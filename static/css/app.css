@@ -1,0 +1,105 @@
+/*  REMEMBER only to edit the SCSS file  */
+/* RAW COLORS */
+/* darker green */
+/* COLOR SCHEME 
+        https://coolors.co/423841-2e5c8a-d6d6d6-248232-c97c18
+*/
+/* CUSTOM FONTS */
+@font-face {
+  font-family: nue-gothic-reg;
+  src: url(../fonts/nue-gothic-reg.ttf);
+}
+@font-face {
+  font-family: nue-gothic-round;
+  src: url(../fonts/nue-gothic-round.ttf);
+}
+@font-face {
+  font-family: "lato";
+  src: url(../fonts/lato-med.woff2);
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "lato";
+  src: url(../fonts/lato-bold.woff2);
+  font-weight: bold;
+  font-style: normal;
+}
+@font-face {
+  font-family: "lato";
+  src: url(../fonts/lato-med-italic.woff2);
+  font-weight: normal;
+  font-style: italic;
+}
+@font-face {
+  font-family: "lato";
+  src: url(../fonts/lato-bold-italic.woff2);
+  font-weight: bold;
+  font-style: italic;
+}
+/* FONT VARIABLES */
+/* HTML ELEMENT OVERRIDES */
+body {
+  font-family: lato;
+  background-color: #423841;
+  color: #f0f0f0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: nue-gothic-round;
+  text-transform: uppercase;
+}
+
+/* FOUNDATION OVERRIDES */
+.callout {
+  background-color: #2e5c8a;
+  color: #f0f0f0;
+}
+
+.callout label {
+  color: #f0f0f0;
+}
+
+.callout.primary {
+  background-color: #d6d6d6;
+  color: #111111;
+}
+
+.callout.primary label {
+  color: #111111;
+}
+
+.button {
+  border: 1px solid #111111;
+  border-radius: 5px;
+  background-color: #248232;
+  color: #f0f0f0;
+  font-family: lato, arial;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.button:hover, .button:focus {
+  background-color: #111111;
+  color: #f0f0f0;
+}
+
+.top-bar,
+.top-bar-right,
+.top-bar-left {
+  background-color: transparent;
+}
+
+.menu,
+.menu li {
+  background-color: #2e5c8a;
+}
+
+/* CUSTOM CLASSES */
+.nav-button {
+  background-color: transparent;
+  border: none;
+  border-radius: 0px;
+}
+
+/*# sourceMappingURL=app.css.map */

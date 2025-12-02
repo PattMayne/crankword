@@ -4,6 +4,8 @@ use actix_web::{ App, HttpServer, middleware::{from_fn}, web };
 use actix_files::Files;
 use dotenvy;
 
+mod routes;
+
 
 /*
  * TO DO (in this order):
@@ -21,6 +23,30 @@ use dotenvy;
  * */
 
 
-fn main() {
-    println!("Hello, world!");
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    // dotenvy loads env variables for whole app
+    // after this, just call std::env::var(variable_name)
+    dotenvy::dotenv().ok();
+
+    HttpServer::new(|| {
+        App::new()
+            .service(Files::new("/static", "./static"))
+            //.wrap(from_fn(middleware::login_status_middleware))
+            .service(routes::home)
+            .service(routes::game)
+            //.default_service(web::get().to(routes::not_found)) // <- catch-all
+            //.wrap(from_fn(middleware::jwt_cookie_middleware))
+    })
+    .bind(("127.0.0.1", 8080))?
+    .run()
+    .await
 }
+
+
+/*
+ * ROUTES SCHEME:
+ *      /game/{}            -- get user_id from JSON web token from cookie
+ *      /game_in/           -- SCOPE for routes sending data TO the game (db) FROM the user/client
+ *      /game_out/          -- SCOPE for routes sending data FROM the game (db) TO the user/client
+ */
