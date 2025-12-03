@@ -6,6 +6,7 @@ use dotenvy;
 
 mod routes;
 mod game_logic;
+mod db;
 
 
 /*

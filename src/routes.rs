@@ -1,3 +1,5 @@
+use crate::db;
+
 /* 
  * ====================
  * ====================
@@ -146,8 +148,7 @@ pub async fn check_word(
     req: HttpRequest,
     word_json: web::Json<WordToCheck>
 ) -> HttpResponse {
-    let winning_word: String = String::from("APPLE");
-
+    let winning_word: String = db::get_winning_word(5).await;
     let result: Vec<LetterScore> = game_logic::check_word(&word_json.guess_word, &winning_word);
 
     HttpResponse::Ok().json(result)

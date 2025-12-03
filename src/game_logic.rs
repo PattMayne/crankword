@@ -1,5 +1,6 @@
 use serde::{ Serialize };
 use std::collections::BTreeMap;
+use crate::db;
 
     
 #[derive(Serialize, PartialEq)]
@@ -18,8 +19,6 @@ fn get_letter_counts(word: &String) -> BTreeMap<char, u8> {
     let mut letter_counts: BTreeMap<char, u8> = BTreeMap::new();
 
     for letter in word.chars() {
-        println!("{}", &letter);
-
         letter_counts.insert(letter, {
             match letter_counts.get(&letter) {
                 None => 1,
