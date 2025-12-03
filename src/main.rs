@@ -5,6 +5,7 @@ use actix_files::Files;
 use dotenvy;
 
 mod routes;
+mod game_logic;
 
 
 /*
@@ -35,6 +36,10 @@ async fn main() -> std::io::Result<()> {
             //.wrap(from_fn(middleware::login_status_middleware))
             .service(routes::home)
             .service(routes::game)
+            .service(
+                web::scope("/game_in")
+                .service(routes::check_word)
+            )
             //.default_service(web::get().to(routes::not_found)) // <- catch-all
             //.wrap(from_fn(middleware::jwt_cookie_middleware))
     })
@@ -47,6 +52,6 @@ async fn main() -> std::io::Result<()> {
 /*
  * ROUTES SCHEME:
  *      /game/{}            -- get user_id from JSON web token from cookie
- *      /game_in/           -- SCOPE for routes sending data TO the game (db) FROM the user/client
+ *      /game_in/           -- SCOPE for routes sending data TO the game (db) FROM the user/client ()POST
  *      /game_out/          -- SCOPE for routes sending data FROM the game (db) TO the user/client
  */

@@ -23,6 +23,16 @@ use actix_web::cookie::{ Cookie };
 use askama::Template;
 use serde::{ Deserialize, Serialize };
 
+use crate::game_logic::{ self, LetterScore };
+
+
+
+#[derive(Deserialize)]
+struct WordToCheck {
+    pub guess_word: String,
+}
+
+
 /* 
  * 
  * 
@@ -111,3 +121,34 @@ async fn game(req: HttpRequest) -> impl Responder {
         .content_type("text/html")
         .body(game_template.render().unwrap())
  }
+
+
+ /* 
+ * 
+ * 
+ * 
+ * 
+ * =========================
+ * =========================
+ * =====               =====
+ * =====  POST ROUTES  =====
+ * =====               =====
+ * =========================
+ * =========================
+ * 
+ * 
+ * 
+ * 
+*/
+
+#[post("/check_word")]
+pub async fn check_word(
+    req: HttpRequest,
+    word_json: web::Json<WordToCheck>
+) -> HttpResponse {
+    let winning_word: String = String::from("APPLE");
+
+    let result: Vec<LetterScore> = game_logic::check_word(&word_json.guess_word, &winning_word);
+
+    HttpResponse::Ok().json(result)
+}
