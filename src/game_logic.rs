@@ -124,6 +124,6 @@ pub fn check_word(
             }
         }
     }
-
+    
     guess_map
 }

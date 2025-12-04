@@ -1,5 +1,6 @@
 $(document).foundation()
 import * as io from './io.js'
+import { LetterState, Tile } from './utils.js'
 
 /* 
  * 
@@ -100,73 +101,8 @@ const set_sizes = () => {
  *
  * 
  * 
- * 
- * 
- * 
- * =================================
- * =================================
- * =====                       =====
- * =====  game data stuctures  =====
- * =====                       =====
- * =================================
- * =================================
-*/
+ */
 
-
-// For which color to print it
-const LetterState = {
-    CURRENT: "current_guess",
-    RIGHT_SPOT: "right_spot",
-    WRONG_SPOT: "wrong_spot",
-    DUD: "dud"
-}
-
-class Tile {
-    constructor(element, state) {
-        this.element = element
-        this.state = state
-        this.letter = ""
-    }
-
-    set_letter(letter) {
-        this.letter = letter
-        this.element.innerHTML = letter
-        this.element.classList.add(LetterState.CURRENT)
-    }
-}
-
-// temporary... will all be in the backend with much bigger list
-const word_options = [
-    "CRANK",
-    "APPLE",
-    "BAKER",
-    "SMASH",
-    "DONUT",
-    "FOLLY",
-    "TRASH",
-    "MANGO",
-    "BERRY",
-    "MOVIE",
-    "CAMEL",
-    "CROSS",
-    "GROSS",
-    "DROSS",
-    "COAST",
-    "TOTAL",
-    "FINAL",
-    "HAPPY",
-    "IMPLY",
-    "TONER",
-    "SOUPY",
-    "GROPE",
-    "STYLE",
-    "VINYL",
-    "CORAL",
-    "STOUT",
-    "SWORD",
-    "BEVEL",
-    "YOUTH"
-]
 
 
 // This is how we set the colors for each letter
@@ -229,64 +165,13 @@ const guess_map = {
     ]
 }
 
-let word = "CRANK" // default word
-const letter_counts = new Map()
-
 let word_index = 0
 let letter_index = 0
 
 let current_word = guess_map.words[word_index]
 let current_tile = current_word.tiles[letter_index]
 
-/**
- * We need occurrences of each letter so we can highlight the correct
- * number of occurrences in the guess.
- */
-const count_letters = () => {
-    for (let i=0; i<word.length; i++) {
-        const letter = word.charAt(i)
-        letter_counts.set(letter, (letter_counts.get(letter) || 0) + 1)
-    }    
-}
 
-/**
- * This should be called on each letter of the current word
- * just when the user presses enter, if that word is full.
- * This is called TWICE
- * 
- * returns bool indicating correct letter in correct spot
-*/
-const check_letter = (tile, input_position, is_first_pass) => {
-    let right_spot = false
-
-    if (is_first_pass) {
-        // Checking for perfect placement first
-        if (word.at(input_position) == tile.letter) {
-            // correct letter in correct spot
-            tile.state = LetterState.RIGHT_SPOT
-            tile.element.classList.remove(LetterState.CURRENT)
-            tile.element.classList.add(tile.state)
-            // DECREMENT COUNT
-            letter_counts.set(tile.letter, (letter_counts.get(tile.letter) || 0) - 1)
-            right_spot = true
-        }        
-    } else if (tile.state == LetterState.CURRENT) {
-        // Second pass: checking letters that weren't approved in the first pass
-        if (!!letter_counts.get(tile.letter)) {
-            tile.state = LetterState.WRONG_SPOT
-            // DECREMENT COUNT
-            letter_counts.set(tile.letter, (letter_counts.get(tile.letter) || 0) - 1)
-        } else {
-            tile.state = LetterState.DUD
-
-        }
-
-        tile.element.classList.remove(LetterState.CURRENT)
-        tile.element.classList.add(tile.state)
-    }
-
-    return right_spot
-}
 
 /*
  * Make sure current word is really full. No empty spaces.
@@ -307,68 +192,72 @@ const current_word_is_ready = () => {
 /**
  * After every line we check the input word against the winning word.
  * Do multiple runs to give precedence to right_spot.
- * Spend the letter_counts each time and rebuild.
  */
-const check_word = () => {
+const check_word = async () => {
     // Make sure word is ready
     if (!current_word_is_ready()) {
         new_message("Please finish the word")
         return
     }
 
-
     // Make word from chars
     const full_word = current_word.tiles.reduce((str, tile) => str + tile.letter, "")
-    console.log("Full Word: " + full_word)
-    io.check_word_io(full_word)
+    const letter_states_obj = await io.check_word_io(full_word)
 
+    // Show Error
+    if (!!letter_states_obj.error) {
+        new_message(letter_states_obj.error)
+        return
+    } else if (
+        !letter_states_obj.letter_states ||
+        !Array.isArray(letter_states_obj.letter_states) ||
+        letter_states_obj.letter_states.length != current_word.tiles.length
+    ) {
+        new_message("Bad server response")
+        return
+    }
 
     let full_word_correct = true
 
-    // Check all tiles for RIGHT SPOT 
-    current_word.tiles.map(( tile, index ) => {
-        if (!check_letter(tile, index, true) ) {
+    // map result onto tiles
+    letter_states_obj.letter_states.map((letter_state, index) => {
+        const tile = current_word.tiles[index]
+        //current_word.tiles[index].element.classList.add(letter_state)
+        tile.state = letter_state  
+        tile.element.classList.remove(LetterState.CURRENT)  
+        tile.element.classList.add(tile.state)  
+        if (letter_state != LetterState.RIGHT_SPOT) {
             full_word_correct = false
         }
     })
 
-
     if (full_word_correct) {
-        end_game(true)
+        end_game(true, full_word)
         return
     }
 
-    // Check all tiles for WRONG SPOT (else DUD)
-    current_word.tiles.map(( tile, index, ) => {
-        check_letter(tile, index, false)
-    })
-
-    // move on to next work
+    // move on to next guess
     letter_index = 0
     word_index ++
 
     if (word_index > 4) {
-        end_game(false)
+        end_game(false, full_word)
         return
     }
 
     current_word = guess_map.words[word_index]
     set_current_tile(current_word.tiles[letter_index])
-    // Reset the letter_counts for the next word
-    letter_counts.clear()
-    count_letters()
     remove_tabindexes() // remove old (all) tabindexes
     set_tabindexes() // set NEW tabindexes
     current_tile.element.focus()
 }
 
 
-const end_game = victory => {
+const end_game = (victory, word) => {
     const endgame_msg = "You " + 
         (victory ? "Win!" : "Lose!") +
         "<br/>The word was " +
         "<h3>" + word + "<h3>"
-    console.log(endgame_msg)
     current_word = null
     set_current_tile(null)
     unset_current_tile_classes()
@@ -392,7 +281,6 @@ const key_pressed = event => {
     }
     
     const key = event.key.toString().toUpperCase()
-    console.log(key)
 
     // Check for relevant non-letter keys first
     if (key == "ENTER") {
@@ -501,8 +389,6 @@ const backspace = (event = null) => {
 
 const start_game = () => {
     set_sizes()
-    word = word_options[Math.floor(Math.random() * word_options.length)]
-    count_letters()
     set_tabindexes()
     current_tile.element.focus()
     guess_map.words.map(word => {
@@ -606,23 +492,6 @@ const unset_current_tile_classes = () => {
     )
 }
 
-/* 
- * 
- * 
- * 
- * 
- * ====================================
- * ====================================
- * ===============      ===============
- * ===============  IO  ===============
- * ===============      ===============
- * ====================================
- * ====================================
- * 
- * 
- * 
- * 
-*/
 
 /**
  * TODO:

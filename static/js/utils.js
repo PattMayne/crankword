@@ -1,83 +1,10 @@
-/* REGEX for user inputs */
 
-export const username_regex = /^[A-Za-z0-9_-]+$/
-export const password_regex = /^[A-Za-z0-9!@#$%^&*()_\-+=\[\]{}:;<>.,?~`|]+$/
-export const email_regex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
-
-/* LENGTH RANGES for inputs */
-
-export const username_length_range = {
-    min: 6,
-    max: 20
-}
-
-export const password_length_range = {
-    min: 6,
-    max: 16
-}
-
-export const first_last_name_length_range = {
-    min: 1,
-    max: 50
-}
-
-/* Error messages for failed input valiadtion. */
-export const email_reqs_msg = "Must be a legitimate email address. Check your formatting."
-export const username_reqs_msg = "Username must be 6 to 20 characters. " +
-    "Only letters, numbers, underscore, and hyphen allowed."
-export const password_reqs_msg = "Password must be 6 to 16 characters with no spaces."
-export const name_range_err_msg = "Names must be 2 to 50 characters in length"
-
-export const new_client_req_fields_msg = "Site domain, name, auth_id, redirect_uri, " +
-    "and type must not be empty. Also, redirect_uri and domain must be valid."
-
-// Make sure password matches regex and length requirements
-export const check_password = (password, err_msgs) => {
-    const password_is_legit = password_regex.test(password) &&
-        string_in_range(password_length_range, password)
-
-    if (!password_is_legit) { err_msgs.push(password_reqs_msg) }
-    return password_is_legit
-}
-
-
-// Make sure email matches regex
-export const check_email = (email, err_msgs) => {
-    const email_is_legit = email_regex.test(email)
-
-    if (!email_is_legit) { err_msgs.push(email_reqs_msg) }
-    return email_is_legit
-}
-
-
-// Make sure username matches regex and length requirements
-export const check_username = (username, err_msgs) => {
-    const username_is_legit = username_regex.test(username) &&
-        string_in_range(username_length_range, username)
-
-    if (!username_is_legit) { err_msgs.push(username_reqs_msg) }
-    return username_is_legit
-}
-
-/**
- * Validate either first or last name.
- * Same rules apply to both.
- * No regex, just length.
- * @param {string} name 
- * @param {array} msgs 
- * @returns boolean
- */
-export const check_real_name = (name, msgs) => {   
-    let name_in_range =  string_in_range(first_last_name_length_range, name)
-    if (!name_in_range) {
-        msgs.push(name_range_err_msg)
-    }
-    return name_in_range    
-}
 
 // Make sure the input string is within a given length range
 const string_in_range = (range_obj, string) =>
     string.length >= range_obj.min && string.length <= range_obj.max
+
+
 
 
 /**
@@ -121,3 +48,49 @@ const is_valid_json_string = (json_string) => {
 
 // In case we have an error parsing the JSON, notify of error
 const json_simple_error_string = () => JSON.stringify({ "error": "JSON response error" })
+
+
+/*
+ * 
+ * 
+ * =================================
+ * =================================
+ * =====                       =====
+ * =====  game data stuctures  =====
+ * =====                       =====
+ * =================================
+ * =================================
+*/
+
+
+// For which color to print it
+export const LetterState = {
+    CURRENT: "current_guess",
+    RIGHT_SPOT: "right_spot",
+    WRONG_SPOT: "wrong_spot",
+    DUD: "dud"
+}
+
+// Data for the game tiles
+export class Tile {
+    constructor(element, state) {
+        this.element = element
+        this.state = state
+        this.letter = ""
+    }
+
+    set_letter(letter) {
+        this.letter = letter
+        this.element.innerHTML = letter
+        this.element.classList.add(LetterState.CURRENT)
+    }
+}
+
+export const get_default_letter_states = number_of_letters => {
+    const letter_states = []
+    for (let i=0; i<number_of_letters; i++) {
+        letter_states.push(LetterState.CURRENT)
+    }
+
+    return letter_states
+}
