@@ -342,7 +342,6 @@ const move_left = (event = null) => {
         letter_index--
         set_current_tile(current_word.tiles[letter_index])
         current_tile.element.focus()
-
         event && event.preventDefault()
     }
 }
