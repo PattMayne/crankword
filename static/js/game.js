@@ -390,6 +390,7 @@ const start_game = () => {
     set_sizes()
     set_tabindexes()
     current_tile.element.focus()
+    current_tile.element.classList.add("current_tile")
     guess_map.words.map(word => {
         make_tiles_clickable(word.tiles)
     })

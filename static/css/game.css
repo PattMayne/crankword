@@ -90,6 +90,9 @@ body {
     cursor:default;
 }
 
+.current_tile {
+    background-color: #333;
+}
 
 .tile:focus {
     outline: none !important;
