@@ -34,6 +34,10 @@ struct WordToCheck {
     pub guess_word: String,
 }
 
+#[derive(Deserialize)]
+struct AuthCodeQuery {
+    code: String,
+}
 
 /* 
  * 
@@ -123,7 +127,27 @@ async fn game(req: HttpRequest) -> impl Responder {
         .content_type("text/html")
         .body(game_template.render().unwrap())
  }
+ 
 
+ /**
+  * LOGIN RECEPTION
+  * After the user logs in on auth app,
+  * they are redirected here.
+  */
+#[get("/reception")]
+async fn reception(req: HttpRequest, query: web::Query<AuthCodeQuery>) -> impl Responder {
+    let auth_code: String = query.code.to_owned();
+
+    println!("auth_code: {}", auth_code);
+
+    // IN THIS FUNCTION we will CALL the AUTH APP and RECEIVE the REFRESH_TOKEN
+    // THEN we will CREATE A JWT
+    // THEN we will put BOTH into the RESPONSE
+    // THEN we will create MIDDLEWARE to put those BOTH in COOKIES
+    // THEN we will REDIRECT to DASHBOARD
+
+    Redirect::to("/game")
+}
 
  /* 
  * 

@@ -37,6 +37,7 @@ async fn main() -> std::io::Result<()> {
             //.wrap(from_fn(middleware::login_status_middleware))
             .service(routes::home)
             .service(routes::game)
+            .service(routes::reception)
             .service(
                 web::scope("/game_in")
                 .service(routes::check_word)
