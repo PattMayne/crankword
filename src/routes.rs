@@ -1,4 +1,14 @@
+use actix_web::{
+    web, HttpResponse, HttpRequest,
+    Responder, http::StatusCode, http::header,
+    get, post, web::Redirect };
+use actix_web::cookie::{ Cookie };
+use askama::Template;
+use serde::{ Deserialize, Serialize };
+use reqwest::Client;
+
 use crate::db;
+use crate::game_logic::{ self, LetterScore };
 
 /* 
  * ====================
@@ -16,16 +26,6 @@ use crate::db;
  * 
  * 
 */
-// why it gray?
-use actix_web::{
-    web, HttpResponse, HttpRequest,
-    Responder, http::StatusCode, http::header,
-    get, post, web::Redirect };
-use actix_web::cookie::{ Cookie };
-use askama::Template;
-use serde::{ Deserialize, Serialize };
-
-use crate::game_logic::{ self, LetterScore };
 
 
 
@@ -38,6 +38,14 @@ struct WordToCheck {
 struct AuthCodeQuery {
     code: String,
 }
+
+#[derive(Serialize)]
+struct ClientAuthData {
+    code: String,
+    client_id: String,
+    client_secret: String,
+}
+
 
 /* 
  * 
@@ -141,6 +149,38 @@ async fn reception(req: HttpRequest, query: web::Query<AuthCodeQuery>) -> impl R
     println!("auth_code: {}", auth_code);
 
     // IN THIS FUNCTION we will CALL the AUTH APP and RECEIVE the REFRESH_TOKEN
+
+    let client_id: String = match std::env::var("CLIENT_ID") {
+        Ok(secret) => secret,
+        Err(_e) => {
+            eprintln!("ERROR: NO CLIENT ID. MAKE ERROR PAGE!");
+            return Redirect::to("/game");
+        }
+    };
+
+    let client_secret: String = match std::env::var("CLIENT_SECRET") {
+        Ok(secret) => secret,
+        Err(_e) => {
+            eprintln!("ERROR: NO CLIENT SECRET. MAKE ERROR PAGE!");
+            return Redirect::to("/game");
+        }
+    };
+
+
+    let client_auth_data: ClientAuthData = ClientAuthData {
+        client_id,
+        client_secret,
+        code: auth_code,
+    };
+
+    // Use a reqwest Client for POST request
+    let client: Client = Client::new();
+    let res: Result<reqwest::Response, reqwest::Error> = client
+        .post("http://auth.localhost.test:3000/ext_auth/verify_auth_code") // put this in resources file
+        .json(&client_auth_data)
+        .send()
+        .await;
+
     // THEN we will CREATE A JWT
     // THEN we will put BOTH into the RESPONSE
     // THEN we will create MIDDLEWARE to put those BOTH in COOKIES
