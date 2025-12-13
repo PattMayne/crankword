@@ -7,6 +7,9 @@ use dotenvy;
 mod routes;
 mod game_logic;
 mod db;
+mod auth_code_shared;
+mod auth;
+mod io;
 
 
 /*

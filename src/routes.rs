@@ -7,8 +7,16 @@ use askama::Template;
 use serde::{ Deserialize, Serialize };
 use reqwest::Client;
 
-use crate::db;
-use crate::game_logic::{ self, LetterScore };
+use crate::{
+    db, auth, io,
+    game_logic::{ self, LetterScore },
+    auth_code_shared::{ 
+        AuthCodeError,
+        AuthCodeRequest,
+        AuthCodeResponse,
+        AuthCodeSuccess
+    }
+};
 
 /* 
  * ====================
@@ -39,12 +47,6 @@ struct AuthCodeQuery {
     code: String,
 }
 
-#[derive(Serialize)]
-struct ClientAuthData {
-    code: String,
-    client_id: String,
-    client_secret: String,
-}
 
 
 /* 
@@ -166,27 +168,32 @@ async fn reception(req: HttpRequest, query: web::Query<AuthCodeQuery>) -> impl R
         }
     };
 
-
-    let client_auth_data: ClientAuthData = ClientAuthData {
+    let client_auth_data: AuthCodeRequest = AuthCodeRequest {
         client_id,
         client_secret,
         code: auth_code,
     };
 
-    // Use a reqwest Client for POST request
-    let client: Client = Client::new();
-    let res: Result<reqwest::Response, reqwest::Error> = client
-        .post("http://auth.localhost.test:3000/ext_auth/verify_auth_code") // put this in resources file
-        .json(&client_auth_data)
-        .send()
-        .await;
+    let auth_code_response: Result<AuthCodeSuccess, anyhow::Error> = 
+        io::check_auth_code(client_auth_data).await;
 
+    match auth_code_response {
+        Ok(success) => {
+            println!("Token: {}", success.refresh_token);
+            println!("Name: {}", success.username);
+            println!("Id: {}", success.user_id);
+            Redirect::to("/game")
+        },
+        Err(e) => {
+            println!("Errrror: {}", e);
+            Redirect::to("/game")
+        }
+    }
     // THEN we will CREATE A JWT
     // THEN we will put BOTH into the RESPONSE
     // THEN we will create MIDDLEWARE to put those BOTH in COOKIES
     // THEN we will REDIRECT to DASHBOARD
 
-    Redirect::to("/game")
 }
 
  /* 
@@ -217,3 +224,7 @@ pub async fn check_word(
 
     HttpResponse::Ok().json(result)
 }
+
+
+
+
