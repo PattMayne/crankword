@@ -48,6 +48,13 @@ struct AuthCodeQuery {
 }
 
 
+#[derive(Serialize)]
+pub struct ErrorResponse {
+    pub error: String,
+    pub code: u16,
+}
+
+
 
 /* 
  * 
@@ -82,6 +89,16 @@ struct HomeTemplate {
 struct GameTemplate {
     title: String,
 }
+
+
+// OTHER STRUCTS
+
+
+struct TwoAuthCookies {
+    pub jwt_cookie: Cookie<'static>,
+    pub refresh_token_cookie: Cookie<'static>,
+}
+
 
 
 /* 
@@ -139,13 +156,20 @@ async fn game(req: HttpRequest) -> impl Responder {
  }
  
 
+fn redirect_to_game() -> HttpResponse {
+    HttpResponse::Found() // 302 redirect
+        .append_header((header::LOCATION, "/game"))
+        .finish()
+}
+
+
  /**
   * LOGIN RECEPTION
   * After the user logs in on auth app,
   * they are redirected here.
   */
 #[get("/reception")]
-async fn reception(req: HttpRequest, query: web::Query<AuthCodeQuery>) -> impl Responder {
+async fn reception(query: web::Query<AuthCodeQuery>) -> HttpResponse {
     let auth_code: String = query.code.to_owned();
 
     println!("auth_code: {}", auth_code);
@@ -156,7 +180,7 @@ async fn reception(req: HttpRequest, query: web::Query<AuthCodeQuery>) -> impl R
         Ok(secret) => secret,
         Err(_e) => {
             eprintln!("ERROR: NO CLIENT ID. MAKE ERROR PAGE!");
-            return Redirect::to("/game");
+            return redirect_to_game();
         }
     };
 
@@ -164,7 +188,7 @@ async fn reception(req: HttpRequest, query: web::Query<AuthCodeQuery>) -> impl R
         Ok(secret) => secret,
         Err(_e) => {
             eprintln!("ERROR: NO CLIENT SECRET. MAKE ERROR PAGE!");
-            return Redirect::to("/game");
+            return redirect_to_game()
         }
     };
 
@@ -182,17 +206,52 @@ async fn reception(req: HttpRequest, query: web::Query<AuthCodeQuery>) -> impl R
             println!("Token: {}", success.refresh_token);
             println!("Name: {}", success.username);
             println!("Id: {}", success.user_id);
-            Redirect::to("/game")
+
+            // trying cookies here:
+
+            // generate JWT. Don't send user obj (with password) back
+            let jwt_err_500: ErrorResponse = ErrorResponse {
+                error: String::from("Access Token Generation Error."),
+                code: 500
+            };
+
+            // Generate a token String
+            let jwt: String = match auth::generate_jwt(
+                success.user_id,
+                success.username,
+                "ROLE_PLACEHOLDER".to_string()
+            ) {
+                Ok(token) => token,
+                Err(e) => {
+                    println!("Error: {}", e);
+                    return redirect_to_game();
+                }
+            };
+
+            // Now make the cookies and set them in the response
+            let jwt_cookie: Cookie<'_> = auth::build_token_cookie(
+                jwt,
+                String::from("jwt"));
+            
+            let refresh_token_cookie: Cookie<'_> = auth::build_token_cookie(
+                success.refresh_token,
+                String::from("refresh_token"));
+
+            HttpResponse::Found() // 302 redirect
+                .append_header((header::LOCATION, "/game"))
+                .cookie(jwt_cookie)
+                .cookie(refresh_token_cookie)
+                .finish()
+
         },
         Err(e) => {
-            println!("Errrror: {}", e);
-            Redirect::to("/game")
+            println!("Error: {}", e);
+            HttpResponse::Found() // 302 redirect
+                .append_header((header::LOCATION, "/game"))
+                .finish()
         }
     }
-    // THEN we will CREATE A JWT
-    // THEN we will put BOTH into the RESPONSE
-    // THEN we will create MIDDLEWARE to put those BOTH in COOKIES
-    // THEN we will REDIRECT to DASHBOARD
+
 
 }
 

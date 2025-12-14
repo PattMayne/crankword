@@ -10,6 +10,7 @@ mod db;
 mod auth_code_shared;
 mod auth;
 mod io;
+mod utils;
 
 
 /*
