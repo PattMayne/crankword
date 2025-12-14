@@ -207,19 +207,11 @@ async fn reception(query: web::Query<AuthCodeQuery>) -> HttpResponse {
             println!("Name: {}", success.username);
             println!("Id: {}", success.user_id);
 
-            // trying cookies here:
-
-            // generate JWT. Don't send user obj (with password) back
-            let jwt_err_500: ErrorResponse = ErrorResponse {
-                error: String::from("Access Token Generation Error."),
-                code: 500
-            };
-
             // Generate a token String
             let jwt: String = match auth::generate_jwt(
                 success.user_id,
                 success.username,
-                "ROLE_PLACEHOLDER".to_string()
+                success.user_role
             ) {
                 Ok(token) => token,
                 Err(e) => {

@@ -49,6 +49,7 @@ pub struct AuthCodeRequest {
 pub struct AuthCodeSuccess {
     pub user_id: i32,
     pub username: String,
+    pub user_role: String,
     pub refresh_token: String,
 }
 
