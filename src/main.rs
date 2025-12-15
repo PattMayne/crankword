@@ -11,6 +11,7 @@ mod auth_code_shared;
 mod auth;
 mod io;
 mod utils;
+mod middleware;
 
 
 /*
@@ -38,7 +39,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
             .service(Files::new("/static", "./static"))
-            //.wrap(from_fn(middleware::login_status_middleware))
+            .wrap(from_fn(middleware::login_status_middleware))
             .service(routes::home)
             .service(routes::game)
             .service(routes::reception)
@@ -47,7 +48,7 @@ async fn main() -> std::io::Result<()> {
                 .service(routes::check_word)
             )
             //.default_service(web::get().to(routes::not_found)) // <- catch-all
-            //.wrap(from_fn(middleware::jwt_cookie_middleware))
+            .wrap(from_fn(middleware::jwt_cookie_middleware))
     })
     .bind(("127.0.0.1", 8080))?
     .run()
