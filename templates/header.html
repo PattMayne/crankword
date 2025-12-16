@@ -1,6 +1,13 @@
 <div class="top-bar">
     <div class="top-bar-right">
         <ul class="menu">
+            <li><a href="#" class="button small nav-button inert-nav-button">
+                {% if user.role == "guest" %}
+                    {{ user.role }}
+                {% else %}
+                    {{ user.get_username() }}
+                {% endif %}
+            </a></li>
             <li><a href="/" class="button small nav-button">HOME</a></li>
             <li><a href="/game" class="button small nav-button">GAME</a></li>
         </ul> 

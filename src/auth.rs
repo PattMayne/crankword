@@ -211,6 +211,13 @@ impl UserReqData {
     pub fn clone_lang(&self) -> SupportedLangs {
         self.lang.clone()
     }
+
+    pub fn get_username(&self) -> String {
+        match &self.username {
+            None => self.role.to_owned(),
+            Some(username) => username.to_owned()
+        }
+    }
 }
 
 /* functions for the Claims struct */

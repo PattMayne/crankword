@@ -79,6 +79,7 @@ pub struct ErrorResponse {
 struct HomeTemplate {
     title: String,
     message: String,
+    user: auth::UserReqData,
 }
 
 
@@ -86,6 +87,7 @@ struct HomeTemplate {
 #[template(path ="game.html")]
 struct GameTemplate {
     title: String,
+    user: auth::UserReqData,
 }
 
 
@@ -135,12 +137,13 @@ struct TwoAuthCookies {
 
 /* ROOT DOMAIN */
 #[get("/")]
-async fn home() -> impl Responder {
-    //let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+async fn home(req: HttpRequest) -> impl Responder {
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
 
     let home_template: HomeTemplate = HomeTemplate {
         title: "CRANKWORD".to_string(),
-        message: "Welcome to Crankword!".to_string()
+        message: "Welcome to Crankword!".to_string(),
+        user: user_req_data
     };
 
     HttpResponse::Ok()
@@ -151,11 +154,12 @@ async fn home() -> impl Responder {
 
 /* ROOT DOMAIN */
 #[get("/game")]
-async fn game() -> impl Responder {
-    //let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+async fn game(req: HttpRequest) -> HttpResponse {
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
 
     let game_template: GameTemplate = GameTemplate {
-        title: "CRANKWORD".to_string()
+        title: "CRANKWORD".to_string(),
+        user: user_req_data
     };
 
     HttpResponse::Ok()
@@ -180,23 +184,21 @@ fn redirect_to_game() -> HttpResponse {
 async fn reception(query: web::Query<AuthCodeQuery>) -> HttpResponse {
     let auth_code: String = query.code.to_owned();
 
-    println!("auth_code: {}", auth_code);
-
     // IN THIS FUNCTION we will CALL the AUTH APP and RECEIVE the REFRESH_TOKEN
 
     let client_id: String = match std::env::var("CLIENT_ID") {
         Ok(secret) => secret,
         Err(_e) => {
-            eprintln!("ERROR: NO CLIENT ID. MAKE ERROR PAGE!");
-            return redirect_to_game();
+            eprintln!("ERROR: NO CLIENT ID.");
+            return redirect_to_err("404");
         }
     };
 
     let client_secret: String = match std::env::var("CLIENT_SECRET") {
         Ok(secret) => secret,
         Err(_e) => {
-            eprintln!("ERROR: NO CLIENT SECRET. MAKE ERROR PAGE!");
-            return redirect_to_game()
+            eprintln!("ERROR: NO CLIENT SECRET.");
+            return redirect_to_err("404");
         }
     };
 
@@ -223,8 +225,8 @@ async fn reception(query: web::Query<AuthCodeQuery>) -> HttpResponse {
             ) {
                 Ok(token) => token,
                 Err(e) => {
-                    println!("Error: {}", e);
-                    return redirect_to_game();
+                    eprintln!("Error: {}", e);
+                    return redirect_to_err("404");
                 }
             };
 
@@ -246,9 +248,7 @@ async fn reception(query: web::Query<AuthCodeQuery>) -> HttpResponse {
         },
         Err(e) => {
             println!("Error: {}", e);
-            HttpResponse::Found() // 302 redirect
-                .append_header((header::LOCATION, "/game"))
-                .finish()
+            return redirect_to_err("404");
         }
     }
 
@@ -258,18 +258,14 @@ async fn reception(query: web::Query<AuthCodeQuery>) -> HttpResponse {
 
 // Function for the catch-all "not found" route
 pub async fn not_found() -> impl Responder {
-
-    println!("here ---111");
     Redirect::to("/error/404")
 }
 
 
 #[get("/error/{code}")]
 async fn error_page(req: HttpRequest, path: web::Path<String>) -> HttpResponse {
-    println!("here 000");
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
 
-    println!("here 111");
 
     let code: String = match path.into_inner().parse::<String>() {
         Ok(code) => code,
@@ -281,13 +277,11 @@ async fn error_page(req: HttpRequest, path: web::Path<String>) -> HttpResponse {
         &user_req_data.lang
     );
 
-    println!("here 222");
     let error_template: ErrorTemplate<> = ErrorTemplate {
         error_data,
         texts: ErrorTexts::new(&user_req_data),
         user: user_req_data
     };
-    println!("here 333");
 
     HttpResponse::Ok()
         .content_type("text/html")
@@ -309,6 +303,16 @@ async fn error_root_2() -> HttpResponse {
         .append_header(("Location", "/error"))
         .finish()
 }
+
+
+// if user just goes to /auth
+pub fn redirect_to_err(err_code: &str) -> HttpResponse{
+    let new_location: String = format!("/error/{}", err_code);
+    HttpResponse::Found()
+        .append_header(("Location", new_location))
+        .finish()
+}
+
 
 
  /* 

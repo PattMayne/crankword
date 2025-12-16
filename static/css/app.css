@@ -102,4 +102,11 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 0px;
 }
 
+
+.inert-nav-button:hover,
+.inert-nav-button:focus {
+  cursor: default;
+  background-color: transparent;
+}
+
 /*# sourceMappingURL=app.css.map */
