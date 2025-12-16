@@ -21,7 +21,12 @@ use actix_web::{
     middleware::{ Next }
 };
 
-use crate::{ auth, db, utils };
+use crate::{ auth, io,
+    auth_code_shared::{ 
+            RefreshCheckSuccess,
+            RefreshCheckRequest,
+        }
+};
 
 
 pub struct NewJwtObj {
@@ -97,54 +102,83 @@ async fn get_user_req_data_from_opt(
     let jwt_cookie: actix_web::cookie::Cookie<'_> = option.unwrap();
 
     // Must use match here because of multiple enums
-    match auth::verify_jwt(jwt_cookie.value()).await {
-        auth::JwtVerification::Invalid => Ok(guest_data),
-        auth::JwtVerification::Valid(claims) => {
-            Ok(auth::UserReqData::new(Some(claims)))
+    let claims = match auth::verify_jwt(jwt_cookie.value()).await {
+        auth::JwtVerification::Invalid => {
+            return Ok(guest_data);
         },
-        auth::JwtVerification::Expired(claims) => {
-            println!("JWT expired. will check refresh token and generate new JWT");
-            // JWT is expired but otherwise valid.
-            // check refresh_token in auth_app before generating a new one
-            /* 
-                * PROCESS:
-                * => check REFRESH TOKEN
-                * => if that is valid (and non-expired):
-                * ====> set FLAG for setting the new JWT
-                * => ELSE
-                * ====> set FLAG to make user log in again
-                */
-            
-            // Check the cookies for a refresh_token
-            let r_token_optn = req.cookie("refresh_token");
-            if r_token_optn.is_none() { return Ok(guest_data); }
-            let r_tkn_ckie: actix_web::cookie::Cookie<'_> = r_token_optn.unwrap();
-            let refresh_token: &str = r_tkn_ckie.value();
+        auth::JwtVerification::Valid(claims) => {
+            return Ok(auth::UserReqData::new(Some(claims)));
+        },
+        auth::JwtVerification::Expired(claims) => claims
+    };
 
-            // SEND TO AUTH_APP to compare to refresh_token in DB
+    println!("JWT expired. will check refresh token and generate new JWT");
+    // JWT is expired but otherwise valid.
+    // check refresh_token in auth_app before generating a new one
+    /* 
+    * PROCESS:
+    * => check REFRESH TOKEN
+    * => if that is valid (and non-expired):
+    * ====> set FLAG for setting the new JWT
+    * => ELSE
+    * ====> set FLAG to make user log in again
+    */
+    
+    // Check the cookies for a refresh_token
+    let r_token_optn = req.cookie("refresh_token");
+    if r_token_optn.is_none() { return Ok(guest_data); }
+    let r_tkn_ckie: actix_web::cookie::Cookie<'_> = r_token_optn.unwrap();
+    let refresh_token: &str = r_tkn_ckie.value();
+    let client_data_result: Result<auth::ClientData, std::env::VarError> =
+        auth::get_client_data();
 
-            let r_tkn_valid: bool = true;
 
-            if r_tkn_valid {
-                // CREATE and GIVE NEW JWT
-                let new_jwt_rslt: Result<String, auth::AuthError> =
-                    auth::generate_jwt(
-                        claims.get_sub(),
-                        claims.get_username().to_owned(),
-                        claims.get_role().to_owned()
-                    );
+    if client_data_result.is_err() {
+        // TO DO: send to ERROR PAGE
+        return Ok(guest_data);
+    }
 
-                if let Err(e) = new_jwt_rslt {
-                    return Err(error::ErrorInternalServerError(e.to_string()));
-                }
+    let client_data: auth::ClientData = client_data_result.unwrap();
 
-                let new_jwt = new_jwt_rslt.unwrap();
-                req.extensions_mut().insert(NewJwtObj::new(new_jwt));
-                return Ok(auth::UserReqData::new(Some(claims)));
-            } else {
-                Ok(guest_data)
-            }                   
+    let refresh_check_data: RefreshCheckRequest = RefreshCheckRequest {
+        token: refresh_token.to_string(),
+        user_id: claims.get_sub(),
+        client_id: client_data.client_id,
+        client_secret: client_data.client_secret
+    };
+
+    let refresh_check_result: Result<RefreshCheckSuccess, anyhow::Error> =
+        io::check_refresh_code(&refresh_check_data).await;
+
+    if refresh_check_result.is_err() {
+        // TO DO: send to ERROR PAGE
+        return Ok(guest_data);
+    }
+
+    // Get the OK from auth_app
+    let r_tkn_valid: bool = refresh_check_result.unwrap().is_valid();
+
+    if r_tkn_valid {
+        println!("REFRESH TOKEN VALID!");
+        // CREATE and GIVE NEW JWT
+        let new_jwt_rslt: Result<String, auth::AuthError> =
+            auth::generate_jwt(
+                claims.get_sub(),
+                claims.get_username().to_owned(),
+                claims.get_role().to_owned()
+            );
+
+        if let Err(e) = new_jwt_rslt {
+            return Err(error::ErrorInternalServerError(e.to_string()));
         }
+
+        let new_jwt = new_jwt_rslt.unwrap();
+        req.extensions_mut().insert(NewJwtObj::new(new_jwt));
+
+        Ok(auth::UserReqData::new(Some(claims)))
+    } else {
+        println!("REFRESH TOKEN NOT NOT NOT VALID!");
+        Ok(guest_data)
     }
 }
 

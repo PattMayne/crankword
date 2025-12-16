@@ -4,11 +4,7 @@ use jsonwebtoken::{
 use serde::{ Serialize, Deserialize };
 use time::{ Duration, OffsetDateTime };
 use actix_web::{ HttpMessage, HttpRequest, cookie::{Cookie, SameSite}};
-use rand::{distr::Alphanumeric, Rng};
 use std::fmt;
-use argon2::{Argon2, PasswordHasher, PasswordVerifier};
-use rand_core::OsRng;
-use password_hash::{SaltString, PasswordHash};
 
 use crate::utils::{self, SupportedLangs};
 
@@ -97,6 +93,12 @@ pub struct Claims {
     role: String,
     username: String,
     exp: usize, // expiration as a timestamp (seconds since epoch)
+}
+
+#[derive(Serialize)]
+pub struct ClientData {
+    pub client_secret: String,
+    pub client_id: String,
 }
 
 pub enum JwtVerification {
@@ -378,3 +380,12 @@ pub fn get_jwt_secret() -> Result<String, std::env::VarError> {
     std::env::var("JWT_SECRET")
 }
 
+
+pub fn get_client_data() -> Result<ClientData, std::env::VarError> {
+    let client_id: String = std::env::var("CLIENT_ID")?;
+    let client_secret: String = std::env::var("CLIENT_SECRET")?;
+
+    Ok(ClientData {
+        client_id, client_secret
+    })
+}

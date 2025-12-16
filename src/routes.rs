@@ -1,19 +1,17 @@
 use actix_web::{
-    web, HttpResponse, HttpRequest,
-    Responder, http::StatusCode, http::header,
-    get, post, web::Redirect };
-use actix_web::cookie::{ Cookie };
+    web, HttpResponse, Responder, HttpRequest,
+    http::header, get, post, web::Redirect,
+    cookie::{ Cookie }
+};
 use askama::Template;
 use serde::{ Deserialize, Serialize };
-use reqwest::Client;
 
 use crate::{
     db, auth, io,
     game_logic::{ self, LetterScore },
+    resource_mgr::*,
     auth_code_shared::{ 
-        AuthCodeError,
         AuthCodeRequest,
-        AuthCodeResponse,
         AuthCodeSuccess
     }
 };
@@ -91,6 +89,16 @@ struct GameTemplate {
 }
 
 
+#[derive(Template)]
+#[template(path ="error.html")]
+struct ErrorTemplate {
+    error_data: ErrorData,
+    user: auth::UserReqData,
+    texts: ErrorTexts,
+}
+
+
+
 // OTHER STRUCTS
 
 
@@ -127,7 +135,7 @@ struct TwoAuthCookies {
 
 /* ROOT DOMAIN */
 #[get("/")]
-async fn home(req: HttpRequest) -> impl Responder {
+async fn home() -> impl Responder {
     //let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
 
     let home_template: HomeTemplate = HomeTemplate {
@@ -143,7 +151,7 @@ async fn home(req: HttpRequest) -> impl Responder {
 
 /* ROOT DOMAIN */
 #[get("/game")]
-async fn game(req: HttpRequest) -> impl Responder {
+async fn game() -> impl Responder {
     //let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
 
     let game_template: GameTemplate = GameTemplate {
@@ -247,6 +255,62 @@ async fn reception(query: web::Query<AuthCodeQuery>) -> HttpResponse {
 
 }
 
+
+// Function for the catch-all "not found" route
+pub async fn not_found() -> impl Responder {
+
+    println!("here ---111");
+    Redirect::to("/error/404")
+}
+
+
+#[get("/error/{code}")]
+async fn error_page(req: HttpRequest, path: web::Path<String>) -> HttpResponse {
+    println!("here 000");
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+
+    println!("here 111");
+
+    let code: String = match path.into_inner().parse::<String>() {
+        Ok(code) => code,
+        Err(_) => "400".to_string()
+    };
+
+    let error_data: ErrorData = ErrorData::new(
+        code,
+        &user_req_data.lang
+    );
+
+    println!("here 222");
+    let error_template: ErrorTemplate<> = ErrorTemplate {
+        error_data,
+        texts: ErrorTexts::new(&user_req_data),
+        user: user_req_data
+    };
+    println!("here 333");
+
+    HttpResponse::Ok()
+        .content_type("text/html")
+        .body(error_template.render().unwrap())
+}
+
+
+#[get("/error")]
+async fn error_root() -> HttpResponse {
+    HttpResponse::Found()
+        .append_header(("Location", "/error/500"))
+        .finish()
+}
+
+
+#[get("/error/")]
+async fn error_root_2() -> HttpResponse {
+    HttpResponse::Found()
+        .append_header(("Location", "/error"))
+        .finish()
+}
+
+
  /* 
  * 
  * 
@@ -267,7 +331,6 @@ async fn reception(query: web::Query<AuthCodeQuery>) -> HttpResponse {
 
 #[post("/check_word")]
 pub async fn check_word(
-    req: HttpRequest,
     word_json: web::Json<WordToCheck>
 ) -> HttpResponse {
     let winning_word: String = db::get_winning_word(5).await;

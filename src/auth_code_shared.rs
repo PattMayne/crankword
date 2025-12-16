@@ -74,3 +74,48 @@ pub enum AuthCodeResponse {
     Ok(AuthCodeSuccess),
     Err(AuthCodeError),
 }
+
+
+
+/* 
+ * For sending refresh_tokens from client_app to auth_app,
+ * and sending true/false validation back.
+ */
+
+#[derive(Serialize, Deserialize)]
+pub struct RefreshCheckRequest {
+    pub token: String,
+    pub user_id: i32,
+    pub client_id: String,
+    pub client_secret: String,
+}
+
+
+#[derive(Serialize, Deserialize)]
+pub struct RefreshCheckSuccess {
+    is_valid: bool,
+}
+
+
+#[derive(Serialize, Deserialize)]
+pub struct RefreshCheckError {
+    pub error_code: u16,
+    pub message: String,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(untagged)] 
+pub enum RefreshCheckResponse {
+    Ok(RefreshCheckSuccess),
+    Err(RefreshCheckError)
+}
+
+impl RefreshCheckSuccess {
+    pub fn new(is_valid: bool) -> Self {
+        RefreshCheckSuccess { is_valid }
+    }
+
+    pub fn is_valid(&self) -> bool {
+        self.is_valid
+    }
+}

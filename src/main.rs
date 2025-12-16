@@ -12,6 +12,8 @@ mod auth;
 mod io;
 mod utils;
 mod middleware;
+mod resources;
+mod resource_mgr;
 
 
 /*
@@ -40,6 +42,9 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .service(Files::new("/static", "./static"))
             .wrap(from_fn(middleware::login_status_middleware))
+            .service(routes::error_root)
+            .service(routes::error_root_2)
+            .service(routes::error_page)
             .service(routes::home)
             .service(routes::game)
             .service(routes::reception)
@@ -47,7 +52,7 @@ async fn main() -> std::io::Result<()> {
                 web::scope("/game_in")
                 .service(routes::check_word)
             )
-            //.default_service(web::get().to(routes::not_found)) // <- catch-all
+            .default_service(web::get().to(routes::not_found)) // <- catch-all
             .wrap(from_fn(middleware::jwt_cookie_middleware))
     })
     .bind(("127.0.0.1", 8080))?
