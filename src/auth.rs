@@ -341,7 +341,6 @@ pub fn build_token_cookie(token: String, name: String) -> Cookie<'static> {
 }
 
 
-
 /**
  * Decode the jwt string, check it against the Claims struct.
  * If the JWT is expired, we will still return the Claims (using insecure_decode)

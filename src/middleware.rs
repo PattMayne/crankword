@@ -101,8 +101,8 @@ async fn get_user_req_data_from_opt(
     if option.is_none() { return Ok(guest_data); }
     let jwt_cookie: actix_web::cookie::Cookie<'_> = option.unwrap();
 
-    // Must use match here because of multiple enums
-    let claims = match auth::verify_jwt(jwt_cookie.value()).await {
+    // hold claims in var if jwt expired. Otherwise return within match.
+    let claims: auth::Claims = match auth::verify_jwt(jwt_cookie.value()).await {
         auth::JwtVerification::Invalid => {
             return Ok(guest_data);
         },

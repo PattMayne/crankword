@@ -81,9 +81,6 @@ impl HomeTexts {
 }
 
 
-
-
-
 /**
  * route: get "/error"
  */
@@ -100,7 +97,6 @@ impl ErrorTexts {
         }
     }
 }
-
 
 
 /* 
@@ -167,7 +163,6 @@ impl NavTexts {
         }
     }
 }
-
 
 
 /* 

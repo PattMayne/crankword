@@ -7,13 +7,11 @@ use askama::Template;
 use serde::{ Deserialize, Serialize };
 
 use crate::{
-    db, auth, io,
-    game_logic::{ self, LetterScore },
-    resource_mgr::*,
-    auth_code_shared::{ 
+    auth, auth_code_shared::{ 
         AuthCodeRequest,
         AuthCodeSuccess
-    }
+    }, db, game_logic::{ self, LetterScore }, io, resource_mgr::{self, *},
+    resources::get_translation, utils::SupportedLangs,
 };
 
 /* 
@@ -157,6 +155,10 @@ async fn home(req: HttpRequest) -> impl Responder {
 async fn game(req: HttpRequest) -> HttpResponse {
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
 
+    if user_req_data.role == "guest" {
+        return redirect_to_login();
+    }
+
     let game_template: GameTemplate = GameTemplate {
         title: "CRANKWORD".to_string(),
         user: user_req_data
@@ -251,8 +253,6 @@ async fn reception(query: web::Query<AuthCodeQuery>) -> HttpResponse {
             return redirect_to_err("404");
         }
     }
-
-
 }
 
 
@@ -306,13 +306,39 @@ async fn error_root_2() -> HttpResponse {
 
 
 // if user just goes to /auth
-pub fn redirect_to_err(err_code: &str) -> HttpResponse{
+pub fn redirect_to_err(err_code: &str) -> HttpResponse {
     let new_location: String = format!("/error/{}", err_code);
     HttpResponse::Found()
         .append_header(("Location", new_location))
         .finish()
 }
 
+
+// redirect user to login page
+pub fn redirect_to_login() -> HttpResponse {
+    let lang: SupportedLangs = SupportedLangs::English;
+    let mut login_url: String = get_translation(
+        "links.login",
+        &lang,
+        None
+    );
+
+    let querystring: String = match std::env::var("CLIENT_ID") {
+        Ok(client_id) => {
+            "?client_id=".to_string() + &client_id
+        },
+        Err(_e) => {
+            eprintln!("");
+            "ERROR RETRIEVING CLIENT ID".to_string()
+        }
+    };
+
+    login_url.push_str(&querystring);
+
+    HttpResponse::Found()
+        .append_header(("Location", login_url))
+        .finish()
+}
 
 
  /* 
@@ -342,7 +368,3 @@ pub async fn check_word(
 
     HttpResponse::Ok().json(result)
 }
-
-
-
-

@@ -123,6 +123,10 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "err.invalid_creds.fr" => "Identifiants invalides.",
     "err.user_not_found.en" => "User not found.",
     "err.user_not_found.fr" => "Utilisateur non trouvé.",
+
+    // LINKS & URLS
+    "links.login.en" => "http://auth.localhost.test:3000/auth/login",
+    "links.login.fr" => "http://auth.localhost.test:3000/auth/login",
 };
 
 
