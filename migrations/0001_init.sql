@@ -4,13 +4,25 @@
 CREATE TABLE IF NOT EXISTS games (
     id INT AUTO_INCREMENT NOT NULL UNIQUE,
     word VARCHAR(10) NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT "ongoing", -- options: ongoing, finished, cancelled
-    winner_id INT, -- nullable
+    status VARCHAR(20) NOT NULL DEFAULT "pregame", -- options: pregame, ongoing, finished, cancelled
+    winner_id INT, -- nullable WAIT... DON'T WE NEED NON-NULLABLE EVERYTHING???
+    turn_user_id INT NOT NULL DEFAULT 0,
     created_timestamp TIMESTAMP NOT NULL DEFAULT UTC_TIMESTAMP
 );
 
+CREATE INDEX idx_winner_id ON games(winner_id);
+
+
+CREATE TABLE IF NOT EXISTS user_game_stats (
+    user_id INT PRIMARY KEY,
+    wins INT DEFAULT 0,
+    losses INT DEFAULT 0
+);
+
+
 CREATE TABLE IF NOT EXISTS guesses (
     id INT AUTO_INCREMENT NOT NULL UNIQUE,
+    game_id INT NOT NULL,
     word VARCHAR(10) NOT NULL,
     guess_number TINYINT NOT NULL,
     user_id INT NOT NULL

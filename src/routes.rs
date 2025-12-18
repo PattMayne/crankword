@@ -10,7 +10,7 @@ use crate::{
     auth, auth_code_shared::{ 
         AuthCodeRequest,
         AuthCodeSuccess
-    }, db, game_logic::{ self, LetterScore }, io, resource_mgr::{self, *},
+    }, db, game_logic::{ self, LetterScore }, io, resource_mgr::{*},
     resources::get_translation, utils::SupportedLangs,
 };
 

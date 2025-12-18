@@ -14,6 +14,8 @@ mod utils;
 mod middleware;
 mod resources;
 mod resource_mgr;
+mod words_solutions;
+mod words_all;
 
 
 /*
@@ -67,3 +69,17 @@ async fn main() -> std::io::Result<()> {
  *      /game_in/           -- SCOPE for routes sending data TO the game (db) FROM the user/client ()POST
  *      /game_out/          -- SCOPE for routes sending data FROM the game (db) TO the user/client
  */
+
+
+ fn check_words() {
+    let word: &str = words_solutions::get_random_word();
+    //let word: &str = "hghgh";
+    println!("{}", word);
+    let word_exists: bool = words_all::check_word(word);
+
+    if word_exists {
+        println!("{} exists", word);
+    } else {
+        println!("{} does NOT exist", word);
+    }
+ }
