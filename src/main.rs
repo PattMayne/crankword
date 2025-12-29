@@ -53,6 +53,7 @@ async fn main() -> std::io::Result<()> {
             .service(routes::error_page)
             .service(routes::home)
             .service(routes::game)
+            .service(routes::new_game)
             .service(routes::login)
             .service(routes::register)
             .service(routes::logout)

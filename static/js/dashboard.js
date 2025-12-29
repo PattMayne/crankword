@@ -1,4 +1,5 @@
 $(document).foundation()
+import * as io from './io.js'
 import * as utils from './utils.js'
 import * as globals from './globals.js'
 
@@ -7,8 +8,13 @@ let msgs = []
 
 const create_new_game = () => {
     console.log("CREATING NEW GAME")
-
+    msgs = []
     msgs.push("NEW GAME CREATING")
+
+    let response = io.new_game().then((response) => {
+        console.log("response again: " + response)
+    })
+    
     show_msg_box()
 }
 
@@ -36,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => hide_msg_box())
 
 document.getElementById('new_game_button').addEventListener(
     'click', (e) => create_new_game())
-
 
 
 window.create_new_game = create_new_game

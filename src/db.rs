@@ -5,18 +5,8 @@ use anyhow::{ Result, anyhow, Context };
 use sqlx::{MySqlPool };
 use time::{ OffsetDateTime, Duration };
 
-use crate::game_logic;
+use crate::{ game_logic, words_solutions };
 
-// For retrieving game_id from the game_users table
-struct GameId {
-    game_id: i64,
-}
-
-pub struct GameItemData {
-    game_id: i32,
-    status: game_logic::GameStatus,
-    number_of_players: u8,
-}
 
 /* 
  * 
@@ -36,11 +26,74 @@ pub struct GameItemData {
 */
 
 
+/* 
+ * 
+ * 
+ * 
+ * 
+ * =====================
+ * =====================
+ * =====           =====
+ * =====  STRUCTS  =====
+ * =====           =====
+ * =====================
+ * =====================
+ * 
+ * 
+ * 
+ * 
+*/
+
+// For retrieving game_id from the game_users table
+struct GameId {
+    game_id: i64,
+}
+
+
+// For referential items in a list of games
+pub struct GameItemData {
+    game_id: i32,
+    status: game_logic::GameStatus,
+    number_of_players: u8,
+}
+
+
+// Full data for one game
+pub struct Game {
+    id: i32,
+    word: String,
+    game_status: String,
+    owner_id: i32,
+    winner_id: Option<i32>,
+    turn_user_id: Option<i32>,
+    created_timestamp: OffsetDateTime,
+}
+
+
+
+/* 
+ * 
+ * 
+ * 
+ * 
+ * ====================
+ * ====================
+ * =====          =====
+ * =====  SELECT  =====
+ * =====          =====
+ * ====================
+ * ====================
+ * 
+ * 
+ * 
+ * 
+*/
+
+
+
 pub async fn get_current_games(user_id: i32) -> Result<Vec<GameItemData>> {
-
-    let games: Vec<GameItemData> = Vec::new();
-
     let pool: MySqlPool = create_pool().await?;
+    let games: Vec<GameItemData> = Vec::new();
 
     // FIRST get each game_id in game_users for the user_id
 
@@ -77,8 +130,55 @@ pub async fn get_current_games(user_id: i32) -> Result<Vec<GameItemData>> {
     Ok(games)
 }
 
+/* 
+ * 
+ * 
+ * 
+ * 
+ * ==============================
+ * ==============================
+ * =====                    =====
+ * =====  INSERT FUNCTIONS  =====
+ * =====                    =====
+ * ==============================
+ * ==============================
+ * 
+ * 
+ * 
+ * 
+*/
+
+pub async fn new_game(owner_id: i32) -> Result<i32, anyhow::Error> {
+    let pool: MySqlPool = create_pool().await.map_err(|e| {
+        eprintln!("Failed to create pool: {:?}", e);
+        anyhow!("Could not create pool: {e}")
+    })?;
+
+    // get word
+    let word: &str = words_solutions::get_random_word();
+
+    let result: sqlx::mysql::MySqlQueryResult = sqlx::query(
+        "INSERT INTO games (
+            word,
+            owner_id)
+            VALUES (?, ?)")
+        .bind(word)
+        .bind(owner_id)
+        .execute(&pool).await.map_err(|e| {
+            eprintln!("Failed to save game to database: {:?}", e);
+            anyhow!("Could not save game to database: {e}")
+    })?;
+
+    Ok(result.last_insert_id() as i32)
+}
 
 
+
+
+/**
+ * PLACEHOLDER FUNCTION
+ * SOON TO BE OBSOLETE
+ */
 pub async fn get_winning_word(game_id: i32) -> String {
     // list of words
 

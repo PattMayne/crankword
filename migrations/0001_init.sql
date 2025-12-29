@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS games (
     game_status VARCHAR(20) NOT NULL DEFAULT "pre_game", -- options: pre_game, in_progress, finished, cancelled
     winner_id INT, -- nullable
     owner_id INT NOT NULL,
-    turn_user_id INT NOT NULL DEFAULT 0,
+    turn_user_id INT, -- nullable
     created_timestamp TIMESTAMP NOT NULL DEFAULT UTC_TIMESTAMP
 );
 

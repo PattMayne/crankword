@@ -8,8 +8,22 @@ import * as utils from './utils.js'
  * ----------             ----------
  * ---------------------------------
  * 
+ * 
+ * 
+ * 
+ * 
+ * ----------------------------------
+ * ----------------------------------
+ * -----------            -----------
+ * -----------  AUTH APP  -----------
+ * -----------            -----------
+ * ----------------------------------
+ * ----------------------------------
+ * 
+ * 
+ * 
+ * 
 */
-
 
 export const check_word_io = async guess_word => {
     const check_word_route = "/game_in/check_word"
@@ -44,4 +58,36 @@ export const check_word_io = async guess_word => {
 
     console.log("return length 2: " + response_obj.letter_states.length)
     return response_obj
+}
+
+
+/* 
+ * 
+ * 
+ * 
+ * 
+ * -------------------------------
+ * -------------------------------
+ * -----------         -----------
+ * -----------  LOCAL  -----------
+ * -----------         -----------
+ * -------------------------------
+ * -------------------------------
+ * 
+ * 
+ * 
+ * 
+*/
+
+export const new_game = async () => {
+    const route = "/new_game"
+
+    let response = await fetch(route, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' }
+    })
+
+    console.log("response: " + JSON.stringify(response))
+
+    return response
 }

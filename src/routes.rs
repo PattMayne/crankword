@@ -450,10 +450,52 @@ pub fn redirect_to_login() -> HttpResponse {
  * 
 */
 
+#[post("/new_game")]
+pub async fn new_game(req: HttpRequest) -> HttpResponse {
+    // make sure it's a real user
+    // make the game and get the id
+    // redirect user to game page
+    // on game page show word (FOR NOW.... obviously later we will NOT show that)
+
+    // Make sure it's a real user
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+
+    if user_req_data.get_role() == "guest" {
+        let error: String = get_translation("err.empty_creds", &user_req_data.lang, None);
+        return HttpResponse::Unauthorized().json(
+            ErrorResponse {
+            error,
+            code: 401
+        });
+    }
+
+    // make the game and get the id
+    let user_id: i32 = user_req_data.id.unwrap();
+    let game_id: i32 = match db::new_game(user_id).await {
+        Ok(id) => id,
+        Err(e) => {
+            return HttpResponse::Unauthorized().json(
+                ErrorResponse {
+                error: e.to_string(),
+                code: 404
+            });
+        }
+    };
+
+    // redirect user to game page
+
+    // NO... we must send back the game_id so the JS can redirect.
+
+    println!("created game object: {}", game_id);
+
+    HttpResponse::Ok().finish()
+}
+
 #[post("/check_word")]
 pub async fn check_word(
     word_json: web::Json<WordToCheck>
 ) -> HttpResponse {
+    // TODO: ADD AUTH CHECKS
     let winning_word: String = db::get_winning_word(5).await;
     let result: Vec<LetterScore> = game_logic::check_word(&word_json.guess_word, &winning_word);
 
