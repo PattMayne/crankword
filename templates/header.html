@@ -8,7 +8,17 @@
                     {{ user.get_username() }}
                 {% endif %}
             </a></li>
-            <li><a href="/" class="button small nav-button">HOME</a></li>
+
+            {% if user.logged_in %}
+                <li><a href="/dashboard" class="button small nav-button">DASHBOARD</a></li>
+                <li><a href="/logout" class="button small nav-button">LOGOUT</a></li>
+            {% else %}
+
+                <li><a href="/" class="button small nav-button">HOME</a></li>
+                <li><a href="/login" class="button small nav-button">LOGIN</a></li>
+                <li><a href="/register" class="button small nav-button">REGISTER</a></li>
+            {% endif %}
+
             <li><a href="/game" class="button small nav-button">GAME</a></li>
         </ul> 
     </div>

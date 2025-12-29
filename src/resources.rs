@@ -41,6 +41,14 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "home.greeting.en" => "Hello, {0}!",
     "home.greeting.fr" => "Bonjour, {0}!",
 
+    // DASH TEXTS
+    "dash.new_game.en" => "NEW GAME",
+    "dash.new_game.fr" => "NOUVEAU JEU",
+    "dash.current_games.en" => "CURRENT GAMES",
+    "dash.current_games.fr" => "JEUX ACTUELS",
+    "dash.stats.en" => "STATS",
+    "dash.stats.fr" => "STATISTIQUES",
+
     // NAV BUTTONS
     "nav.home.en" => "HOME",
     "nav.home.fr" => "ACCUEIL",
@@ -127,6 +135,8 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     // LINKS & URLS
     "links.login.en" => "http://auth.localhost.test:3000/auth/login",
     "links.login.fr" => "http://auth.localhost.test:3000/auth/login",
+    "links.register.en" => "http://auth.localhost.test:3000/auth/register",
+    "links.register.fr" => "http://auth.localhost.test:3000/auth/register",
 };
 
 

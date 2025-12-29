@@ -90,6 +90,15 @@ struct GameTemplate {
 
 
 #[derive(Template)]
+#[template(path="dashboard.html")]
+struct DashboardTemplate {
+    texts: DashTexts,
+    user: auth::UserReqData,
+    current_games: Vec<db::GameItemData>,
+}
+
+
+#[derive(Template)]
 #[template(path ="error.html")]
 struct ErrorTemplate {
     error_data: ErrorData,
@@ -99,7 +108,7 @@ struct ErrorTemplate {
 
 
 
-// OTHER STRUCTS
+// OTHER STRUCTS & ENUMS
 
 
 struct TwoAuthCookies {
@@ -129,6 +138,86 @@ struct TwoAuthCookies {
  * 
  * 
  */
+
+
+ #[get("/login")]
+ async fn login() -> HttpResponse {
+    let lang: SupportedLangs = SupportedLangs::English;
+    let mut login_url: String = get_translation(
+        "links.login",
+        &lang,
+        None
+    );
+
+    let querystring: String = match std::env::var("CLIENT_ID") {
+        Ok(client_id) => {
+            "?client_id=".to_string() + &client_id
+        },
+        Err(_e) => {
+            eprintln!("");
+            "ERROR RETRIEVING CLIENT ID".to_string()
+        }
+    };
+
+    login_url.push_str(&querystring);
+
+    HttpResponse::Found()
+        .append_header(("Location", login_url))
+        .finish()
+ }
+
+
+ #[get("/register")]
+ async fn register() -> HttpResponse {
+    let lang: SupportedLangs = SupportedLangs::English;
+    let mut register_url: String = get_translation(
+        "links.register",
+        &lang,
+        None
+    );
+
+    let querystring: String = match std::env::var("CLIENT_ID") {
+        Ok(client_id) => {
+            "?client_id=".to_string() + &client_id
+        },
+        Err(_e) => {
+            eprintln!("");
+            "ERROR RETRIEVING CLIENT ID".to_string()
+        }
+    };
+
+    register_url.push_str(&querystring);
+
+    HttpResponse::Found()
+        .append_header(("Location", register_url))
+        .finish()
+ }
+
+
+
+#[get("/logout")]
+pub async fn logout() -> HttpResponse {
+
+    let jwt_cookie: Cookie<'_> = Cookie::build("jwt", "")
+        .path("/")
+        .max_age(time::Duration::seconds(0))
+        .http_only(true)
+        .finish();
+
+    let refresh_cookie: Cookie<'_> = Cookie::build("refresh_token", "")
+        .path("/")
+        .max_age(time::Duration::seconds(0))
+        .http_only(true)
+        .finish();
+
+    // TO DO: call auth_app to delete refresh_token from DB
+    
+    HttpResponse::Found() // 302 redirect
+        .cookie(jwt_cookie)
+        .cookie(refresh_cookie)
+        .append_header((header::LOCATION, "/"))
+        .finish()
+}
 
 
 
@@ -167,6 +256,27 @@ async fn game(req: HttpRequest) -> HttpResponse {
     HttpResponse::Ok()
         .content_type("text/html")
         .body(game_template.render().unwrap())
+ }
+
+
+/* PLAYER DASHBOARD */
+#[get("/dashboard")]
+async fn dashboard(req: HttpRequest) -> HttpResponse {
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+
+    if user_req_data.role == "guest" {
+        return redirect_to_login();
+    }
+
+    let dash_template: DashboardTemplate = DashboardTemplate {
+        texts: DashTexts::new(&user_req_data),
+        user: user_req_data,
+        current_games: Vec::new(),
+    };
+
+    HttpResponse::Ok()
+        .content_type("text/html")
+        .body(dash_template.render().unwrap())
  }
  
 
@@ -316,27 +426,8 @@ pub fn redirect_to_err(err_code: &str) -> HttpResponse {
 
 // redirect user to login page
 pub fn redirect_to_login() -> HttpResponse {
-    let lang: SupportedLangs = SupportedLangs::English;
-    let mut login_url: String = get_translation(
-        "links.login",
-        &lang,
-        None
-    );
-
-    let querystring: String = match std::env::var("CLIENT_ID") {
-        Ok(client_id) => {
-            "?client_id=".to_string() + &client_id
-        },
-        Err(_e) => {
-            eprintln!("");
-            "ERROR RETRIEVING CLIENT ID".to_string()
-        }
-    };
-
-    login_url.push_str(&querystring);
-
-    HttpResponse::Found()
-        .append_header(("Location", login_url))
+    HttpResponse::Found() // 302 redirect
+        .append_header((header::LOCATION, "/login"))
         .finish()
 }
 

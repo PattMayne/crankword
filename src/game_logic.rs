@@ -9,6 +9,15 @@ pub enum LetterScore {
     WrongSpot,
     Dud,
 }
+    
+#[derive(Serialize, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum GameStatus {
+    PreGame,
+    InProgress,
+    Finished,
+    Cancelled,
+}
 
 /**
  * We need occurrences of each letter so we can highlight the correct

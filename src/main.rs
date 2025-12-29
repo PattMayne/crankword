@@ -17,6 +17,10 @@ mod resource_mgr;
 mod words_solutions;
 mod words_all;
 
+pub struct AppConfig {
+    pub client_id: String,
+}
+
 
 /*
  * TO DO (in this order):
@@ -49,7 +53,11 @@ async fn main() -> std::io::Result<()> {
             .service(routes::error_page)
             .service(routes::home)
             .service(routes::game)
+            .service(routes::login)
+            .service(routes::register)
+            .service(routes::logout)
             .service(routes::reception)
+            .service(routes::dashboard)
             .service(
                 web::scope("/game_in")
                 .service(routes::check_word)

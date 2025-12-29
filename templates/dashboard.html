@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta http-equiv="x-ua-compatible" content="ie=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{{ title }}</title>
+        <title>{{ texts.title }}</title>
         <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
         <link rel="stylesheet" href="static/css/foundation.min.css">
         <link rel="stylesheet" href="static/css/app.css?id=1">
@@ -16,16 +16,29 @@
     <div class="grid-container">
         <div class="grid-x grid-padding-x">
             <div class="large-12 cell">
-                <h1>{{ title }}</h1>
+                <h1>{{ texts.title }}</h1>
+            </div>
+
+            <div class="large-12 cell">
+                <a class="button" id="new_game_button">{{ texts.new_game }}</a>
             </div>
 
             <div class="large-12 cell">
                 <div class="callout">
-                    <p>
-                        {{ message }}
-                    </p>
+                    <h4>{{ texts.current_games }}:</h4>
                 </div>
+            </div>
 
+            <div class="large-12 cell">
+                <div class="callout">
+                    <h4>{{ texts.stats }}:</h4>
+                </div>
+            </div>
+
+
+            <div class="large-12 cell">
+                <div class="callout primary" id="msg_box">
+                </div>
             </div>
         </div> <!-- end of grid-x -->
 
@@ -35,7 +48,7 @@
         <script src="static/js/vendor/jquery.js"></script>
         <script src="static/js/vendor/what-input.js"></script>
         <script src="static/js/vendor/foundation.min.js"></script>
-        <script type="module" src="static/js/app.js"></script>
+        <script type="module" src="static/js/dashboard.js"></script>
     </body>
 
 

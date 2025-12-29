@@ -52,6 +52,38 @@ use crate::{
 */
 
 
+pub struct DashTexts {
+    pub title: String,
+    pub new_game: String,
+    pub current_games: String,
+    pub stats: String,
+    pub nav: NavTexts
+}
+
+impl DashTexts {
+    pub fn new(user_req_data: &UserReqData) -> DashTexts {
+        let lang: &SupportedLangs = &user_req_data.lang;
+        let title: String = get_translation("home.title", lang, None);
+        let stats: String = get_translation("dash.stats", lang, None);
+        let new_game: String = get_translation("dash.new_game", lang, None);
+        let current_games: String = get_translation(
+            "dash.current_games",
+            lang,
+            None
+        );
+        let nav: NavTexts = NavTexts::new(lang);
+
+        DashTexts { title, new_game, stats, current_games, nav }
+    }
+}
+
+
+/*
+
+current_games
+stats
+
+*/
 
 /**
  * route: get "/"
@@ -70,7 +102,7 @@ impl HomeTexts {
             "home.greeting",
             lang,
             Some(&[&user_req_data.get_role()]));
-        let nav = NavTexts::new(lang);
+        let nav: NavTexts = NavTexts::new(lang);
 
         HomeTexts {
             title,

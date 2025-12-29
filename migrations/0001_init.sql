@@ -4,8 +4,9 @@
 CREATE TABLE IF NOT EXISTS games (
     id INT AUTO_INCREMENT NOT NULL UNIQUE,
     word VARCHAR(10) NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT "pregame", -- options: pregame, ongoing, finished, cancelled
-    winner_id INT, -- nullable WAIT... DON'T WE NEED NON-NULLABLE EVERYTHING???
+    game_status VARCHAR(20) NOT NULL DEFAULT "pre_game", -- options: pre_game, in_progress, finished, cancelled
+    winner_id INT, -- nullable
+    owner_id INT NOT NULL,
     turn_user_id INT NOT NULL DEFAULT 0,
     created_timestamp TIMESTAMP NOT NULL DEFAULT UTC_TIMESTAMP
 );
