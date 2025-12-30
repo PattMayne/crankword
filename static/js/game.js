@@ -41,6 +41,13 @@ const headline = document.getElementById("headline")
 const message_modal = $('#message_modal') // Foundation demands jquery for this
 const message_p = document.getElementById("message_p")
 
+// Game id is in the path (game/id)
+const game_id = () => {
+    const path = window.location.pathname
+    const parts = path.split('/')
+    return parts.length > 0 ? parts[parts.length - 1] : null
+}
+
 window.addEventListener("load", () => start_game())
 window.addEventListener("keydown", (event) => key_pressed(event));
 
@@ -202,7 +209,7 @@ const check_guess = async () => {
 
     // Make word from chars
     const full_word = current_word.tiles.reduce((str, tile) => str + tile.letter, "")
-    const letter_states_obj = await io.check_guess_io(full_word)
+    const letter_states_obj = await io.check_guess_io(full_word, game_id())
 
     // Show Error
     if (!!letter_states_obj.error) {

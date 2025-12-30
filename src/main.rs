@@ -82,10 +82,10 @@ async fn main() -> std::io::Result<()> {
 
 
  fn check_words() {
-    let word: &str = words_solutions::get_random_word();
+    let word: String = words_solutions::get_random_word();
     //let word: &str = "hghgh";
     println!("{}", word);
-    let word_exists: bool = words_all::check_word(word);
+    let word_exists: bool = words_all::check_word(&word);
 
     if word_exists {
         println!("{} exists", word);

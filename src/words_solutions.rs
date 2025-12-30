@@ -1,4 +1,5 @@
 use rand::Rng;
+use crate::utils;
 
 /* 
  * 
@@ -31,9 +32,9 @@ use rand::Rng;
  * The solution will go in the DB for the game that
  * selected the word.
  */
-pub fn get_random_word() -> &'static str {
+pub fn get_random_word() -> String {
     let index = rand::rng().random_range(0..SOLUTIONS.len());
-    SOLUTIONS[index]
+    utils::all_caps( SOLUTIONS[index])
 }
 
 

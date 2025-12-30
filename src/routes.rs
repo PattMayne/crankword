@@ -36,6 +36,7 @@ use crate::{
 #[derive(Deserialize)]
 struct WordToCheck {
     pub guess_word: String,
+    pub game_id: i32,
 }
 
 #[derive(Deserialize)]
@@ -518,11 +519,44 @@ pub async fn new_game(req: HttpRequest) -> HttpResponse {
 
 #[post("/check_guess")]
 pub async fn check_guess(
+    req: HttpRequest,
     word_json: web::Json<WordToCheck>
 ) -> HttpResponse {
-    // TODO: ADD AUTH CHECKS
-    let winning_word: String = db::get_winning_word(5).await;
-    let result: Vec<LetterScore> = game_logic::check_guess(&word_json.guess_word, &winning_word);
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
 
-    HttpResponse::Ok().json(result)
+    if user_req_data.get_role() == "guest" {
+        let error: String = get_translation("err.empty_creds", &user_req_data.lang, None);
+        return HttpResponse::Unauthorized().json(
+            ErrorResponse {
+            error,
+            code: 401
+        });
+    }
+
+    // User is logged in
+    // TO DO: make sure user is part of the game
+
+    // make sure guess is part of the ACCEPTED actual words
+    let guess_is_real_word: bool = true;
+
+
+    // IF SO... get the winning_word from the actual game
+
+    // TODO: ADD AUTH CHECKS
+    let winning_word: String = match db::get_winning_word(word_json.game_id).await {
+        Ok(word) => word,
+        Err(_e) => {
+            return HttpResponse::Unauthorized().json(ErrorResponse{
+                error: String::from("Not Found"),
+                code: 406
+            })
+        }
+    };
+
+    println!("Winning word is: {}", winning_word);
+    println!("Guess word is: {}", word_json.guess_word);
+
+    let guess_result: Vec<LetterScore> =
+        game_logic::check_guess(&word_json.guess_word, &winning_word);
+    HttpResponse::Ok().json(guess_result)
 }

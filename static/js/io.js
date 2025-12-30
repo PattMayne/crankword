@@ -25,10 +25,11 @@ import * as utils from './utils.js'
  * 
 */
 
-export const check_guess_io = async guess_word => {
+export const check_guess_io = async (guess_word, game_id) => {
     const check_guess_route = "/game_in/check_guess"
     const guess_obj = {
-        "guess_word": guess_word
+        "guess_word": guess_word,
+        "game_id": parseInt(game_id)
     }
 
     const response_obj = {

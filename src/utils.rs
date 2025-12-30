@@ -159,3 +159,12 @@ impl SupportedLangs {
     }
 }
 
+/**
+ * The words and guesses must always be all-caps
+ */
+pub fn all_caps(input: &str) -> String {
+    input.split_whitespace()
+        .map(|word| word.to_uppercase())
+        .collect::<Vec<_>>()
+        .join(" ")
+}
