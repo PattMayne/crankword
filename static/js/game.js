@@ -177,7 +177,7 @@ let current_tile = current_word.tiles[letter_index]
  * Make sure current word is really full. No empty spaces.
  * TO DO: check it against list of actual words (much later)
  */
-const current_word_is_ready = () => {
+const current_guess_is_ready = () => {
     let ready = true
     current_word.tiles.map(tile => {
         if (tile.letter == "" || !tile.letter) {
@@ -193,16 +193,16 @@ const current_word_is_ready = () => {
  * After every line we check the input word against the winning word.
  * Do multiple runs to give precedence to right_spot.
  */
-const check_word = async () => {
+const check_guess = async () => {
     // Make sure word is ready
-    if (!current_word_is_ready()) {
+    if (!current_guess_is_ready()) {
         new_message("Please finish the word")
         return
     }
 
     // Make word from chars
     const full_word = current_word.tiles.reduce((str, tile) => str + tile.letter, "")
-    const letter_states_obj = await io.check_word_io(full_word)
+    const letter_states_obj = await io.check_guess_io(full_word)
 
     // Show Error
     if (!!letter_states_obj.error) {
@@ -284,7 +284,7 @@ const key_pressed = event => {
 
     // Check for relevant non-letter keys first
     if (key == "ENTER") {
-        check_word()
+        check_guess()
         return
     } else if (
         ( key === "TAB" && event.shiftKey ) ||
@@ -512,4 +512,4 @@ const unset_current_tile_classes = () => {
  * 
  */
 
-window.check_word = check_word
+window.check_guess = check_guess

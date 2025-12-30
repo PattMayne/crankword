@@ -79,7 +79,7 @@ fn letter_is_right_spot(
  * we do the comparison and build a map of results
  * about the status of each letter in the guess word.
  */
-pub fn check_word(
+pub fn check_guess(
     guess_word: &String,
     winning_word: &String
 ) -> Vec<LetterScore> {

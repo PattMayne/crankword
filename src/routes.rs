@@ -249,19 +249,12 @@ async fn home(req: HttpRequest) -> impl Responder {
 #[get("/game")]
 async fn game_root(req: HttpRequest) -> HttpResponse {
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+    let role: &String = user_req_data.get_role();
+    let redirect_location: &str = if role == "guest" { "/login" } else { "/dashboard" };
 
-    if user_req_data.role == "guest" {
-        return redirect_to_login();
-    }
-
-    let game_template: GameTemplate = GameTemplate {
-        title: "CRANKWORD".to_string(),
-        user: user_req_data
-    };
-
-    HttpResponse::Ok()
-        .content_type("text/html")
-        .body(game_template.render().unwrap())
+    HttpResponse::Found() // 302 redirect
+        .append_header((header::LOCATION, redirect_location))
+        .finish()
  }
 
  #[get("/game/{game_id}")]
@@ -523,13 +516,13 @@ pub async fn new_game(req: HttpRequest) -> HttpResponse {
     HttpResponse::Ok().json(GameId { game_id })
 }
 
-#[post("/check_word")]
-pub async fn check_word(
+#[post("/check_guess")]
+pub async fn check_guess(
     word_json: web::Json<WordToCheck>
 ) -> HttpResponse {
     // TODO: ADD AUTH CHECKS
     let winning_word: String = db::get_winning_word(5).await;
-    let result: Vec<LetterScore> = game_logic::check_word(&word_json.guess_word, &winning_word);
+    let result: Vec<LetterScore> = game_logic::check_guess(&word_json.guess_word, &winning_word);
 
     HttpResponse::Ok().json(result)
 }

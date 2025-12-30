@@ -1,9 +1,9 @@
 extern crate rand;
 // import commonly used items from the prelude:
 use rand::prelude::*;
-use anyhow::{ Result, anyhow, Context };
+use anyhow::{ Result, anyhow };
 use sqlx::{MySqlPool };
-use time::{ OffsetDateTime, Duration };
+use time::{ OffsetDateTime };
 
 use crate::{ game_logic, words_solutions };
 

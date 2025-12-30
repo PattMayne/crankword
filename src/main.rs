@@ -62,7 +62,7 @@ async fn main() -> std::io::Result<()> {
             .service(routes::dashboard)
             .service(
                 web::scope("/game_in")
-                .service(routes::check_word)
+                .service(routes::check_guess)
             )
             .default_service(web::get().to(routes::not_found)) // <- catch-all
             .wrap(from_fn(middleware::jwt_cookie_middleware))

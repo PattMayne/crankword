@@ -25,8 +25,8 @@ import * as utils from './utils.js'
  * 
 */
 
-export const check_word_io = async guess_word => {
-    const check_word_route = "/game_in/check_word"
+export const check_guess_io = async guess_word => {
+    const check_guess_route = "/game_in/check_guess"
     const guess_obj = {
         "guess_word": guess_word
     }
@@ -36,7 +36,7 @@ export const check_word_io = async guess_word => {
         error: null
     }
 
-    await utils.fetch_json_post(check_word_route, guess_obj)
+    await utils.fetch_json_post(check_guess_route, guess_obj)
     .then(response => {
         if(!response.ok) {
             response.json().then(data => {
