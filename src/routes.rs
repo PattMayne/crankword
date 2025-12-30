@@ -51,6 +51,12 @@ pub struct ErrorResponse {
 }
 
 
+#[derive(Serialize)]
+pub struct GameId {
+    pub game_id: i32,
+}
+
+
 
 /* 
  * 
@@ -488,7 +494,7 @@ pub async fn new_game(req: HttpRequest) -> HttpResponse {
 
     println!("created game object: {}", game_id);
 
-    HttpResponse::Ok().finish()
+    HttpResponse::Ok().json(GameId { game_id })
 }
 
 #[post("/check_word")]

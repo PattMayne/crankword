@@ -79,6 +79,12 @@ export const check_word_io = async guess_word => {
  * 
 */
 
+/**
+ * User presses "new game" button.
+ * We call the "new game" function in the backend.
+ * Backend creates an empty new game and returns id.
+ * @returns 
+ */
 export const new_game = async () => {
     const route = "/new_game"
 
@@ -87,7 +93,12 @@ export const new_game = async () => {
         headers: { 'Content-Type': 'application/json; charset=utf-8' }
     })
 
-    console.log("response: " + JSON.stringify(response))
+    let data = await response.json()
 
-    return response
+    if (data.game_id !== undefined) {
+        return data.game_id
+    } else {
+        console.log("no game id")
+        return null
+    }
 }

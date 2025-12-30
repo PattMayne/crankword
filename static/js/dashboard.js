@@ -11,11 +11,19 @@ const create_new_game = () => {
     msgs = []
     msgs.push("NEW GAME CREATING")
 
-    let response = io.new_game().then((response) => {
-        console.log("response again: " + response)
-    })
-    
-    show_msg_box()
+    let game_id = io.new_game()
+
+    if (!game_id || game_id < 1) {
+        msgs = []
+        msgs.push("ERROR CREATING NEW GAME")
+        show_msg_box()
+        return
+    }
+
+    // Redirect user to game
+
+    window.location = "/game/" + game_id
+
 }
 
 // SHOW/HIDE ERROR BOX
