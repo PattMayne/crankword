@@ -247,12 +247,39 @@ async fn home(req: HttpRequest) -> impl Responder {
 
 /* ROOT DOMAIN */
 #[get("/game")]
-async fn game(req: HttpRequest) -> HttpResponse {
+async fn game_root(req: HttpRequest) -> HttpResponse {
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
 
     if user_req_data.role == "guest" {
         return redirect_to_login();
     }
+
+    let game_template: GameTemplate = GameTemplate {
+        title: "CRANKWORD".to_string(),
+        user: user_req_data
+    };
+
+    HttpResponse::Ok()
+        .content_type("text/html")
+        .body(game_template.render().unwrap())
+ }
+
+ #[get("/game/{game_id}")]
+ async fn game(req: HttpRequest, path: web::Path<String>) -> HttpResponse {
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+
+    if user_req_data.role == "guest" {
+        return redirect_to_login();
+    }
+
+    let game_id: i32 = match path.into_inner().parse::<i32>() {
+        Ok(id) => id,
+        Err(_) => {
+            return redirect_to_err("400");
+        }
+    };
+
+    println!("game id: {}", game_id);
 
     let game_template: GameTemplate = GameTemplate {
         title: "CRANKWORD".to_string(),
@@ -316,7 +343,7 @@ async fn reception(query: web::Query<AuthCodeQuery>) -> HttpResponse {
         Ok(secret) => secret,
         Err(_e) => {
             eprintln!("ERROR: NO CLIENT SECRET.");
-            return redirect_to_err("404");
+            return redirect_to_err("400");
         }
     };
 
@@ -381,7 +408,6 @@ pub async fn not_found() -> impl Responder {
 #[get("/error/{code}")]
 async fn error_page(req: HttpRequest, path: web::Path<String>) -> HttpResponse {
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
-
 
     let code: String = match path.into_inner().parse::<String>() {
         Ok(code) => code,

@@ -6,12 +6,12 @@ import * as globals from './globals.js'
 
 let msgs = []
 
-const create_new_game = () => {
+const create_new_game = async () => {
     console.log("CREATING NEW GAME")
     msgs = []
     msgs.push("NEW GAME CREATING")
 
-    let game_id = io.new_game()
+    let game_id = await io.new_game()
 
     if (!game_id || game_id < 1) {
         msgs = []
@@ -21,9 +21,8 @@ const create_new_game = () => {
     }
 
     // Redirect user to game
-
-    window.location = "/game/" + game_id
-
+    const game_uri = "/game/" + game_id
+    window.location.href = game_uri
 }
 
 // SHOW/HIDE ERROR BOX
