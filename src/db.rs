@@ -161,11 +161,31 @@ pub async fn get_current_games(user_id: i32) -> Result<Vec<GameItemData>> {
  * 
 */
 
-pub async fn new_game(owner_id: i32) -> Result<i32, anyhow::Error> {
-    let pool: MySqlPool = create_pool().await.map_err(|e| {
-        eprintln!("Failed to create pool: {:?}", e);
-        anyhow!("Could not create pool: {e}")
+pub async fn new_guess(
+    user_id: i32,
+    game_id: i32,
+    guess_word: &str,
+    guess_number: u8
+) -> Result<i64, anyhow::Error> {
+    let pool: MySqlPool = create_pool().await?;
+    let result: sqlx::mysql::MySqlQueryResult = sqlx::query(
+        "INSERT INTO guesses (
+            game_id, word, guess_number, user_id)
+            VALUES (?, ?, ?, ?)")
+        .bind(game_id)
+        .bind(guess_word)
+        .bind(guess_number)
+        .bind(user_id)
+        .execute(&pool).await.map_err(|e| {
+            eprintln!("Failed to save GUESS to database: {:?}", e);
+            anyhow!("Could not save GUESS to database: {e}")
     })?;
+
+    Ok(result.last_insert_id() as i64)
+}
+
+pub async fn new_game(owner_id: i32) -> Result<i32, anyhow::Error> {
+    let pool: MySqlPool = create_pool().await?;
 
     // get word
     let word: String = words_solutions::get_random_word();

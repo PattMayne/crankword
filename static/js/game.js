@@ -215,6 +215,11 @@ const check_guess = async () => {
     if (!!letter_states_obj.error) {
         new_message(letter_states_obj.error)
         return
+    } else if (letter_states_obj.fake_word) {
+        console.log("WORD STILL FAKE")
+        new_message("NOT IN WORD LIST")
+        // put focus on first letter of word again?
+        return
     } else if (
         !letter_states_obj.letter_states ||
         !Array.isArray(letter_states_obj.letter_states) ||
@@ -224,6 +229,7 @@ const check_guess = async () => {
         return
     }
 
+    // make win TRUE and then prove it FALSE
     let full_word_correct = true
 
     // map result onto tiles

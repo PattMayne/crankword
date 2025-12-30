@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS guesses (
     user_id INT NOT NULL
 );
 
+CREATE INDEX idx_game_id ON guesses(game_id);
 
 -- 
 CREATE TABLE IF NOT EXISTS game_users (

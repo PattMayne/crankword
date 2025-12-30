@@ -10,8 +10,9 @@ use crate::{
     auth, auth_code_shared::{ 
         AuthCodeRequest,
         AuthCodeSuccess
-    }, db, game_logic::{ self, LetterScore }, io, resource_mgr::{*},
-    resources::get_translation, utils::SupportedLangs,
+    }, db, game_logic::{ self, LetterScore }, io, resource_mgr::*,
+    resources::get_translation, utils::SupportedLangs, words_solutions,
+    words_all,
 };
 
 /* 
@@ -57,7 +58,19 @@ pub struct GameId {
     pub game_id: i32,
 }
 
+#[derive(Serialize)]
+pub struct FakeWord {
+    pub fake_word: bool,
+}
 
+
+impl FakeWord {
+    pub fn new() -> FakeWord {
+        FakeWord {
+            fake_word: true
+        }
+    }
+}
 
 /* 
  * 
@@ -537,8 +550,14 @@ pub async fn check_guess(
     // TO DO: make sure user is part of the game
 
     // make sure guess is part of the ACCEPTED actual words
-    let guess_is_real_word: bool = true;
+    let guess_is_real_word: bool = words_all::check_word(&word_json.guess_word);
+    // TODO: send "not a word" for front-end to deal with (show message)
+    // save the GUESS to the GUESS TABLE
 
+    if !guess_is_real_word {
+        println!("NOT A REAL WORD");
+        return HttpResponse::Ok().json(FakeWord::new());
+    }
 
     // IF SO... get the winning_word from the actual game
 

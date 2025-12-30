@@ -168,3 +168,14 @@ pub fn all_caps(input: &str) -> String {
         .collect::<Vec<_>>()
         .join(" ")
 }
+
+
+/**
+ * The words lists are lowercase, so we must make guesses lowercase before checking.
+ */
+pub fn no_caps(input: &str) -> String {
+    input.split_whitespace()
+        .map(|word| word.to_lowercase())
+        .collect::<Vec<_>>()
+        .join(" ")
+}

@@ -33,8 +33,8 @@ use crate::utils;
  * is on the master list of five-letter words.
  */
 pub fn check_word(word: &str) -> bool {
-    let all_caps_word: String = utils::all_caps(word);
-    ALL_WORDS.contains(&all_caps_word)
+    let no_caps_word: String = utils::no_caps(word);
+    ALL_WORDS.contains(&no_caps_word)
 }
 
 
