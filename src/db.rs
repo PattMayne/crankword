@@ -63,19 +63,19 @@ pub struct GameItemData {
 
 // Full data for one game
 pub struct Game {
-    id: i32,
-    word: String,
-    game_status: String,
-    owner_id: i32,
-    winner_id: Option<i32>,
-    turn_user_id: Option<i32>,
-    created_timestamp: OffsetDateTime,
+    pub id: i32,
+    pub word: String,
+    pub game_status: String,
+    pub owner_id: i32,
+    pub winner_id: Option<i32>,
+    pub turn_user_id: Option<i32>,
+    pub created_timestamp: OffsetDateTime,
 }
 
 
 pub struct GameAndPlayers {
-    game: Game,
-    player_ids: Vec<i32>,
+    pub game: Game,
+    pub player_ids: Vec<i32>,
 }
 
 
@@ -96,6 +96,12 @@ impl GameId {
 
     pub fn get_id(&self) -> i64 {
         self.game_id
+    }
+}
+
+impl GameAndPlayers {
+    pub fn user_is_player(&self, user_id: i32) -> bool {
+        self.player_ids.contains(&user_id)
     }
 }
 

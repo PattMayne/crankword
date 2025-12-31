@@ -1,6 +1,6 @@
 use actix_web::{
     web, HttpResponse, Responder, HttpRequest,
-    http::header, get, post, web::Redirect,
+    http::header, get, post, web::Redirect, http::StatusCode,
     cookie::{ Cookie }
 };
 use askama::Template;
@@ -10,9 +10,7 @@ use crate::{
     auth, auth_code_shared::{ 
         AuthCodeRequest,
         AuthCodeSuccess
-    }, db, game_logic::{ self, LetterScore }, io, resource_mgr::*,
-    resources::get_translation, utils::SupportedLangs, words_solutions,
-    words_all,
+    }, db::{self, GameAndPlayers}, game_logic::{ self, LetterScore }, io, resource_mgr::*, resources::get_translation, utils::SupportedLangs, words_all, words_solutions
 };
 
 /* 
@@ -536,22 +534,19 @@ pub async fn check_guess(
     word_json: web::Json<WordToCheck>
 ) -> HttpResponse {
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
-
-    if user_req_data.get_role() == "guest" {
-        let error: String = get_translation("err.empty_creds", &user_req_data.lang, None);
-        return HttpResponse::Unauthorized().json(
-            ErrorResponse {
-            error,
-            code: 401
-        });
-    }
+    let user_id: i32 = match user_req_data.id {
+        Some(id) => id,
+        None => {
+            // user is guest
+            let error: String = get_translation("err.403.body", &user_req_data.lang, None);
+            return HttpResponse::Unauthorized().json(
+                ErrorResponse {
+                error,
+                code: 403
+            });
+    }};
 
     // User is logged in
-    // make sure guess is part of the ACCEPTED actual words
-    if !words_all::check_word(&word_json.guess_word) {
-        println!("NOT A REAL WORD");
-        return HttpResponse::Ok().json(FakeWord::new());
-    }
 
     // save the GUESS to the GUESS TABLE
     // IF SO... get the winning_word from the actual game
@@ -562,6 +557,44 @@ pub async fn check_guess(
     // 3. make sure word is REAL WORD
     // 4. add guess to DB table
     // 5. check word against winning word and return vector of LetterScores
+
+    // Get the game
+    let game_and_players: GameAndPlayers =
+        match db::get_game_and_players(word_json.game_id).await {
+            Ok(data) => data,
+            Err(_e) => return return_internal_err_json()
+        };
+
+    // Make sure user is a player
+    if !game_and_players.user_is_player(user_id) {
+        // User is NOT player for this game.
+        let error: String = get_translation("err.403.body", &user_req_data.lang, None);
+        return HttpResponse::Unauthorized().json(
+            ErrorResponse {
+            error,
+            code: 403
+        });
+    }
+
+    // TODO: Make sure it is player's turn
+    let player_turn: bool = true;
+
+    // make sure guess word is REAL WORD
+    if !words_all::check_word(&word_json.guess_word) {
+        println!("NOT A REAL WORD");
+        return HttpResponse::Ok().json(FakeWord::new());
+    }
+
+    // add guess to the DB
+    // get the NUMBER of player guesses first!
+    let player_guess_count: u8 = 1;
+
+    let add_guess_result: Result<i64, anyhow::Error> = db::new_guess(
+        user_id,
+        game_and_players.game.id,
+        &word_json.guess_word,
+        player_guess_count
+    ).await;
 
     // TODO: ADD AUTH CHECKS (user belongs to game, it is user's turn)
     let winning_word: String = match db::get_winning_word(word_json.game_id).await {
@@ -580,4 +613,36 @@ pub async fn check_guess(
     let guess_result: Vec<LetterScore> =
         game_logic::check_guess(&word_json.guess_word, &winning_word);
     HttpResponse::Ok().json(guess_result)
+}
+
+
+
+
+/**
+ * Sometimes we don't know what went wrong and we need to return a JSON
+ * object which says so.
+ */
+pub fn return_internal_err_json() -> HttpResponse {
+    HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR)
+        .json(ErrorResponse{
+            error: String::from("Internal server error"),
+            code: 500
+        })
+}
+
+// If authentication failed and user must log back in
+pub fn return_authentication_err_json() -> HttpResponse {
+    HttpResponse::Unauthorized().json(ErrorResponse{
+        error: String::from("Authentication required"),
+        code: 401
+    })
+}
+
+
+// If something is not found
+pub fn return_not_found_err_json() -> HttpResponse {
+    HttpResponse::Unauthorized().json(ErrorResponse{
+        error: String::from("Not Found"),
+        code: 406
+    })
 }
