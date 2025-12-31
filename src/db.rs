@@ -69,6 +69,11 @@ pub struct Game {
 }
 
 
+pub struct GameAndPlayers {
+    game: Game,
+    player_ids: Vec<i32>,
+}
+
 
 /* 
  * 
@@ -202,9 +207,31 @@ pub async fn new_game(owner_id: i32) -> Result<i32, anyhow::Error> {
             anyhow!("Could not save game to database: {e}")
     })?;
 
-    Ok(result.last_insert_id() as i32)
-}
+    let game_id: i32 = result.last_insert_id() as i32;
 
+    println!("game id {}", game_id);
+
+    // Now put owner_id in game_users table
+    let game_users_result: sqlx::mysql::MySqlQueryResult = sqlx::query(
+        "INSERT INTO game_users (
+            game_id,
+            user_id)
+            VALUES (?, ?)")
+        .bind(game_id)
+        .bind(owner_id)
+        .execute(&pool).await.map_err(|e| {
+            eprintln!("Failed to save game_user to database: {:?}", e);
+            anyhow!("Could not save game_user to database: {e}")
+    })?;
+
+    println!("game_ id {}", game_id);
+
+    if game_users_result.rows_affected() > 0 {
+        Ok(game_id)
+    } else {
+        Err(anyhow!("Could not save game_user to database"))
+    }
+}
 
 
 

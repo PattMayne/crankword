@@ -547,21 +547,23 @@ pub async fn check_guess(
     }
 
     // User is logged in
-    // TO DO: make sure user is part of the game
-
     // make sure guess is part of the ACCEPTED actual words
-    let guess_is_real_word: bool = words_all::check_word(&word_json.guess_word);
-    // TODO: send "not a word" for front-end to deal with (show message)
-    // save the GUESS to the GUESS TABLE
-
-    if !guess_is_real_word {
+    if !words_all::check_word(&word_json.guess_word) {
         println!("NOT A REAL WORD");
         return HttpResponse::Ok().json(FakeWord::new());
     }
 
+    // save the GUESS to the GUESS TABLE
     // IF SO... get the winning_word from the actual game
 
-    // TODO: ADD AUTH CHECKS
+    // GET THE GAME. Don't just get the word. Get the GAME and see whose TURN it is.
+    // 1. get the GAME -- NEW STRUCT which includes PLAYER IDs
+    // 2. make sure user belongs in game AND it is user's turn
+    // 3. make sure word is REAL WORD
+    // 4. add guess to DB table
+    // 5. check word against winning word and return vector of LetterScores
+
+    // TODO: ADD AUTH CHECKS (user belongs to game, it is user's turn)
     let winning_word: String = match db::get_winning_word(word_json.game_id).await {
         Ok(word) => word,
         Err(_e) => {

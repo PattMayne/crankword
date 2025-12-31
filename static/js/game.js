@@ -185,15 +185,15 @@ let current_tile = current_word.tiles[letter_index]
  * TO DO: check it against list of actual words (much later)
  */
 const current_guess_is_ready = () => {
-    let ready = true
+    let is_ready = true
     current_word.tiles.map(tile => {
         if (tile.letter == "" || !tile.letter) {
             console.log("word not ready")
-            ready = false
+            is_ready = false
         }
     })
 
-    return ready
+    return is_ready
 }
 
 /**
@@ -216,9 +216,10 @@ const check_guess = async () => {
         new_message(letter_states_obj.error)
         return
     } else if (letter_states_obj.fake_word) {
-        console.log("WORD STILL FAKE")
         new_message("NOT IN WORD LIST")
-        // put focus on first letter of word again?
+        letter_index = 0
+        set_current_tile(current_word.tiles[letter_index])
+        current_tile.element.focus()
         return
     } else if (
         !letter_states_obj.letter_states ||

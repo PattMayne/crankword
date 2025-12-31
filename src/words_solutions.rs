@@ -38,7 +38,7 @@ pub fn get_random_word() -> String {
 }
 
 
-static SOLUTIONS: [&str; 2274] = [
+static SOLUTIONS: [&str; 2273] = [
     "aback",
     "abase",
     "abash",
@@ -837,7 +837,6 @@ static SOLUTIONS: [&str; 2274] = [
     "drier",
     "drift",
     "drill",
-    "drily",
     "drink",
     "drips",
     "drive",
