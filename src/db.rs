@@ -1,7 +1,7 @@
 extern crate rand;
 // import commonly used items from the prelude:
 use anyhow::{ Result, anyhow };
-use sqlx::{MySqlPool };
+use sqlx::{ MySqlPool };
 use time::{ OffsetDateTime };
 
 use crate::{ game_logic, words_solutions };
@@ -49,6 +49,10 @@ struct GameId {
 }
 
 
+struct UserId {
+    user_id: i64,
+}
+
 // For referential items in a list of games
 pub struct GameItemData {
     game_id: i32,
@@ -74,6 +78,26 @@ pub struct GameAndPlayers {
     player_ids: Vec<i32>,
 }
 
+
+impl UserId {
+    pub fn new(id: i32) -> UserId {
+        UserId { user_id: id as i64 }
+    }
+
+    pub fn get_id(&self) -> i64 {
+        self.user_id
+    }
+}
+
+impl GameId {
+    pub fn new(id: i32) -> GameId {
+        GameId { game_id: id as i64 }
+    }
+
+    pub fn get_id(&self) -> i64 {
+        self.game_id
+    }
+}
 
 /* 
  * 
@@ -108,6 +132,23 @@ pub async fn get_game_by_id(game_id: i32) -> Result<Game> {
     Ok(game)
 }
 
+
+pub async fn get_players_by_game_id(game_id: i32) -> Result<Vec<i32>> {
+    let pool: MySqlPool = create_pool().await?;
+    let rows= sqlx::query!(
+        "SELECT user_id FROM game_users WHERE game_id = ?",
+        game_id
+    ).fetch_all(&pool).await?;
+
+    Ok(rows.into_iter().map(|row| row.user_id).collect())
+}
+
+
+pub async fn get_game_and_players(game_id: i32) -> Result<GameAndPlayers> {
+    let game: Game = get_game_by_id(game_id).await?;
+    let player_ids: Vec<i32> = get_players_by_game_id(game_id).await?;
+    Ok(GameAndPlayers { game, player_ids })
+}
 
 pub async fn get_current_games(user_id: i32) -> Result<Vec<GameItemData>> {
     let pool: MySqlPool = create_pool().await?;
