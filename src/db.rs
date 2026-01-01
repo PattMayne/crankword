@@ -4,7 +4,7 @@ use anyhow::{ Result, anyhow };
 use sqlx::{ MySqlPool };
 use time::{ OffsetDateTime };
 
-use crate::{ game_logic, words_solutions };
+use crate::{ game_logic::{self, GameStatus}, words_solutions };
 
 
 /* 
@@ -56,13 +56,18 @@ struct UserId {
 // For referential items in a list of games
 pub struct GameItemData {
     game_id: i32,
-    status: game_logic::GameStatus,
+    game_status: game_logic::GameStatus,
     number_of_players: u8,
 }
 
+#[derive(Debug)]
+struct Count {
+    count: i64,
+}
 
-// Full data for one game
-pub struct Game {
+
+// raw DB data for one game to populate Game
+struct RawGame {
     pub id: i32,
     pub word: String,
     pub game_status: String,
@@ -72,10 +77,44 @@ pub struct Game {
     pub created_timestamp: OffsetDateTime,
 }
 
+// Full data for one game
+pub struct Game {
+    pub id: i32,
+    pub word: String,
+    pub game_status: GameStatus,
+    pub owner_id: i32,
+    pub winner_id: Option<i32>,
+    pub turn_user_id: Option<i32>,
+    pub created_timestamp: OffsetDateTime,
+}
+
+pub struct Guess {
+    pub id: i64,
+    pub word: String,
+    pub game_id: i32,
+    pub user_id: i32,
+    pub guess_number: i8,
+}
+
 
 pub struct GameAndPlayers {
     pub game: Game,
     pub player_ids: Vec<i32>,
+}
+
+
+impl Game {
+    pub fn new(raw_game: &RawGame) -> Self {
+        Game {
+            id: raw_game.id,
+            word: raw_game.word.to_owned(),
+            game_status: GameStatus::from_string(&raw_game.game_status),
+            owner_id: raw_game.owner_id,
+            winner_id: raw_game.winner_id,
+            turn_user_id: raw_game.turn_user_id,
+            created_timestamp: raw_game.created_timestamp,
+        }
+    }
 }
 
 
@@ -123,17 +162,56 @@ impl GameAndPlayers {
  * 
 */
 
+/**
+ * All player's guesses for a given game.
+ */
+pub async fn get_guesses(game_id: i32, user_id: i32) -> Result<Vec<Guess>> {
+    let pool: MySqlPool = create_pool().await?;
+    let guesses: Vec<Guess> = sqlx::query_as!(
+        Guess,
+        "SELECT id, game_id, word, guess_number, user_id FROM guesses
+            WHERE user_id = ? AND game_id = ?
+            ORDER BY guess_number ASC",
+        user_id, game_id
+    ).fetch_all(&pool).await?;
+
+    Ok(guesses)
+}
+
+
+pub async fn get_guess_count(game_id: i32, user_id: i32) -> Result<u8> {
+    let pool: MySqlPool = create_pool().await?;
+    let count_option: Option<Count> = match sqlx::query_as!(
+        Count,
+        "SELECT COUNT(*) as count FROM guesses WHERE game_id = ? AND user_id = ?",
+        game_id,
+        user_id
+    ).fetch_optional(&pool).await {
+        Ok(count) => count,
+        Err(e) => {
+            eprintln!("Failed to fetch guesses count from DB: {:?}", e);
+            return Err(anyhow!("Could not fetch guesses count: {e}"));
+        }
+    };
+
+    let count: u8 = count_option.unwrap_or(Count{count: 0}).count as u8;
+
+    Ok(count)
+}
 
 pub async fn get_game_by_id(game_id: i32) -> Result<Game> {
     let pool: MySqlPool = create_pool().await?;
 
-    let game: Game = sqlx::query_as!(
-        Game,
+    // RawGame gets the string from game_status, all to populate Game which takes an enum.
+    let raw_game: RawGame = sqlx::query_as!(
+        RawGame,
         "SELECT id, word, game_status, owner_id, winner_id,
             turn_user_id, created_timestamp FROM games
             WHERE id = ?",
         game_id
     ).fetch_one(&pool).await?;
+
+    let game: Game = Game::new(&raw_game);
 
     Ok(game)
 }

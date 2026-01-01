@@ -19,6 +19,29 @@ pub enum GameStatus {
     Cancelled,
 }
 
+
+impl GameStatus {
+    pub fn to_string(&self) -> &str {
+        match self {
+            GameStatus::PreGame => "pre_game",
+            GameStatus::InProgress => "in_progress",
+            GameStatus::Finished => "finished",
+            GameStatus::Cancelled => "cancelled",
+        }
+    }
+
+    pub fn from_string(input: &str) -> GameStatus {
+        match input {
+            "pre_game" => GameStatus::PreGame,
+            "in_progress" => GameStatus::InProgress,
+            "finished" => GameStatus::Finished,
+            "cancelled" => GameStatus::Cancelled,
+            &_ => GameStatus::PreGame,
+        }
+    }
+}
+
+
 /**
  * We need occurrences of each letter so we can highlight the correct
  * number of occurrences in the guess.

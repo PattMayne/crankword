@@ -213,10 +213,17 @@ const check_guess = async () => {
 
     // Show Error
     if (!!letter_states_obj.error) {
+        console.log("ERROR")
         new_message(letter_states_obj.error)
         return
     } else if (letter_states_obj.fake_word) {
         new_message("NOT IN WORD LIST")
+        letter_index = 0
+        set_current_tile(current_word.tiles[letter_index])
+        current_tile.element.focus()
+        return
+    } else if (letter_states_obj.max_guesses) {
+        new_message("NO MORE GUESSES")
         letter_index = 0
         set_current_tile(current_word.tiles[letter_index])
         current_tile.element.focus()

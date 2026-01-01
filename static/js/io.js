@@ -35,6 +35,7 @@ export const check_guess_io = async (guess_word, game_id) => {
     const response_obj = {
         letter_states: [],
         fake_word: false,
+        max_guesses: false,
         error: null
     }
 
@@ -54,6 +55,9 @@ export const check_guess_io = async (guess_word, game_id) => {
         if (!!guess_map.fake_word) {
             console.log("FAKE WORD")
             response_obj.fake_word = true
+        } else if (!!guess_map.max_guesses) {
+            console.log("MAX GUESSES")
+            response_obj.max_guesses = true
         } else {
             console.log("Guess Map: ", guess_map)
             response_obj.letter_states = guess_map

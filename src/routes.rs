@@ -61,6 +61,10 @@ pub struct FakeWord {
     pub fake_word: bool,
 }
 
+#[derive(Serialize)]
+pub struct MaxGuesses {
+    pub max_guesses: bool,
+}
 
 impl FakeWord {
     pub fn new() -> FakeWord {
@@ -69,6 +73,16 @@ impl FakeWord {
         }
     }
 }
+
+
+impl MaxGuesses {
+    pub fn new() -> MaxGuesses {
+        MaxGuesses {
+            max_guesses: true
+        }
+    }
+}
+
 
 /* 
  * 
@@ -285,6 +299,11 @@ async fn game_root(req: HttpRequest) -> HttpResponse {
     };
 
     println!("game id: {}", game_id);
+
+    // 1. get the GAME object (including players list)
+    // 2. check game STATUS and if user BELONGS TO GAME
+    // 3. create functions to deliver different pages depending on status
+    //      -- create enum for status, and pattern match each status
 
     let game_template: GameTemplate = GameTemplate {
         title: "CRANKWORD".to_string(),
@@ -528,6 +547,15 @@ pub async fn new_game(req: HttpRequest) -> HttpResponse {
     HttpResponse::Ok().json(GameId { game_id })
 }
 
+/**
+ * One of the most important functions.
+ * User's guesses must be checked in multiple ways:
+ * 1. get the GAME -- NEW STRUCT which includes PLAYER IDs
+ * 2. make sure user belongs in game AND it is user's turn
+ * 3. make sure word is REAL WORD
+ * 4. add guess to DB table
+ * 5. check word against winning word and return vector of LetterScores
+ */
 #[post("/check_guess")]
 pub async fn check_guess(
     req: HttpRequest,
@@ -547,17 +575,6 @@ pub async fn check_guess(
     }};
 
     // User is logged in
-
-    // save the GUESS to the GUESS TABLE
-    // IF SO... get the winning_word from the actual game
-
-    // GET THE GAME. Don't just get the word. Get the GAME and see whose TURN it is.
-    // 1. get the GAME -- NEW STRUCT which includes PLAYER IDs
-    // 2. make sure user belongs in game AND it is user's turn
-    // 3. make sure word is REAL WORD
-    // 4. add guess to DB table
-    // 5. check word against winning word and return vector of LetterScores
-
     // Get the game
     let game_and_players: GameAndPlayers =
         match db::get_game_and_players(word_json.game_id).await {
@@ -577,7 +594,24 @@ pub async fn check_guess(
     }
 
     // TODO: Make sure it is player's turn
+    // If it's not the user's turn, return a json object which indicates that.
     let player_turn: bool = true;
+
+    // get the NUMBER of player guesses.
+    let player_guess_count: u8 = match db::get_guess_count(word_json.game_id, user_id).await {
+        Ok(count) => count,
+        Err(_e) => return return_internal_err_json()
+    };
+
+    if player_guess_count > 4 {
+        println!(
+            "TOO MANY GUESSES. user_id: {}, game_id: {}",
+            user_id,
+            game_and_players.game.id
+        );
+        return HttpResponse::Ok().json(MaxGuesses::new());
+    }
+
 
     // make sure guess word is REAL WORD
     if !words_all::check_word(&word_json.guess_word) {
@@ -586,17 +620,21 @@ pub async fn check_guess(
     }
 
     // add guess to the DB
-    // get the NUMBER of player guesses first!
-    let player_guess_count: u8 = 1;
 
     let add_guess_result: Result<i64, anyhow::Error> = db::new_guess(
         user_id,
         game_and_players.game.id,
         &word_json.guess_word,
-        player_guess_count
+        player_guess_count + 1
     ).await;
 
-    // TODO: ADD AUTH CHECKS (user belongs to game, it is user's turn)
+    if add_guess_result.is_err() {
+        eprintln!("Error adding guess result");
+        return return_internal_err_json();
+    }
+    
+    // TODO: ADD AUTH CHECKS (user belongs to game, it is user's turn).
+    // If it's not the user's turn, return a json object which indicates that.
     let winning_word: String = match db::get_winning_word(word_json.game_id).await {
         Ok(word) => word,
         Err(_e) => {
@@ -606,9 +644,6 @@ pub async fn check_guess(
             })
         }
     };
-
-    println!("Winning word is: {}", winning_word);
-    println!("Guess word is: {}", word_json.guess_word);
 
     let guess_result: Vec<LetterScore> =
         game_logic::check_guess(&word_json.guess_word, &winning_word);
