@@ -4,7 +4,7 @@ use anyhow::{ Result, anyhow };
 use sqlx::{ MySqlPool };
 use time::{ OffsetDateTime };
 
-use crate::{ game_logic::{self, GameStatus}, words_solutions };
+use crate::{ auth, game_logic::{self, GameStatus}, words_solutions };
 
 
 /* 
@@ -67,7 +67,7 @@ struct Count {
 
 
 // raw DB data for one game to populate Game
-struct RawGame {
+pub struct RawGame {
     pub id: i32,
     pub word: String,
     pub game_status: String,
@@ -97,9 +97,17 @@ pub struct Guess {
 }
 
 
+/* Simple identifiers for a Player  */
+#[derive(PartialEq)]
+pub struct PlayerInfo {
+    pub user_id: i32,
+    pub username: String,
+}
+
+
 pub struct GameAndPlayers {
     pub game: Game,
-    pub player_ids: Vec<i32>,
+    pub player_ids: Vec<PlayerInfo>,
 }
 
 
@@ -139,8 +147,8 @@ impl GameId {
 }
 
 impl GameAndPlayers {
-    pub fn user_is_player(&self, user_id: i32) -> bool {
-        self.player_ids.contains(&user_id)
+    pub fn user_is_player(&self, player_info: PlayerInfo) -> bool {
+        self.player_ids.contains(&player_info)
     }
 }
 
@@ -217,20 +225,22 @@ pub async fn get_game_by_id(game_id: i32) -> Result<Game> {
 }
 
 
-pub async fn get_players_by_game_id(game_id: i32) -> Result<Vec<i32>> {
+pub async fn get_players_by_game_id(game_id: i32) -> Result<Vec<PlayerInfo>> {
     let pool: MySqlPool = create_pool().await?;
-    let rows= sqlx::query!(
-        "SELECT user_id FROM game_users WHERE game_id = ?",
+
+    let player_info_vec: Vec<PlayerInfo> = sqlx::query_as!(
+        PlayerInfo,
+        "SELECT user_id, username FROM game_users WHERE game_id = ?",
         game_id
     ).fetch_all(&pool).await?;
 
-    Ok(rows.into_iter().map(|row| row.user_id).collect())
+    Ok(player_info_vec)
 }
 
 
 pub async fn get_game_and_players(game_id: i32) -> Result<GameAndPlayers> {
     let game: Game = get_game_by_id(game_id).await?;
-    let player_ids: Vec<i32> = get_players_by_game_id(game_id).await?;
+    let player_ids = get_players_by_game_id(game_id).await?;
     Ok(GameAndPlayers { game, player_ids })
 }
 
@@ -314,7 +324,7 @@ pub async fn new_guess(
     Ok(result.last_insert_id() as i64)
 }
 
-pub async fn new_game(owner_id: i32) -> Result<i32, anyhow::Error> {
+pub async fn new_game(user_req_data: &auth::UserReqData) -> Result<i32, anyhow::Error> {
     let pool: MySqlPool = create_pool().await?;
 
     // get word
@@ -326,7 +336,7 @@ pub async fn new_game(owner_id: i32) -> Result<i32, anyhow::Error> {
             owner_id)
             VALUES (?, ?)")
         .bind(word)
-        .bind(owner_id)
+        .bind(user_req_data.id)
         .execute(&pool).await.map_err(|e| {
             eprintln!("Failed to save game to database: {:?}", e);
             anyhow!("Could not save game to database: {e}")
@@ -340,10 +350,12 @@ pub async fn new_game(owner_id: i32) -> Result<i32, anyhow::Error> {
     let game_users_result: sqlx::mysql::MySqlQueryResult = sqlx::query(
         "INSERT INTO game_users (
             game_id,
-            user_id)
-            VALUES (?, ?)")
+            user_id,
+            username)
+            VALUES (?, ?, ?)")
         .bind(game_id)
-        .bind(owner_id)
+        .bind(user_req_data.id)
+        .bind(user_req_data.get_username())
         .execute(&pool).await.map_err(|e| {
             eprintln!("Failed to save game_user to database: {:?}", e);
             anyhow!("Could not save game_user to database: {e}")

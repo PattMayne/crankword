@@ -1,0 +1,45 @@
+<!doctype html>
+<html class="no-js" lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{ texts.title }}</title>
+        <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
+        <link rel="stylesheet" href="../static/css/foundation.min.css">
+        <link rel="stylesheet" href="../static/css/app.css?id=1">
+    </head>
+
+
+    <body>
+    {% include "header.html" %}
+    <div class="grid-container">
+        <div class="grid-x grid-padding-x">
+            <div class="large-6 medium-6 small-12 cell">
+                <div class="callout">
+                    <p>GAME HAS NOT YET STARTED</p>
+                    <p>Players registered for this game:</p>
+                </div>
+            </div>
+            <div class="large-6 medium-6 small-12 cell">
+                <div class="callout">
+                    <a id="refresh_btn" class="button small">REFRESH</a>
+                    <br />
+                    <a id="start_btn" class="button small">START GAME</a>
+                    <br />
+                    <a id="join_btn" class="button small">JOIN GAME</a>
+                </div>
+            </div>
+        </div> <!-- end of grid-x -->
+
+    </div><!-- end of grid-container -->
+            
+
+        <script src="../static/js/vendor/jquery.js"></script>
+        <script src="../static/js/vendor/what-input.js"></script>
+        <script src="../static/js/vendor/foundation.min.js"></script>
+        <script type="module" src="../static/js/dashboard.js"></script>
+    </body>
+
+
+</html>

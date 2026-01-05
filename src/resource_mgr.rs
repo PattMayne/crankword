@@ -78,6 +78,58 @@ impl DashTexts {
 }
 
 
+pub struct PreGameTexts {
+    pub title: String,
+    pub players_label: String,
+    pub nav: NavTexts
+}
+
+impl PreGameTexts {
+    pub fn new(user_req_data: &UserReqData) -> PreGameTexts {
+        let lang: &SupportedLangs = &user_req_data.lang;
+        let title: String = get_translation("home.title", lang, None);
+        let players_label: String = get_translation("pregame.players.label", lang, None);
+        let nav: NavTexts = NavTexts::new(lang);
+
+        PreGameTexts { title, players_label, nav }
+    }
+}
+
+
+pub struct PostGameTexts {
+    pub title: String,
+    pub winner_username: Option<String>,
+    pub is_cancelled: bool,
+    pub message: String,
+    pub nav: NavTexts
+}
+
+impl PostGameTexts {
+    pub fn new(
+        user_req_data: &UserReqData,
+        winner_username: Option<String>,
+        is_cancelled: bool
+    ) -> PostGameTexts {
+        let lang: &SupportedLangs = &user_req_data.lang;
+        let title: String = get_translation("home.title", lang, None);
+
+        let message: String = if is_cancelled {
+                get_translation("postgame.cancelled.message", lang, None)
+            } else if let Some(username) = &winner_username {
+                get_translation(
+                    "postgame.winner.message",
+                    lang,
+                    Some(&[&username]))
+            } else {
+                get_translation("postgame.nowinner.message", lang, None)
+            };
+
+        let nav: NavTexts = NavTexts::new(lang);
+
+        PostGameTexts { title, winner_username: winner_username, is_cancelled, message, nav }
+    }
+}
+
 /*
 
 current_games

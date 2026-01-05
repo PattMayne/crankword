@@ -10,7 +10,12 @@ use crate::{
     auth, auth_code_shared::{ 
         AuthCodeRequest,
         AuthCodeSuccess
-    }, db::{self, GameAndPlayers}, game_logic::{ self, LetterScore }, io, resource_mgr::*, resources::get_translation, utils::SupportedLangs, words_all, words_solutions
+    }, db::{self, GameAndPlayers},
+    game_logic::{ self, LetterScore },
+    io, resource_mgr::{self, *},
+    resources::get_translation,
+    utils::SupportedLangs,
+    words_all,
 };
 
 /* 
@@ -66,6 +71,8 @@ pub struct MaxGuesses {
     pub max_guesses: bool,
 }
 
+
+
 impl FakeWord {
     pub fn new() -> FakeWord {
         FakeWord {
@@ -117,6 +124,22 @@ struct HomeTemplate {
 #[template(path ="game.html")]
 struct GameTemplate {
     title: String,
+    user: auth::UserReqData,
+}
+
+
+#[derive(Template)]
+#[template(path="pre_game.html")]
+struct PreGameTemplate {
+    texts: PreGameTexts,
+    user: auth::UserReqData,
+    game: db::GameAndPlayers,
+}
+
+#[derive(Template)]
+#[template(path="post_game.html")]
+struct PostGameTemplate {
+    texts: PostGameTexts,
     user: auth::UserReqData,
 }
 
@@ -214,6 +237,7 @@ struct TwoAuthCookies {
         },
         Err(_e) => {
             eprintln!("");
+            // TODO: return a response here. Don't just put an err msg in the querystring.
             "ERROR RETRIEVING CLIENT ID".to_string()
         }
     };
@@ -271,7 +295,7 @@ async fn home(req: HttpRequest) -> impl Responder {
  }
 
 
-/* ROOT DOMAIN */
+/* /game needs a game_id */
 #[get("/game")]
 async fn game_root(req: HttpRequest) -> HttpResponse {
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
@@ -304,19 +328,106 @@ async fn game_root(req: HttpRequest) -> HttpResponse {
     // 2. check game STATUS and if user BELONGS TO GAME
     // 3. create functions to deliver different pages depending on status
     //      -- create enum for status, and pattern match each status
+    // 4. in-progress game should include vector of letter_state maps to populate grid
 
+    let game: db::GameAndPlayers = match db::get_game_and_players(game_id).await {
+        Ok(game) => game,
+        Err(_e) => return redirect_to_err("404")
+    };
+
+    // Each game status option has its own page to render
+    // Each option is in a function
+    match game.game.game_status {
+        game_logic::GameStatus::PreGame =>
+            go_to_pregame(game, user_req_data).await,
+        game_logic::GameStatus::InProgress =>
+            go_to_inprogress_game(game, user_req_data).await,
+        game_logic::GameStatus::Finished =>
+            go_to_finished_game(game, user_req_data).await,
+        game_logic::GameStatus::Cancelled =>
+            go_to_cancelled_game(game, user_req_data).await
+    }
+}
+
+/* FUNCTIONS TO SUPPORT THE /game/{game_id} ROUTE */
+
+async fn go_to_pregame(
+    the_game: db::GameAndPlayers,
+    user_req_data: auth::UserReqData
+) -> HttpResponse {
+
+    println!("{}", the_game.game.game_status.to_string());
+    let pre_game_template: PreGameTemplate = PreGameTemplate {
+        texts: resource_mgr::PreGameTexts::new(&user_req_data),
+        game: the_game,
+        user: user_req_data
+    };
+
+    return HttpResponse::Ok()
+        .content_type("text/html")
+        .body(pre_game_template.render().unwrap());
+}
+
+
+async fn go_to_inprogress_game(
+    the_game: db::GameAndPlayers,
+    user_req_data: auth::UserReqData
+) -> HttpResponse {
+    println!("{}", the_game.game.game_status.to_string());
     let game_template: GameTemplate = GameTemplate {
         title: "CRANKWORD".to_string(),
         user: user_req_data
     };
 
-    HttpResponse::Ok()
+    return HttpResponse::Ok()
         .content_type("text/html")
-        .body(game_template.render().unwrap())
- }
+        .body(game_template.render().unwrap());
+}
 
 
-/* PLAYER DASHBOARD */
+async fn go_to_finished_game(
+    the_game: db::GameAndPlayers,
+    user_req_data: auth::UserReqData
+) -> HttpResponse {
+    println!("{}", the_game.game.game_status.to_string());
+    let post_game_texts: PostGameTexts = resource_mgr::PostGameTexts::new(
+        &user_req_data,
+        None,
+        false
+    );
+    let post_game_template: PostGameTemplate = PostGameTemplate {
+        texts: post_game_texts,
+        user: user_req_data
+    };
+
+    return HttpResponse::Ok()
+        .content_type("text/html")
+        .body(post_game_template.render().unwrap());
+}
+
+async fn go_to_cancelled_game(
+    the_game: db::GameAndPlayers,
+    user_req_data: auth::UserReqData
+) -> HttpResponse {
+    println!("{}", the_game.game.game_status.to_string());
+    let post_game_texts: PostGameTexts = resource_mgr::PostGameTexts::new(
+        &user_req_data,
+        None,
+        true
+    );
+    let post_game_template: PostGameTemplate = PostGameTemplate {
+        texts: post_game_texts,
+        user: user_req_data
+    };
+
+    return HttpResponse::Ok()
+        .content_type("text/html")
+        .body(post_game_template.render().unwrap());
+}
+
+
+
+/* PLAYER DASHBOARD ROUTE */
 #[get("/dashboard")]
 async fn dashboard(req: HttpRequest) -> HttpResponse {
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
@@ -527,7 +638,7 @@ pub async fn new_game(req: HttpRequest) -> HttpResponse {
 
     // make the game and get the id
     let user_id: i32 = user_req_data.id.unwrap();
-    let game_id: i32 = match db::new_game(user_id).await {
+    let game_id: i32 = match db::new_game(&user_req_data).await {
         Ok(id) => id,
         Err(e) => {
             return HttpResponse::Unauthorized().json(
@@ -583,7 +694,12 @@ pub async fn check_guess(
         };
 
     // Make sure user is a player
-    if !game_and_players.user_is_player(user_id) {
+    if !game_and_players.user_is_player(
+        db::PlayerInfo {
+            user_id,
+            username: user_req_data.get_username()
+        }
+    ) {
         // User is NOT player for this game.
         let error: String = get_translation("err.403.body", &user_req_data.lang, None);
         return HttpResponse::Unauthorized().json(

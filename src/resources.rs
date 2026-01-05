@@ -63,6 +63,19 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "nav.dashboard.en" => "DASHBOARD",
     "nav.dashboard.fr" => "TABLEAU DE BORD",
 
+    // PRE-GAME PAGE TEXTS
+    "pregame.players.label.en" => "PLAYERS",
+    "pregame.players.label.fr" => "JOUEURS",
+
+    // POST-GAME PAGE TEXTS
+    "postgame.winner.message.en" => "Game over! {0} is the winner!",
+    "postgame.winner.message.fr" => "Fin du jeu !{0} est le gagnant !",
+    "postgame.nowinner.message.en" => "Game over! There was no winner!",
+    "postgame.nowinner.message.fr" => "Fin du jeu ! Il n'y avait pas de gagnant !",
+    "postgame.cancelled.message.en" => "Game was cancelled!",
+    "postgame.cancelled.message.fr" => "Le jeu a été annulé !",
+    
+
     // ERROR CODES AND TITLES FOR ERROR PAGE
     "err.400.title.en" => "Bad Request",
     "err.400.title.fr" => "Mauvaise demande",
