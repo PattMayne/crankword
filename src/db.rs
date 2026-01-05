@@ -107,7 +107,7 @@ pub struct PlayerInfo {
 
 pub struct GameAndPlayers {
     pub game: Game,
-    pub player_ids: Vec<PlayerInfo>,
+    pub players: Vec<PlayerInfo>,
 }
 
 
@@ -148,7 +148,17 @@ impl GameId {
 
 impl GameAndPlayers {
     pub fn user_is_player(&self, player_info: PlayerInfo) -> bool {
-        self.player_ids.contains(&player_info)
+        self.players.contains(&player_info)
+    }
+
+    pub fn user_id_is_player(&self, player_id: i32) -> bool {
+        for player_info in &self.players {
+            if player_info.user_id == player_id {
+                return true;
+            }
+        }
+
+        false
     }
 }
 
@@ -240,8 +250,8 @@ pub async fn get_players_by_game_id(game_id: i32) -> Result<Vec<PlayerInfo>> {
 
 pub async fn get_game_and_players(game_id: i32) -> Result<GameAndPlayers> {
     let game: Game = get_game_by_id(game_id).await?;
-    let player_ids = get_players_by_game_id(game_id).await?;
-    Ok(GameAndPlayers { game, player_ids })
+    let players: Vec<PlayerInfo> = get_players_by_game_id(game_id).await?;
+    Ok(GameAndPlayers { game, players })
 }
 
 pub async fn get_current_games(user_id: i32) -> Result<Vec<GameItemData>> {
