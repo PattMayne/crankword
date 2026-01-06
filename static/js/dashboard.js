@@ -11,11 +11,12 @@ const create_new_game = async () => {
     msgs = []
     msgs.push("NEW GAME CREATING")
 
-    let game_id = await io.new_game()
+    const game_data = await io.new_game()
+    const game_id = game_data.game_id
 
     if (!game_id || game_id < 1) {
         msgs = []
-        msgs.push("ERROR CREATING NEW GAME")
+        msgs.push(game_data.error)
         show_msg_box()
         return
     }

@@ -106,12 +106,21 @@ export const new_game = async () => {
 
     let data = await response.json()
 
+    let return_obj = {
+        game_id: 0,
+        error: null
+    }
+
     if (data.game_id !== undefined) {
-        return data.game_id
+        return_obj.game_id = data.game_id
+    } else if (!!data.error) {
+        return_obj.error = data.error
     } else {
         console.log("no game id")
-        return null
+        return_obj.error = "NO GAME ID"
     }
+
+    return return_obj
 }
 
 

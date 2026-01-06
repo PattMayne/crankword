@@ -755,6 +755,22 @@ pub async fn new_game(req: HttpRequest) -> HttpResponse {
 
     // make the game and get the id
     let user_id: i32 = user_req_data.id.unwrap();
+
+    // Make sure they're not already in a pregame or inprogress game.
+    let games_count: u8 = 
+        match db::get_current_games_count(user_id).await {
+            Ok(count) => count,
+            Err(_e) => return return_internal_err_json()
+        };
+
+    if games_count > 0 {
+        return HttpResponse::Ok().json(JoinGameFailure {
+            success: false,
+            error: "Too many current games".to_string()
+        });
+    }
+
+
     let game_id: i32 = match db::new_game(&user_req_data).await {
         Ok(id) => id,
         Err(e) => {
