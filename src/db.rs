@@ -197,8 +197,34 @@ pub async fn get_guesses(game_id: i32, user_id: i32) -> Result<Vec<Guess>> {
 }
 
 
+/**
+ * Returns number of PreGame or InProgress games the user is registered for.
+ * (We're only allowed one game at a time)
+ */
 pub async fn get_current_games_count(user_id: i32) -> Result<u8> {
-    Ok(50)
+    let pool: MySqlPool = create_pool().await?;
+
+    let count_option: Option<Count> = match sqlx::query_as!(
+        Count,
+        "SELECT COUNT(*) as count FROM games g
+        JOIN game_users gu ON g.id = gu.game_id
+        WHERE gu.user_id = ?
+        AND (g.game_status = ?
+        OR g.game_status = ?)",
+        user_id,
+        GameStatus::PreGame.to_string(),
+        GameStatus::InProgress.to_string()
+    ).fetch_optional(&pool).await {
+        Ok(count) => count,
+        Err(e) => {
+            eprintln!("Failed to fetch games count from DB: {:?}", e);
+            return Err(anyhow!("Could not fetch games count: {e}"));
+        }
+    };
+
+    let count: u8 = count_option.unwrap_or(Count{count: 0}).count as u8;
+
+    Ok(count)
 }
 
 

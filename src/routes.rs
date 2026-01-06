@@ -657,6 +657,22 @@ pub async fn join_game(
         return return_unauthorized_err_json(&user_req_data);
     }
 
+
+    // Make sure they're not already in a pregame or inprogress game.
+    let games_count: u8 = 
+        match db::get_current_games_count(user_req_data.id.unwrap()).await {
+            Ok(count) => count,
+            Err(_e) => return return_internal_err_json()
+        };
+
+    if games_count > 0 {
+        return HttpResponse::Ok().json(JoinGameFailure {
+            success: false,
+            error: "Too many current games".to_string()
+        });
+    }
+
+    // Use may join
     let user_joined_game: bool = match db::user_join_game(
         &user_req_data,
         game_join_id.game_id
@@ -669,12 +685,6 @@ pub async fn join_game(
             });
         }
     };
-
-    // add user to game
-    // return boolean?
-
-    // TO DO:  make sure user has NO OTHER CURRENT GAMES.
-    // TO DO:   make sure user isn't ALREADY IN THE GAME.
 
     HttpResponse::Ok().json(JoinGameSuccess { success: user_joined_game })
 }
