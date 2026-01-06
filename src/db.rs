@@ -197,6 +197,27 @@ pub async fn get_guesses(game_id: i32, user_id: i32) -> Result<Vec<Guess>> {
 }
 
 
+pub async fn get_current_games_count(user_id: i32) -> Result<u8> {
+    Ok(50)
+}
+
+
+/**
+ * When transitioning a game from one stage to the next.
+ */
+pub async fn update_game_status(game_id: i32, new_status: GameStatus) -> Result<u8> {
+    let pool: MySqlPool = create_pool().await?;
+
+    let result: sqlx::mysql::MySqlQueryResult = sqlx::query(
+    "UPDATE games SET game_status = ? WHERE id = ?")
+            .bind(new_status.to_string())
+            .bind(game_id)
+            .execute(&pool)
+            .await?;
+
+    Ok(result.rows_affected() as u8)
+}
+
 pub async fn get_guess_count(game_id: i32, user_id: i32) -> Result<u8> {
     let pool: MySqlPool = create_pool().await?;
     let count_option: Option<Count> = match sqlx::query_as!(

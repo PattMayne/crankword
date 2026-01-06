@@ -153,3 +153,42 @@ export const join_game = async (game_id) => {
 
     return response_obj
 }
+
+export const start_game = async game_id => {
+    const route = "/game_in/start_game"
+    const input = {
+        "game_id": parseInt(game_id)
+    }
+
+    const response_obj = {
+        success: false,
+        error: null
+    }
+
+    await utils.fetch_json_post(route, input)
+    .then(response => {
+        if(!response.ok) {
+            response.json().then(data => {
+                console.log("NOT OK")
+                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                msg += (!!data.error) ? data.error : " Error occurred"
+                response_obj.error = msg
+            })
+
+            throw new Error("Unable to start game, or error on server.")
+        }
+        return response.json()
+    }).then(data => {
+        if (data.success) {
+            console.log("STARTED GAME")
+            response_obj.success = true
+        } else {
+            console.log("DID NOT START GAME")
+            response_obj.error = !!data.error ? data.error : "DID NOT START GAME"
+        }        
+    }).catch(error => {
+        console.log('Error: ', error)
+    })
+
+    return response_obj
+}

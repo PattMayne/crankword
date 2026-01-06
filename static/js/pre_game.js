@@ -29,6 +29,21 @@ const join_game = async () => {
     window.location.reload()
 }
 
+const start_game = async () => {
+    console.log("PRESSED 'START GAME'")
+    msgs = []
+    msgs.push("STARTING GAME...")
+
+    let game_id = document.getElementById("game_id").value
+    let start_response = await io.start_game(game_id)
+
+    if (start_response.success) {
+        window.location.reload()
+    } else {
+        console.log("errrrorrrr")
+    }
+}
+
 // SHOW/HIDE ERROR BOX
 
 const hide_msg_box = () =>
@@ -47,19 +62,27 @@ const show_msg_box = () => {
 }
 
 
-// Add event listeners
 
 document.addEventListener('DOMContentLoaded', () => {
     hide_msg_box()
+    
+    // Add event listeners
 
     const join_btn = document.getElementById('join_btn')
+    const start_btn = document.getElementById('start_btn')
 
     if (join_btn) {
         join_btn.addEventListener(
             'click', (e) => join_game())
     }
 
+    if (start_btn) {
+        start_btn.addEventListener(
+            'click', (e) => start_game())
+    }
+
 })
 
 
 window.join_game = join_game
+window.start_game = start_game

@@ -683,7 +683,7 @@ pub async fn join_game(
 #[post("/start_game")]
 pub async fn start_game(
     req: HttpRequest,
-    game_join_id: web::Json<GameId>
+    game_start_id: web::Json<GameId>
 ) -> HttpResponse {
     println!("STARTING GAME");
     // Make sure it's a real user
@@ -692,7 +692,7 @@ pub async fn start_game(
         return return_unauthorized_err_json(&user_req_data);
     }
 
-    let the_game: db::Game = match db::get_game_by_id(game_join_id.game_id).await {
+    let the_game: db::Game = match db::get_game_by_id(game_start_id.game_id).await {
         Ok(the_game) => the_game,
         Err(_e) => return return_internal_err_json()
     };
@@ -713,9 +713,22 @@ pub async fn start_game(
 
     // NOW call the db to change the status of the game
 
+    let update_result: Result<u8, anyhow::Error> =
+        db::update_game_status(
+            the_game.id,
+            GameStatus::InProgress
+        ).await;
 
-    HttpResponse::Ok().json(StartGameSuccess { success: true })
+    match update_result {
+        Ok(rows_affected) => {
+            HttpResponse::Ok().json(StartGameSuccess {
+                success: rows_affected > 0
+            })
+        },
+        Err(_e) => return_internal_err_json()
+    }
 }
+
 
 #[post("/new_game")]
 pub async fn new_game(req: HttpRequest) -> HttpResponse {
