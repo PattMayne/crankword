@@ -11,7 +11,7 @@ use crate::{
         AuthCodeRequest,
         AuthCodeSuccess
     }, db::{self, GameAndPlayers},
-    game_logic::{ self, LetterScore },
+    game_logic::{ self, GameStatus, LetterScore },
     io, resource_mgr::{self, *},
     resources::get_translation,
     utils::SupportedLangs,
@@ -57,6 +57,34 @@ pub struct ErrorResponse {
 
 
 #[derive(Serialize)]
+pub struct JoinGameFailure {
+    pub error: String,
+    pub success: bool,
+}
+
+
+
+#[derive(Serialize)]
+pub struct StartGameFailure {
+    pub error: String,
+    pub success: bool,
+}
+
+
+#[derive(Serialize)]
+pub struct JoinGameSuccess {
+    pub success: bool,
+}
+
+
+#[derive(Serialize)]
+pub struct StartGameSuccess {
+    pub success: bool,
+}
+
+
+
+#[derive(Serialize, Deserialize)]
 pub struct GameId {
     pub game_id: i32,
 }
@@ -617,6 +645,78 @@ pub fn redirect_to_login() -> HttpResponse {
  * 
 */
 
+#[post("/join_game")]
+pub async fn join_game(
+    req: HttpRequest,
+    game_join_id: web::Json<GameId>
+) -> HttpResponse {
+    println!("JOINING GAME");
+    // Make sure it's a real user
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+    if user_req_data.get_role() == "guest" {
+        return return_unauthorized_err_json(&user_req_data);
+    }
+
+    let user_joined_game: bool = match db::user_join_game(
+        &user_req_data,
+        game_join_id.game_id
+    ).await {
+        Ok(joined) => joined,
+        Err(e) => {
+            return HttpResponse::Ok().json(JoinGameFailure {
+                error: e.to_string(),
+                success: false
+            });
+        }
+    };
+
+    // add user to game
+    // return boolean?
+
+    // TO DO:  make sure user has NO OTHER CURRENT GAMES.
+    // TO DO:   make sure user isn't ALREADY IN THE GAME.
+
+    HttpResponse::Ok().json(JoinGameSuccess { success: user_joined_game })
+}
+
+
+#[post("/start_game")]
+pub async fn start_game(
+    req: HttpRequest,
+    game_join_id: web::Json<GameId>
+) -> HttpResponse {
+    println!("STARTING GAME");
+    // Make sure it's a real user
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+    if user_req_data.get_role() == "guest" {
+        return return_unauthorized_err_json(&user_req_data);
+    }
+
+    let the_game: db::Game = match db::get_game_by_id(game_join_id.game_id).await {
+        Ok(the_game) => the_game,
+        Err(_e) => return return_internal_err_json()
+    };
+
+    if the_game.owner_id != user_req_data.id.unwrap() {
+        // TODO: put the error message into the resources file
+        return HttpResponse::Ok().json(StartGameFailure {
+            error: "Only the game owner can start a game.".to_string(),
+            success: false
+        });
+    } else if the_game.game_status != GameStatus::PreGame {
+        // TODO: put the error message into the resources file
+        return HttpResponse::Ok().json(StartGameFailure {
+            error: "Game has already started.".to_string(),
+            success: false
+        });
+    }
+
+    // NOW call the db to change the status of the game
+
+
+    HttpResponse::Ok().json(StartGameSuccess { success: true })
+}
+
 #[post("/new_game")]
 pub async fn new_game(req: HttpRequest) -> HttpResponse {
     // make sure it's a real user
@@ -626,14 +726,8 @@ pub async fn new_game(req: HttpRequest) -> HttpResponse {
 
     // Make sure it's a real user
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
-
     if user_req_data.get_role() == "guest" {
-        let error: String = get_translation("err.empty_creds", &user_req_data.lang, None);
-        return HttpResponse::Unauthorized().json(
-            ErrorResponse {
-            error,
-            code: 401
-        });
+        return return_unauthorized_err_json(&user_req_data);
     }
 
     // make the game and get the id
@@ -796,4 +890,18 @@ pub fn return_not_found_err_json() -> HttpResponse {
         error: String::from("Not Found"),
         code: 406
     })
+}
+
+pub fn return_unauthorized_err_json(user_req_data: &auth::UserReqData) -> HttpResponse {
+    let error: String = get_translation(
+        "err.empty_creds",
+        &user_req_data.lang,
+        None
+    );
+
+    return HttpResponse::Unauthorized().json(
+        ErrorResponse {
+        error,
+        code: 401
+    });
 }

@@ -381,6 +381,49 @@ pub async fn new_game(user_req_data: &auth::UserReqData) -> Result<i32, anyhow::
 }
 
 
+/**
+ * User wants to join an existing game.
+ * 
+ * TODO:
+ *  -- check that it's pre-game
+ *  -- check that user isn't already in the game
+ */
+pub async fn user_join_game(
+    user_req_data: &auth::UserReqData,
+    game_id: i32
+) -> Result<bool> {
+    let pool: MySqlPool = create_pool().await?;
+    if user_req_data.id.is_none() || user_req_data.get_role() == "guest" {
+        return Err(anyhow!("User is not valid"));
+    }
+
+    // get the game and check that it's pregame
+    // make sure the user isn't already part of the game
+
+    let game: GameAndPlayers = get_game_and_players(game_id).await?;
+    if game.game.game_status != GameStatus::PreGame {
+        return Err(anyhow!("Game already started"));
+    } else if game.user_id_is_player(user_req_data.id.unwrap()) {
+        return Err(anyhow!("User already joined game."));
+    }
+
+    let result: sqlx::mysql::MySqlQueryResult = sqlx::query(
+        "INSERT INTO game_users (
+            game_id,
+            user_id,
+            username)
+            VALUES (?, ?, ?)")
+        .bind(game_id)
+        .bind(user_req_data.id.unwrap())
+        .bind(user_req_data.get_username())
+        .execute(&pool).await.map_err(|e| {
+            eprintln!("Failed to save game_user to database: {:?}", e);
+            anyhow!("Could not save game_user to database: {e}")
+    })?;
+
+    Ok(result.rows_affected() > 0 )
+}
+
 
 /**
  * Get winning word from given game_id

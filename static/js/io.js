@@ -45,7 +45,7 @@ export const check_guess_io = async (guess_word, game_id) => {
             response.json().then(data => {
                 let msg = (!!data.code) ? (data.code.toString() + " ") : ""
                 msg += (!!data.error) ? data.error : " Error occurred"
-                response_obj.error = error
+                response_obj.error = msg
             })
 
             throw new Error("Unable to check word, or error on server.")
@@ -112,4 +112,44 @@ export const new_game = async () => {
         console.log("no game id")
         return null
     }
+}
+
+
+export const join_game = async (game_id) => {
+    const route = "/game_in/join_game"
+    const input = {
+        "game_id": parseInt(game_id)
+    }
+
+    const response_obj = {
+        success: false,
+        error: null
+    }
+
+    await utils.fetch_json_post(route, input)
+    .then(response => {
+        if(!response.ok) {
+            response.json().then(data => {
+                console.log("NOT OK")
+                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                msg += (!!data.error) ? data.error : " Error occurred"
+                response_obj.error = msg
+            })
+
+            throw new Error("Unable to join game, or error on server.")
+        }
+        return response.json()
+    }).then(data => {
+        if (data.success) {
+            console.log("JOINED GAME")
+            response_obj.success = true
+        } else {
+            console.log("DID NOT JOIN GAME")
+            response_obj.error = !!data.error ? data.error : "DID NOT JOIN GAME"
+        }        
+    }).catch(error => {
+        console.log('Error: ', error)
+    })
+
+    return response_obj
 }

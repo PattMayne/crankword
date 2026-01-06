@@ -39,15 +39,22 @@
                     {% endif %}
                 </div>
             </div>
+
+            <div class="large-12 cell">
+                <div class="callout primary" id="msg_box">
+                </div>
+            </div>
+
+
         </div> <!-- end of grid-x -->
 
     </div><!-- end of grid-container -->
-            
+        <input type="hidden" id="game_id" value="{{ game.game.id }}">
 
         <script src="../static/js/vendor/jquery.js"></script>
         <script src="../static/js/vendor/what-input.js"></script>
         <script src="../static/js/vendor/foundation.min.js"></script>
-        <script type="module" src="../static/js/dashboard.js"></script>
+        <script type="module" src="../static/js/pre_game.js?id=5"></script>
     </body>
 
 
