@@ -86,6 +86,9 @@ export const check_guess_io = async (guess_word, game_id) => {
  * -------------------------------
  * 
  * 
+ * "local" meaning the crankword APIs
+ * instead of the auth_app APIs
+ * 
  * 
  * 
 */
@@ -194,6 +197,46 @@ export const start_game = async game_id => {
         } else {
             console.log("DID NOT START GAME")
             response_obj.error = !!data.error ? data.error : "DID NOT START GAME"
+        }        
+    }).catch(error => {
+        console.log('Error: ', error)
+    })
+
+    return response_obj
+}
+
+export const refresh = async game_id => {
+    const route = "/game_in/refresh_pregame"
+    const input = {
+        "game_id": parseInt(game_id)
+    }
+
+    const response_obj = {
+        players: [],
+        game_status: "in_progress"
+    }
+
+    await utils.fetch_json_post(route, input)
+    .then(response => {
+        if(!response.ok) {
+            response.json().then(data => {
+                console.log("NOT OK")
+                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                msg += (!!data.error) ? data.error : " Error occurred"
+                response_obj.error = msg
+            })
+
+            throw new Error("Unable to refresh game, or error on server.")
+        }
+        return response.json()
+    }).then(data => {
+        if (!!data.game_status && !!data.players) {
+            console.log("REFRESHING GAME DATA: " + data.game_status)
+            response_obj.players = data.players
+            response_obj.game_status = data.game_status
+        } else {
+            console.log("DID NOT REFRESH GAME DATA")
+            response_obj.error = !!data.error ? data.error : "DID NOT REFRESH GAME DATA"
         }        
     }).catch(error => {
         console.log('Error: ', error)

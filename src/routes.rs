@@ -10,11 +10,11 @@ use crate::{
     auth, auth_code_shared::{ 
         AuthCodeRequest,
         AuthCodeSuccess
-    }, db::{self, GameAndPlayers},
+    }, db::{self, GameAndPlayers, PlayerInfo},
     game_logic::{ self, GameStatus, LetterScore },
     io, resource_mgr::{self, *},
     resources::get_translation,
-    utils::SupportedLangs,
+    utils::{ self, SupportedLangs },
     words_all,
 };
 
@@ -53,6 +53,13 @@ struct AuthCodeQuery {
 pub struct ErrorResponse {
     pub error: String,
     pub code: u16,
+}
+
+
+#[derive(Serialize)]
+pub struct PreGameRefresh {
+    pub game_status: GameStatus,
+    pub players: Vec<PlayerInfo>,
 }
 
 
@@ -223,6 +230,9 @@ struct TwoAuthCookies {
  */
 
 
+/**
+  * Redirect user to auth_app for login
+  */
  #[get("/login")]
  async fn login() -> HttpResponse {
     let lang: SupportedLangs = SupportedLangs::English;
@@ -236,8 +246,9 @@ struct TwoAuthCookies {
         Ok(client_id) => {
             "?client_id=".to_string() + &client_id
         },
-        Err(_e) => {
-            eprintln!("");
+        Err(e) => {
+            eprintln!("ERROR: {}", e);
+            // TODO: return a response here. Don't just put an err msg in the querystring.
             "ERROR RETRIEVING CLIENT ID".to_string()
         }
     };
@@ -247,9 +258,12 @@ struct TwoAuthCookies {
     HttpResponse::Found()
         .append_header(("Location", login_url))
         .finish()
- }
+}
 
 
+/**
+  * Redirect user to auth_app for registration
+  */
  #[get("/register")]
  async fn register() -> HttpResponse {
     let lang: SupportedLangs = SupportedLangs::English;
@@ -263,8 +277,8 @@ struct TwoAuthCookies {
         Ok(client_id) => {
             "?client_id=".to_string() + &client_id
         },
-        Err(_e) => {
-            eprintln!("");
+        Err(e) => {
+            eprintln!("ERROR: {}", e);
             // TODO: return a response here. Don't just put an err msg in the querystring.
             "ERROR RETRIEVING CLIENT ID".to_string()
         }
@@ -275,7 +289,7 @@ struct TwoAuthCookies {
     HttpResponse::Found()
         .append_header(("Location", register_url))
         .finish()
- }
+}
 
 
 
@@ -323,7 +337,7 @@ async fn home(req: HttpRequest) -> impl Responder {
  }
 
 
-/* /game needs a game_id */
+/* /game needs a game_id. So this just redirects to dashboard. */
 #[get("/game")]
 async fn game_root(req: HttpRequest) -> HttpResponse {
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
@@ -334,6 +348,7 @@ async fn game_root(req: HttpRequest) -> HttpResponse {
         .append_header((header::LOCATION, redirect_location))
         .finish()
  }
+
 
  #[get("/game/{game_id}")]
  async fn game(req: HttpRequest, path: web::Path<String>) -> HttpResponse {
@@ -643,7 +658,39 @@ pub fn redirect_to_login() -> HttpResponse {
  * 
  * 
  * 
-*/
+ */
+
+
+/**
+ * Get fresh data about game status and who the players are.
+ */
+#[post("/refresh_pregame")]
+pub async fn refresh_pregame(
+    req: HttpRequest,
+    game_id: web::Json<GameId>
+) -> HttpResponse {
+    println!("REFRESHING GAME");
+    // Make sure it's a real user
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+    if user_req_data.get_role() == "guest" {
+        return return_unauthorized_err_json(&user_req_data);
+    }
+
+    let the_game: db::GameAndPlayers = match db::get_game_and_players(game_id.game_id).await {
+        Ok(gap) => gap,
+        Err(_e) => return return_internal_err_json()
+    };
+
+    let refresh_data: PreGameRefresh = PreGameRefresh {
+        game_status: the_game.game.game_status,
+        players: the_game.players
+    };
+
+    println!("REFRESHING GAME 2");
+    HttpResponse::Ok().json(refresh_data)
+}
+
+
 
 #[post("/join_game")]
 pub async fn join_game(
@@ -665,7 +712,7 @@ pub async fn join_game(
             Err(_e) => return return_internal_err_json()
         };
 
-    if games_count > 0 {
+    if games_count >= utils::MAX_CURRENT_GAMES {
         return HttpResponse::Ok().json(JoinGameFailure {
             success: false,
             error: "Too many current games".to_string()
@@ -763,13 +810,12 @@ pub async fn new_game(req: HttpRequest) -> HttpResponse {
             Err(_e) => return return_internal_err_json()
         };
 
-    if games_count > 0 {
+    if games_count >= utils::MAX_CURRENT_GAMES {
         return HttpResponse::Ok().json(JoinGameFailure {
             success: false,
             error: "Too many current games".to_string()
         });
     }
-
 
     let game_id: i32 = match db::new_game(&user_req_data).await {
         Ok(id) => id,
@@ -778,16 +824,10 @@ pub async fn new_game(req: HttpRequest) -> HttpResponse {
                 ErrorResponse {
                 error: e.to_string(),
                 code: 404
-            });
-        }
-    };
+    })}};
 
-    // redirect user to game page
-
-    // NO... we must send back the game_id so the JS can redirect.
-
+    // send back the game_id so the front-end can redirect.
     println!("created game object: {}", game_id);
-
     HttpResponse::Ok().json(GameId { game_id })
 }
 

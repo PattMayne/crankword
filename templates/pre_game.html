@@ -20,7 +20,7 @@
                     <p>GAME HAS NOT YET STARTED</p>
                     <p>Players registered for this game:</p>
                     {% if game.players.len() > 0 %}
-                        <ul>
+                        <ul id="players_ul">
                             {% for player_info in game.players %}
                                 <li>{{ player_info.username }}</li>
                             {% endfor %}
@@ -54,7 +54,7 @@
         <script src="../static/js/vendor/jquery.js"></script>
         <script src="../static/js/vendor/what-input.js"></script>
         <script src="../static/js/vendor/foundation.min.js"></script>
-        <script type="module" src="../static/js/pre_game.js?id=5"></script>
+        <script type="module" src="../static/js/pre_game.js?id=4"></script>
     </body>
 
 

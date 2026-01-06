@@ -1,6 +1,7 @@
 extern crate rand;
 // import commonly used items from the prelude:
 use anyhow::{ Result, anyhow };
+use serde::Serialize;
 use sqlx::{ MySqlPool };
 use time::{ OffsetDateTime };
 
@@ -98,7 +99,7 @@ pub struct Guess {
 
 
 /* Simple identifiers for a Player  */
-#[derive(PartialEq)]
+#[derive(PartialEq, Serialize)]
 pub struct PlayerInfo {
     pub user_id: i32,
     pub username: String,

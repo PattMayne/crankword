@@ -34,14 +34,49 @@ const start_game = async () => {
     msgs = []
     msgs.push("STARTING GAME...")
 
-    let game_id = document.getElementById("game_id").value
-    let start_response = await io.start_game(game_id)
+    const game_id = document.getElementById("game_id").value
+    const start_response = await io.start_game(game_id)
 
     if (start_response.success) {
         window.location.reload()
     } else {
         console.log("errrrorrrr")
     }
+}
+
+
+const refresh_data = async () => {
+    console.log("PRESSED 'REFRESH'")
+    msgs = []
+    msgs.push("REFRESHING GAME...")
+
+    const game_id = document.getElementById("game_id").value
+    const refresh_response = await io.refresh(game_id)
+
+    if (!!refresh_response.game_status && !!refresh_response.players) {
+        if (refresh_response.game_status != "pre_game") {
+            window.location.reload()
+            return
+        }
+        // else:
+        set_players_list(refresh_response.players)        
+    } else {
+        console.log("errrrorrrr")
+    }
+}
+
+const set_players_list = players_list => {
+
+    const players_ul = document.getElementById("players_ul")
+    let list_html = ""
+
+    players_list.map(player_item => {
+        if (!!player_item.username) {
+            list_html += "<li>" + player_item.username + "</li>"
+        }
+    })
+    
+    players_ul.innerHTML = list_html
 }
 
 // SHOW/HIDE ERROR BOX
@@ -70,6 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const join_btn = document.getElementById('join_btn')
     const start_btn = document.getElementById('start_btn')
+    const refresh_btn = document.getElementById('refresh_btn')
 
     if (join_btn) {
         join_btn.addEventListener(
@@ -81,8 +117,13 @@ document.addEventListener('DOMContentLoaded', () => {
             'click', (e) => start_game())
     }
 
+    if (refresh_btn) {
+        refresh_btn.addEventListener(
+            'click', (e) => refresh_data())
+    }
 })
 
 
 window.join_game = join_game
 window.start_game = start_game
+window.refresh_data = refresh_data
