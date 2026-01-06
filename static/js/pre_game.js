@@ -46,7 +46,6 @@ const start_game = async () => {
 
 
 const refresh_data = async () => {
-    console.log("PRESSED 'REFRESH'")
     msgs = []
     msgs.push("REFRESHING GAME...")
 
@@ -97,7 +96,6 @@ const show_msg_box = () => {
 }
 
 
-
 document.addEventListener('DOMContentLoaded', () => {
     hide_msg_box()
     
@@ -121,8 +119,10 @@ document.addEventListener('DOMContentLoaded', () => {
         refresh_btn.addEventListener(
             'click', (e) => refresh_data())
     }
-})
 
+    // Check every 3 seconds for new users or updated game_status
+    setInterval(refresh_data, 3000);
+})
 
 window.join_game = join_game
 window.start_game = start_game

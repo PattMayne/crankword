@@ -231,7 +231,6 @@ export const refresh = async game_id => {
         return response.json()
     }).then(data => {
         if (!!data.game_status && !!data.players) {
-            console.log("REFRESHING GAME DATA: " + data.game_status)
             response_obj.players = data.players
             response_obj.game_status = data.game_status
         } else {
