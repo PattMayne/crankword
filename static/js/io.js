@@ -271,7 +271,11 @@ export const get_guess_scores = async game_id => {
         }
         return response.json()
     }).then(data => {
+
+        console.log("RAW DATA: " + JSON.stringify(data))
+
         if (!!data.scores) {
+            console.log("got the scores")
             response_obj.scores = data.scores
         } else {
             console.log("DID NOT GET GUESS DATA")

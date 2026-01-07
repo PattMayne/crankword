@@ -9,7 +9,7 @@ pub enum LetterScore {
     WrongSpot,
     Dud,
 }
-    
+
 #[derive(Serialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum GameStatus {
@@ -18,6 +18,14 @@ pub enum GameStatus {
     Finished,
     Cancelled,
 }
+
+
+#[derive(Serialize)]
+pub struct GuessAndScore {
+    pub word: String,
+    pub score: Vec<LetterScore>,
+}
+
 
 
 impl GameStatus {

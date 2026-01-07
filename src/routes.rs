@@ -58,7 +58,7 @@ pub struct ErrorResponse {
 
 #[derive(Serialize)]
 pub struct AllPlayerScores {
-    pub scores: Vec<Vec<LetterScore>>,
+    pub scores: Vec<game_logic::GuessAndScore>,
 }
 
 
@@ -952,12 +952,11 @@ pub async fn get_guess_scores(
         None => { return return_unauthorized_err_json(&user_req_data); }
     };
 
-    let all_scores: Vec<Vec<LetterScore>> =
+    let all_scores: Vec<game_logic::GuessAndScore> =
         match db::get_guess_scores(game_id.game_id, user_id).await {
             Ok(scores) => scores,
             Err(_e) => return return_unauthorized_err_json(&user_req_data)
         };
-
     
     println!("GUESSES: {}", all_scores.len());
 
@@ -965,7 +964,6 @@ pub async fn get_guess_scores(
     let scores_obj: AllPlayerScores = AllPlayerScores {
         scores: all_scores
     };
-
 
     HttpResponse::Ok().json(scores_obj)
 }
