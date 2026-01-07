@@ -514,13 +514,73 @@ const unset_current_tile_classes = () => {
 }
 
 const settle_old_scores = async () => {
+
     // get the list of guess results
-
-
     const game_id = document.getElementById("game_id").value
-    //const start_response = await io.start_game(game_id)
-    const scores_obj = io.get_guess_scores(game_id)
+    const scores_obj = await io.get_guess_scores(game_id)
+
+    // set the results into the grid
+
+    word_index = 0
+    letter_index = 0
+    current_word = guess_map.words[word_index]
+    current_tile = current_word.tiles[letter_index]
+
+    //current_tile.set_letter(key)
+
+    for (let i=0; i<scores_obj.scores.length; i++) {
+        const guess = scores_obj.scores[i]
+        word_index = i
+        current_word = guess_map.words[word_index]
+
+        for (let k=0; k<guess.score.length; k++) {
+            letter_index = k
+            current_tile = current_word.tiles[letter_index]
+            current_tile.set_letter(guess.word[k])
+            current_tile.element.classList.remove(LetterState.CURRENT)
+            current_tile.state = guess.score[k]
+            current_tile.element.classList.add(current_tile.state)
+        }
+    }
+
+    if (word_index > 3) {
+        // If all guesses are full, remove all interactiveness
+        current_word = null
+        set_current_tile(null)
+        unset_current_tile_classes()
+        remove_tabindexes()
+    } else if (scores_obj.scores.length > 0) {
+        // If we set ANY guesses, remove their interactivity,
+        // but also set the NEXT word as the current word.
+        unset_current_tile_classes()
+        remove_tabindexes()
+        word_index++
+        letter_index = 0
+        current_word = guess_map.words[word_index]
+        current_tile = current_word.tiles[letter_index]
+        current_tile.element.classList.add("current_tile")
+        current_tile.element.classList.add("current_guess")
+        set_tabindexes()
+        current_tile.element.focus()
+    }
 }
+
+
+/*
+
+    // map result onto tiles
+    letter_states_obj.letter_states.map((letter_state, index) => {
+        const tile = current_word.tiles[index]
+        //current_word.tiles[index].element.classList.add(letter_state)
+        tile.state = letter_state
+        tile.element.classList.remove(LetterState.CURRENT)
+        tile.element.classList.add(tile.state)
+        if (letter_state != LetterState.RIGHT_SPOT) {
+            full_word_correct = false
+        }
+    })
+
+*/
 
 /**
  * TODO:

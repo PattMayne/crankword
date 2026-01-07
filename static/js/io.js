@@ -253,7 +253,7 @@ export const get_guess_scores = async game_id => {
     }
 
     const response_obj = {
-        scores: [],
+        scores: null,
         error: null
     }
 
@@ -281,9 +281,10 @@ export const get_guess_scores = async game_id => {
             console.log("DID NOT GET GUESS DATA")
             response_obj.error = !!data.error ? data.error : "DID NOT GET GUESS DATA"
         }        
-    }).catch(error => {
+    }).catch(error =>
         console.log('Error: ', error)
-    })
+    )
 
+    console.log("THIS should happen AFTER 'RAW DATA'")
     return response_obj
 }
