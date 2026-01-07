@@ -513,6 +513,14 @@ const unset_current_tile_classes = () => {
     )
 }
 
+const settle_old_scores = async () => {
+    // get the list of guess results
+
+
+    const game_id = document.getElementById("game_id").value
+    //const start_response = await io.start_game(game_id)
+    const scores_obj = io.get_guess_scores(game_id)
+}
 
 /**
  * TODO:
@@ -520,17 +528,16 @@ const unset_current_tile_classes = () => {
  * INCORPORATING BACKEND:
  * * API returns list of LetterStates (real word is never shared, obviously)
  * * Make this a MODULE (so we can import files and interact with API)
- * * List of accepted words
- * * LARGE list of words user can enter
- * * SMALLER list of words it actually might BE.
  * 
  * 
  * 
- * 
- * FIRST:
- * 1. Simultaneously check it in the backend AND the front end.
- * 2. Replace front-end check with backend check.
  * 
  */
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    settle_old_scores()
+})
+
 
 window.check_guess = check_guess

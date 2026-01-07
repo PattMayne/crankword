@@ -197,6 +197,26 @@ pub async fn get_guesses(game_id: i32, user_id: i32) -> Result<Vec<Guess>> {
     Ok(guesses)
 }
 
+/**
+ * We're not directly calling the DB here.
+ * Instead, we're calling other DB functions to collect some data and return it.
+ * 
+ * 1. get all words guessed by this user for this game
+ * 2. get a vector of LetterScore structs for each guess
+ * 3. return a vec of all those vecs
+ */
+pub async fn get_guess_scores(game_id: i32, user_id: i32) -> Result<Vec<Vec<game_logic::LetterScore>>> {
+    let the_game: Game = get_game_by_id(game_id).await?;
+    let guesses: Vec<Guess> = get_guesses(game_id, user_id).await?;
+    let all_scores: Vec<Vec<game_logic::LetterScore>> = 
+        guesses
+        .iter()
+        .map(|guess| game_logic::check_guess(&guess.word, &the_game.word))
+        .collect();
+
+    Ok(all_scores)
+}
+
 
 /**
  * Returns number of PreGame or InProgress games the user is registered for.

@@ -50,7 +50,7 @@ const refresh_data = async () => {
     msgs.push("REFRESHING GAME...")
 
     const game_id = document.getElementById("game_id").value
-    const refresh_response = await io.refresh(game_id)
+    const refresh_response = await io.refresh_pregame(game_id)
 
     if (!!refresh_response.game_status && !!refresh_response.players) {
         if (refresh_response.game_status != "pre_game") {
@@ -106,18 +106,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const refresh_btn = document.getElementById('refresh_btn')
 
     if (join_btn) {
-        join_btn.addEventListener(
-            'click', (e) => join_game())
+        join_btn.addEventListener('click', (e) => join_game())
     }
 
     if (start_btn) {
-        start_btn.addEventListener(
-            'click', (e) => start_game())
+        start_btn.addEventListener('click', (e) => start_game())
     }
 
     if (refresh_btn) {
-        refresh_btn.addEventListener(
-            'click', (e) => refresh_data())
+        refresh_btn.addEventListener('click', (e) => refresh_data())
     }
 
     // Check every 3 seconds for new users or updated game_status

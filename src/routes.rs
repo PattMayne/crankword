@@ -57,6 +57,12 @@ pub struct ErrorResponse {
 
 
 #[derive(Serialize)]
+pub struct AllPlayerScores {
+    pub scores: Vec<Vec<LetterScore>>,
+}
+
+
+#[derive(Serialize)]
 pub struct PreGameRefresh {
     pub game_status: GameStatus,
     pub players: Vec<PlayerInfo>,
@@ -160,6 +166,7 @@ struct HomeTemplate {
 struct GameTemplate {
     title: String,
     user: auth::UserReqData,
+    game: db::GameAndPlayers,
 }
 
 
@@ -353,25 +360,14 @@ async fn game_root(req: HttpRequest) -> HttpResponse {
  #[get("/game/{game_id}")]
  async fn game(req: HttpRequest, path: web::Path<String>) -> HttpResponse {
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
-
-    if user_req_data.role == "guest" {
+    if user_req_data.role == "guest" || user_req_data.id.is_none() {
         return redirect_to_login();
     }
 
     let game_id: i32 = match path.into_inner().parse::<i32>() {
         Ok(id) => id,
-        Err(_) => {
-            return redirect_to_err("400");
-        }
+        Err(_) => return redirect_to_err("400")
     };
-
-    println!("game id: {}", game_id);
-
-    // 1. get the GAME object (including players list)
-    // 2. check game STATUS and if user BELONGS TO GAME
-    // 3. create functions to deliver different pages depending on status
-    //      -- create enum for status, and pattern match each status
-    // 4. in-progress game should include vector of letter_state maps to populate grid
 
     let game: db::GameAndPlayers = match db::get_game_and_players(game_id).await {
         Ok(game) => game,
@@ -419,7 +415,8 @@ async fn go_to_inprogress_game(
     println!("{}", the_game.game.game_status.to_string());
     let game_template: GameTemplate = GameTemplate {
         title: "CRANKWORD".to_string(),
-        user: user_req_data
+        user: user_req_data,
+        game: the_game
     };
 
     return HttpResponse::Ok()
@@ -939,6 +936,39 @@ pub async fn check_guess(
     HttpResponse::Ok().json(guess_result)
 }
 
+
+/**
+ * Returns a vec of vecs of LetterScore structs.
+ * This is in case we need an update after the page is loaded.
+ */
+#[post("/get_guess_scores")]
+pub async fn get_guess_scores(
+    req: HttpRequest,
+    game_id: web::Json<GameId>
+) -> HttpResponse {
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+    let user_id: i32 = match user_req_data.id {
+        Some(id) => id,
+        None => { return return_unauthorized_err_json(&user_req_data); }
+    };
+
+    let all_scores: Vec<Vec<LetterScore>> =
+        match db::get_guess_scores(game_id.game_id, user_id).await {
+            Ok(scores) => scores,
+            Err(_e) => return return_unauthorized_err_json(&user_req_data)
+        };
+
+    
+    println!("GUESSES: {}", all_scores.len());
+
+    // now I have all the scores. I need to serialize them and deliver them.
+    let scores_obj: AllPlayerScores = AllPlayerScores {
+        scores: all_scores
+    };
+
+
+    HttpResponse::Ok().json(scores_obj)
+}
 
 
 
