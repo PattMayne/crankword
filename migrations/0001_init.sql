@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS game_users (
     game_id INT NOT NULL,
     user_id INT NOT NULL,
     username VARCHAR(255) NOT NULL,
+    turn_order INT DEFAULT 0,
     PRIMARY KEY (game_id, user_id),
     FOREIGN KEY (game_id) REFERENCES games(id)
     -- cannot do FOREIGN KEY on user_id b/c that's stored in auth_app DB

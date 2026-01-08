@@ -550,7 +550,7 @@ const settle_old_scores = async () => {
         unset_current_tile_classes()
         remove_tabindexes()
     } else if (scores_obj.scores.length > 0) {
-        // If we set ANY guesses, remove their interactivity,
+        // If we set ANY guesses (length > 0), remove their interactivity,
         // but also set the NEXT word as the current word.
         unset_current_tile_classes()
         remove_tabindexes()
@@ -565,22 +565,6 @@ const settle_old_scores = async () => {
     }
 }
 
-
-/*
-
-    // map result onto tiles
-    letter_states_obj.letter_states.map((letter_state, index) => {
-        const tile = current_word.tiles[index]
-        //current_word.tiles[index].element.classList.add(letter_state)
-        tile.state = letter_state
-        tile.element.classList.remove(LetterState.CURRENT)
-        tile.element.classList.add(tile.state)
-        if (letter_state != LetterState.RIGHT_SPOT) {
-            full_word_correct = false
-        }
-    })
-
-*/
 
 /**
  * TODO:

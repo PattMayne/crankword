@@ -33,7 +33,7 @@ use crate::utils;
  * selected the word.
  */
 pub fn get_random_word() -> String {
-    let index = rand::rng().random_range(0..SOLUTIONS.len());
+    let index: usize = rand::rng().random_range(0..SOLUTIONS.len());
     utils::all_caps( SOLUTIONS[index])
 }
 

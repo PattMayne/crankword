@@ -4,6 +4,7 @@ use anyhow::{ Result, anyhow };
 use serde::Serialize;
 use sqlx::{ MySqlPool };
 use time::{ OffsetDateTime };
+use rand::Rng;
 
 use crate::{ auth, game_logic::{self, GameStatus, GuessAndScore}, words_solutions };
 
@@ -259,10 +260,42 @@ pub async fn get_current_games_count(user_id: i32) -> Result<u8> {
  */
 pub async fn update_game_status(game_id: i32, new_status: GameStatus) -> Result<u8> {
     let pool: MySqlPool = create_pool().await?;
+    let mut turn_user_id: i32 = 0;
+
+    if new_status == GameStatus::InProgress {
+        // set turn orders. Get all players. Scramble their IDs. Scrambled index +1 becomes turn order.
+        let mut players: Vec<PlayerInfo> = get_players_by_game_id(game_id).await?;
+        let mut scrambled_player_ids: Vec<i32> = Vec::new();
+        let number_of_players: usize = players.len();
+
+        while scrambled_player_ids.len() < number_of_players {
+            let index: usize = rand::rng().random_range(0..players.len());
+            scrambled_player_ids.push(players[index].user_id);
+            turn_user_id = players[index].user_id;
+            players.remove(index);
+        }
+
+        // Instead of using an index, just increment turn during the loop.
+        let mut turn: i32 = 0;
+
+        // insert the indexes as turn orders into game_users table
+        for user_id in &scrambled_player_ids {
+            turn += 1;
+            let result: sqlx::mysql::MySqlQueryResult = sqlx::query(
+            "UPDATE game_users SET turn_order = ? WHERE game_id = ? and user_id = ?")
+                    .bind(turn)
+                    .bind(game_id)
+                    .bind(user_id)
+                    .execute(&pool)
+                    .await?;
+        }
+
+    }
 
     let result: sqlx::mysql::MySqlQueryResult = sqlx::query(
-    "UPDATE games SET game_status = ? WHERE id = ?")
+    "UPDATE games SET game_status = ?, turn_user_id = ? WHERE id = ?")
             .bind(new_status.to_string())
+            .bind(turn_user_id)
             .bind(game_id)
             .execute(&pool)
             .await?;

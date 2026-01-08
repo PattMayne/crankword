@@ -969,7 +969,6 @@ pub async fn get_guess_scores(
 }
 
 
-
 /**
  * Sometimes we don't know what went wrong and we need to return a JSON
  * object which says so.
