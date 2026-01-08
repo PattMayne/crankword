@@ -256,6 +256,47 @@ pub async fn get_current_games_count(user_id: i32) -> Result<u8> {
 
 
 /**
+ * Returns the id of the new current turn user.
+ */
+pub async fn next_turn(game_id: i32) -> Result<i32> {
+    let pool: MySqlPool = create_pool().await?;
+    let players: Vec<PlayerInfo> = get_players_by_game_id(game_id).await?;
+    let game: Game = get_game_by_id(game_id).await?;
+    let current_user_id: i32 = match game.turn_user_id {
+        Some(id) => id,
+        None => return Err(anyhow!("No current turn."))
+    };
+
+    // get the vector index of the current turn
+    let mut current_user_vec_index: usize = 0;
+    let mut index_count: usize = 0;
+    for player in &players {
+        if player.user_id == current_user_id {
+            current_user_vec_index = index_count;
+            break;
+        } else {
+            index_count += 1;
+        }
+    }
+
+    // increment that index and get THAT user_id
+    let vec_index_of_new_turn_id: usize =
+        if index_count >= (players.len() - 1) { 0 }
+        else { index_count + 1 };
+
+    let new_user_turn_id: i32 = players[vec_index_of_new_turn_id].user_id;
+
+    let result: sqlx::mysql::MySqlQueryResult = sqlx::query(
+    "UPDATE games SET turn_user_id = ? WHERE id = ?")
+        .bind(new_user_turn_id)
+        .bind(game_id)
+        .execute(&pool)
+        .await?;            
+
+    Ok(new_user_turn_id)
+}
+
+/**
  * When transitioning a game from one stage to the next.
  */
 pub async fn update_game_status(game_id: i32, new_status: GameStatus) -> Result<u8> {
@@ -281,24 +322,24 @@ pub async fn update_game_status(game_id: i32, new_status: GameStatus) -> Result<
         // insert the indexes as turn orders into game_users table
         for user_id in &scrambled_player_ids {
             turn += 1;
-            let result: sqlx::mysql::MySqlQueryResult = sqlx::query(
+            let _result: sqlx::mysql::MySqlQueryResult = sqlx::query(
             "UPDATE game_users SET turn_order = ? WHERE game_id = ? and user_id = ?")
-                    .bind(turn)
-                    .bind(game_id)
-                    .bind(user_id)
-                    .execute(&pool)
-                    .await?;
+                .bind(turn)
+                .bind(game_id)
+                .bind(user_id)
+                .execute(&pool)
+                .await?;
         }
 
     }
 
     let result: sqlx::mysql::MySqlQueryResult = sqlx::query(
     "UPDATE games SET game_status = ?, turn_user_id = ? WHERE id = ?")
-            .bind(new_status.to_string())
-            .bind(turn_user_id)
-            .bind(game_id)
-            .execute(&pool)
-            .await?;
+        .bind(new_status.to_string())
+        .bind(turn_user_id)
+        .bind(game_id)
+        .execute(&pool)
+        .await?;
 
     Ok(result.rows_affected() as u8)
 }
@@ -346,7 +387,8 @@ pub async fn get_players_by_game_id(game_id: i32) -> Result<Vec<PlayerInfo>> {
 
     let player_info_vec: Vec<PlayerInfo> = sqlx::query_as!(
         PlayerInfo,
-        "SELECT user_id, username FROM game_users WHERE game_id = ?",
+        "SELECT user_id, username FROM game_users WHERE game_id = ?
+            ORDER BY turn_order ASC",
         game_id
     ).fetch_all(&pool).await?;
 

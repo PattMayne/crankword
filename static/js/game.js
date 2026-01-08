@@ -228,6 +228,12 @@ const check_guess = async () => {
         set_current_tile(current_word.tiles[letter_index])
         current_tile.element.focus()
         return
+    } else if (letter_states_obj.wrong_turn) {
+        new_message("NOT YOUR TURN")
+        letter_index = 0
+        set_current_tile(current_word.tiles[letter_index])
+        current_tile.element.focus()
+        return
     } else if (
         !letter_states_obj.letter_states ||
         !Array.isArray(letter_states_obj.letter_states) ||

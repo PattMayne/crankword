@@ -10,66 +10,7 @@ import * as utils from './utils.js'
  * 
  * 
  * 
- * 
- * 
- * ----------------------------------
- * ----------------------------------
- * -----------            -----------
- * -----------  AUTH APP  -----------
- * -----------            -----------
- * ----------------------------------
- * ----------------------------------
- * 
- * 
- * 
- * 
 */
-
-export const check_guess_io = async (guess_word, game_id) => {
-    const check_guess_route = "/game_in/check_guess"
-    const guess_obj = {
-        "guess_word": guess_word,
-        "game_id": parseInt(game_id)
-    }
-
-    const response_obj = {
-        letter_states: [],
-        fake_word: false,
-        max_guesses: false,
-        error: null
-    }
-
-    await utils.fetch_json_post(check_guess_route, guess_obj)
-    .then(response => {
-        if(!response.ok) {
-            response.json().then(data => {
-                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
-                msg += (!!data.error) ? data.error : " Error occurred"
-                response_obj.error = msg
-            })
-
-            throw new Error("Unable to check word, or error on server.")
-        }
-        return response.json()
-    }).then(guess_map => {
-        if (!!guess_map.fake_word) {
-            console.log("FAKE WORD")
-            response_obj.fake_word = true
-        } else if (!!guess_map.max_guesses) {
-            console.log("MAX GUESSES")
-            response_obj.max_guesses = true
-        } else {
-            console.log("Guess Map: ", guess_map)
-            response_obj.letter_states = guess_map
-            console.log("return length 1: " + guess_map.length)
-        }        
-    }).catch(error => {
-        console.log('Error: ', error)
-    })
-
-    console.log("return length 2: " + response_obj.letter_states.length)
-    return response_obj
-}
 
 
 /* 
@@ -127,6 +68,12 @@ export const new_game = async () => {
 }
 
 
+/**
+ * When the user wants to join the game.
+ * 
+ * @param {int} game_id 
+ * @returns obj
+ */
 export const join_game = async (game_id) => {
     const route = "/game_in/join_game"
     const input = {
@@ -166,6 +113,12 @@ export const join_game = async (game_id) => {
     return response_obj
 }
 
+/**
+ * When the owner of the game wants to transition from pre-game to in-progress.
+ * 
+ * @param {int} game_id 
+ * @returns json object
+ */
 export const start_game = async game_id => {
     const route = "/game_in/start_game"
     const input = {
@@ -206,6 +159,12 @@ export const start_game = async game_id => {
 }
 
 
+/**
+ * update the data about the pregame-status game.
+ * 
+ * @param {int} game_id 
+ * @returns obj
+ */
 export const refresh_pregame = async game_id => {
     const route = "/game_in/refresh_pregame"
     const input = {
@@ -246,6 +205,13 @@ export const refresh_pregame = async game_id => {
 }
 
 
+/**
+ * Get all of the current player's previous guesses and their scores
+ * from the database.
+ * 
+ * @param {int} game_id 
+ * @returns obj
+ */
 export const get_guess_scores = async game_id => {
     const route = "/game_in/get_guess_scores"
     const input = {
@@ -286,5 +252,55 @@ export const get_guess_scores = async game_id => {
     )
 
     console.log("THIS should happen AFTER 'RAW DATA'")
+    return response_obj
+}
+
+
+export const check_guess_io = async (guess_word, game_id) => {
+    const check_guess_route = "/game_in/check_guess"
+    const guess_obj = {
+        "guess_word": guess_word,
+        "game_id": parseInt(game_id)
+    }
+
+    const response_obj = {
+        letter_states: [],
+        fake_word: false,
+        max_guesses: false,
+        wrong_turn: false,
+        error: null
+    }
+
+    await utils.fetch_json_post(check_guess_route, guess_obj)
+    .then(response => {
+        if(!response.ok) {
+            response.json().then(data => {
+                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                msg += (!!data.error) ? data.error : " Error occurred"
+                response_obj.error = msg
+            })
+
+            throw new Error("Unable to check word, or error on server.")
+        }
+        return response.json()
+    }).then(guess_map => {
+        if (!!guess_map.fake_word) {
+            console.log("FAKE WORD")
+            response_obj.fake_word = true
+        } else if (!!guess_map.max_guesses) {
+            console.log("MAX GUESSES")
+            response_obj.max_guesses = true
+        } else if (!!guess_map.wrong_turn) {
+            console.log("WRONG TURN")
+            response_obj.wrong_turn = true
+        } else {
+            console.log("Guess Map: ", guess_map)
+            response_obj.letter_states = guess_map
+            console.log("return length 1: " + guess_map.length)
+        }        
+    }).catch(error => {
+        console.log('Error: ', error)
+    })
+
     return response_obj
 }

@@ -112,7 +112,10 @@ pub struct MaxGuesses {
     pub max_guesses: bool,
 }
 
-
+#[derive(Serialize)]
+pub struct WrongTurn {
+    pub wrong_turn: bool,
+}
 
 impl FakeWord {
     pub fn new() -> FakeWord {
@@ -122,11 +125,18 @@ impl FakeWord {
     }
 }
 
-
 impl MaxGuesses {
     pub fn new() -> MaxGuesses {
         MaxGuesses {
             max_guesses: true
+        }
+    }
+}
+
+impl WrongTurn {
+    pub fn new() -> WrongTurn {
+        WrongTurn {
+            wrong_turn: true
         }
     }
 }
@@ -879,9 +889,14 @@ pub async fn check_guess(
         });
     }
 
-    // TODO: Make sure it is player's turn
+    // Make sure it is player's turn
     // If it's not the user's turn, return a json object which indicates that.
-    let player_turn: bool = true;
+    let player_turn: bool = game_and_players.game.turn_user_id.is_some() &&
+        game_and_players.game.turn_user_id.unwrap() == user_id;
+
+    if !player_turn {
+        return HttpResponse::Ok().json(WrongTurn::new());
+    }
 
     // get the NUMBER of player guesses.
     let player_guess_count: u8 = match db::get_guess_count(word_json.game_id, user_id).await {
@@ -933,6 +948,16 @@ pub async fn check_guess(
 
     let guess_result: Vec<LetterScore> =
         game_logic::check_guess(&word_json.guess_word, &winning_word);
+
+    // make it the next player's turn:
+    let _next_turn_user_id: i32 = match db::next_turn(word_json.game_id).await {
+        Ok(new_id) => new_id,
+        Err(_) => {
+            eprintln!("Error switching turns.");
+            return return_internal_err_json();
+        }
+    };
+
     HttpResponse::Ok().json(guess_result)
 }
 
