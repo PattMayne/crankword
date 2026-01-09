@@ -1,0 +1,183 @@
+
+/*
+ * Remember to ONLY EDIT the SCSS file and then run sass.
+ * =========================
+ * =====               =====
+ * =====  COLOR CODES  =====
+ * =====               =====
+ * =========================
+ *
+ *  board bg (pastel blue):     5a639e
+ *  current guess (white):      ffffff
+ *  right place (yellow):       bdf000
+ *  wrong place (dark blue):    0008dd
+ *
+ */
+
+$jet: #423841ff;
+$lapis-lazuli: #2e5c8aff;
+$timberwolf: #d6d6d6ff;
+$forest-green: #248232ff;
+$dartmouth-green: #1A6025; /* darker green */
+$bronze: #c97c18ff;
+$very-light-gray: #f0f0f0;
+$pastel-blue: #5a639e;
+$black: #111111;
+
+@font-face {
+  font-family: nue-gothic-round;
+  src: url('../fonts/nue-gothic-round.ttf');
+}
+
+@font-face {
+  font-family: alte;
+  src: url('../fonts/alte-bold.ttf');
+}
+
+body {
+    background-color: #000000;
+    color:#fff;
+    font-family: 'nue-gothic-round';
+}
+
+
+
+/* 
+ * 
+ * ====================================
+ * ====================================
+ * =====                          =====
+ * =====  CUSTOM IDS AND CLASSES  =====
+ * =====                          =====
+ * ====================================
+ * ====================================
+ * 
+*/
+
+
+/* The container for the actual board-grid
+ * (encompasses headline (title) and board (grid)).
+ */
+#board-panel {
+    background-color: $pastel-blue;
+    color:#000000;
+    border: none;
+    width: 500px;
+    max-width: 100%;
+    padding: 5px;
+    margin: auto;
+    margin-top: 10px;
+}
+
+#headline {
+    width: 100%;
+    text-align: center;
+    font-family: 'nue-gothic-round';
+    font-size: 101px;
+    margin-top: -14px;
+}
+
+/* the grid-container for the tiles. */
+#board {
+    display: grid;
+    width: 100%;
+    height: auto;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+    font-size: 55px;
+    margin-top: -16px;
+}
+
+/* each tile on the game grid/board */
+.tile {
+    font-family: alte;
+    border: 2px solid black;
+    text-align: center;
+    vertical-align: middle;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+}
+
+.tile:hover {
+    cursor:default;
+}
+
+.current_tile {
+    background-color: #333;
+}
+
+.tile:focus {
+    outline: none !important;
+    background-color: #000;
+}
+
+
+#cranktable {
+    width: 100%;
+    padding: 0px;
+    margin: 0px;
+    text-align: center;
+}
+
+
+.wrong_spot {
+    /* color: #0008dd; */
+    color: #0008dd;
+}
+
+.right_spot {
+    color: #60f000;
+    /* color: #bdf000; */
+}
+
+.current_guess {
+    color: #ffffff;
+}
+
+.dud {
+    color: #111111;
+}
+
+
+/* 
+ * 
+ * 
+ * 
+ * 
+ * ===========================
+ * ===========================
+ * =====                 =====
+ * =====  PLAYERS BOARD  =====
+ * =====                 =====
+ * ===========================
+ * ===========================
+ * 
+ * 
+ * 
+ * 
+*/
+
+#players-board {
+    width: 300px;
+    height: auto;
+    background-color: $pastel-blue;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+#current_player_label {
+    background-color: #bdf000;
+    color: $black;
+}
+
+
+
+#message_modal {
+    background-color: #0008dd;
+    color: #bdf000;
+    border: 2px solid #000000;
+    text-align: center;
+ }
+
+

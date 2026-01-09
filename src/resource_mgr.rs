@@ -174,9 +174,27 @@ pub struct ErrorTexts {
 
 impl ErrorTexts {
     pub fn new(user_req_data: &UserReqData) -> ErrorTexts {
-        let nav = NavTexts::new(&user_req_data.lang);
+        let nav: NavTexts = NavTexts::new(&user_req_data.lang);
 
         ErrorTexts {
+            nav
+        }
+    }
+}
+
+
+/**
+ * For in-progress games
+ */
+pub struct GameTexts {
+    pub nav: NavTexts
+}
+
+impl GameTexts {
+    pub fn new(user_req_data: &UserReqData) -> GameTexts {
+        let nav: NavTexts = NavTexts::new(&user_req_data.lang);
+
+        GameTexts {
             nav
         }
     }

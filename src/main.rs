@@ -5,6 +5,7 @@ use actix_files::Files;
 use dotenvy;
 
 mod routes;
+mod routes_utils;
 mod game_logic;
 mod db;
 mod auth_code_shared;

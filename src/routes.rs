@@ -1,21 +1,20 @@
 use actix_web::{
     web, HttpResponse, Responder, HttpRequest,
-    http::header, get, post, web::Redirect, http::StatusCode,
+    http::header, get, post, web::Redirect,
     cookie::{ Cookie }
 };
 use askama::Template;
-use serde::{ Deserialize, Serialize };
 
 use crate::{
     auth, auth_code_shared::{ 
         AuthCodeRequest,
         AuthCodeSuccess
-    }, db::{self, GameAndPlayers, PlayerInfo},
+    }, db::{self, GameAndPlayers},
     game_logic::{ self, GameStatus, LetterScore },
     io, resource_mgr::{self, *},
     resources::get_translation,
     utils::{ self, SupportedLangs },
-    words_all,
+    words_all, routes_utils::{*}
 };
 
 /* 
@@ -34,194 +33,6 @@ use crate::{
  * 
  * 
 */
-
-
-
-#[derive(Deserialize)]
-struct WordToCheck {
-    pub guess_word: String,
-    pub game_id: i32,
-}
-
-#[derive(Deserialize)]
-struct AuthCodeQuery {
-    code: String,
-}
-
-
-#[derive(Serialize)]
-pub struct ErrorResponse {
-    pub error: String,
-    pub code: u16,
-}
-
-
-#[derive(Serialize)]
-pub struct AllPlayerScores {
-    pub scores: Vec<game_logic::GuessAndScore>,
-}
-
-
-#[derive(Serialize)]
-pub struct PreGameRefresh {
-    pub game_status: GameStatus,
-    pub players: Vec<PlayerInfo>,
-}
-
-
-#[derive(Serialize)]
-pub struct JoinGameFailure {
-    pub error: String,
-    pub success: bool,
-}
-
-
-
-#[derive(Serialize)]
-pub struct StartGameFailure {
-    pub error: String,
-    pub success: bool,
-}
-
-
-#[derive(Serialize)]
-pub struct JoinGameSuccess {
-    pub success: bool,
-}
-
-
-#[derive(Serialize)]
-pub struct StartGameSuccess {
-    pub success: bool,
-}
-
-
-
-#[derive(Serialize, Deserialize)]
-pub struct GameId {
-    pub game_id: i32,
-}
-
-#[derive(Serialize)]
-pub struct FakeWord {
-    pub fake_word: bool,
-}
-
-#[derive(Serialize)]
-pub struct MaxGuesses {
-    pub max_guesses: bool,
-}
-
-#[derive(Serialize)]
-pub struct WrongTurn {
-    pub wrong_turn: bool,
-}
-
-impl FakeWord {
-    pub fn new() -> FakeWord {
-        FakeWord {
-            fake_word: true
-        }
-    }
-}
-
-impl MaxGuesses {
-    pub fn new() -> MaxGuesses {
-        MaxGuesses {
-            max_guesses: true
-        }
-    }
-}
-
-impl WrongTurn {
-    pub fn new() -> WrongTurn {
-        WrongTurn {
-            wrong_turn: true
-        }
-    }
-}
-
-
-/* 
- * 
- * 
- * 
- * 
- * ===================================
- * ===================================
- * =====                         =====
- * =====  ASKAMA HTML TEMPLATES  =====
- * =====                         =====
- * ===================================
- * ===================================
- * 
- * 
- * 
- * 
- */
-
-
-
-#[derive(Template)]
-#[template(path ="index.html")]
-struct HomeTemplate {
-    title: String,
-    message: String,
-    user: auth::UserReqData,
-}
-
-
-#[derive(Template)]
-#[template(path ="game.html")]
-struct GameTemplate {
-    title: String,
-    user: auth::UserReqData,
-    game: db::GameAndPlayers,
-}
-
-
-#[derive(Template)]
-#[template(path="pre_game.html")]
-struct PreGameTemplate {
-    texts: PreGameTexts,
-    user: auth::UserReqData,
-    game: db::GameAndPlayers,
-}
-
-#[derive(Template)]
-#[template(path="post_game.html")]
-struct PostGameTemplate {
-    texts: PostGameTexts,
-    user: auth::UserReqData,
-}
-
-
-#[derive(Template)]
-#[template(path="dashboard.html")]
-struct DashboardTemplate {
-    texts: DashTexts,
-    user: auth::UserReqData,
-    current_games: Vec<db::GameItemData>,
-}
-
-
-#[derive(Template)]
-#[template(path ="error.html")]
-struct ErrorTemplate {
-    error_data: ErrorData,
-    user: auth::UserReqData,
-    texts: ErrorTexts,
-}
-
-
-
-// OTHER STRUCTS & ENUMS
-
-
-struct TwoAuthCookies {
-    pub jwt_cookie: Cookie<'static>,
-    pub refresh_token_cookie: Cookie<'static>,
-}
 
 
 
@@ -341,11 +152,13 @@ pub async fn logout() -> HttpResponse {
 #[get("/")]
 async fn home(req: HttpRequest) -> impl Responder {
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+    let texts: HomeTexts = HomeTexts::new(&user_req_data);
 
     let home_template: HomeTemplate = HomeTemplate {
         title: "CRANKWORD".to_string(),
         message: "Welcome to Crankword!".to_string(),
-        user: user_req_data
+        user: user_req_data,
+        texts
     };
 
     HttpResponse::Ok()
@@ -423,10 +236,12 @@ async fn go_to_inprogress_game(
     user_req_data: auth::UserReqData
 ) -> HttpResponse {
     println!("{}", the_game.game.game_status.to_string());
+    let texts: GameTexts = GameTexts::new(&user_req_data);
     let game_template: GameTemplate = GameTemplate {
         title: "CRANKWORD".to_string(),
         user: user_req_data,
-        game: the_game
+        game: the_game,
+        texts
     };
 
     return HttpResponse::Ok()
@@ -991,48 +806,4 @@ pub async fn get_guess_scores(
     };
 
     HttpResponse::Ok().json(scores_obj)
-}
-
-
-/**
- * Sometimes we don't know what went wrong and we need to return a JSON
- * object which says so.
- */
-pub fn return_internal_err_json() -> HttpResponse {
-    HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR)
-        .json(ErrorResponse{
-            error: String::from("Internal server error"),
-            code: 500
-        })
-}
-
-// If authentication failed and user must log back in
-pub fn return_authentication_err_json() -> HttpResponse {
-    HttpResponse::Unauthorized().json(ErrorResponse{
-        error: String::from("Authentication required"),
-        code: 401
-    })
-}
-
-
-// If something is not found
-pub fn return_not_found_err_json() -> HttpResponse {
-    HttpResponse::Unauthorized().json(ErrorResponse{
-        error: String::from("Not Found"),
-        code: 406
-    })
-}
-
-pub fn return_unauthorized_err_json(user_req_data: &auth::UserReqData) -> HttpResponse {
-    let error: String = get_translation(
-        "err.empty_creds",
-        &user_req_data.lang,
-        None
-    );
-
-    return HttpResponse::Unauthorized().json(
-        ErrorResponse {
-        error,
-        code: 401
-    });
 }
