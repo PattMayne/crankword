@@ -464,7 +464,7 @@ pub fn redirect_to_login() -> HttpResponse {
 }
 
 
- /* 
+/* 
  * 
  * 
  * 
@@ -480,7 +480,52 @@ pub fn redirect_to_login() -> HttpResponse {
  * 
  * 
  * 
+*/
+
+
+/**
+ * During an in-progress game, get a list of the current players,
+ * We will NOT sort players here. We'll offload that onto the client.
+ * Instead we will just send a list of players, and the current_player_id.
+ * the current_player_id is what will change most often.
  */
+#[post("refresh_in_prog_players")]
+pub async fn refresh_in_prog_players(
+    req: HttpRequest,
+    game_id: web::Json<GameId>
+) -> HttpResponse {
+    println!("REFRESHING LIST OF PLAYERS DURING IN-PROGRESS GAME");
+    // Make sure it's a real user
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+    let player_id: i32 = match user_req_data.id {
+        Some(id) => id,
+        None => return return_unauthorized_err_json(&user_req_data)
+    };
+
+    // get the game
+    let the_game: db::GameAndPlayers = match db::get_game_and_players(game_id.game_id).await {
+        Ok(gap) => gap,
+        Err(_e) => return return_internal_err_json()
+    };
+
+    // make sure they're a player of this game
+    if !the_game.user_id_is_player(player_id) {
+        return return_unauthorized_err_json(&user_req_data);
+    }
+
+    let current_turn_id: i32 = match the_game.game.turn_user_id {
+        Some(id) => id,
+        None => return return_unauthorized_err_json(&user_req_data)
+    };
+
+    let players_and_curr_player_id: PlayersAndCurrentPlayerId = PlayersAndCurrentPlayerId {
+        current_turn_id,
+        players: the_game.players,
+    };
+
+    HttpResponse::Ok().json(players_and_curr_player_id)
+}
+
 
 
 /**
@@ -508,7 +553,6 @@ pub async fn refresh_pregame(
         players: the_game.players
     };
 
-    println!("REFRESHING GAME 2");
     HttpResponse::Ok().json(refresh_data)
 }
 

@@ -79,6 +79,12 @@ pub struct PreGameRefresh {
     pub players: Vec<PlayerInfo>,
 }
 
+#[derive(Serialize)]
+pub struct PlayersAndCurrentPlayerId {
+    pub current_turn_id: i32,
+    pub players: Vec<PlayerInfo>,
+}
+
 
 #[derive(Serialize)]
 pub struct JoinGameFailure {

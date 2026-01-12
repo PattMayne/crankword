@@ -67,6 +67,7 @@ async fn main() -> std::io::Result<()> {
                 .service(routes::join_game)
                 .service(routes::start_game)
                 .service(routes::refresh_pregame)
+                .service(routes::refresh_in_prog_players)
                 .service(routes::get_guess_scores)
             )
             .default_service(web::get().to(routes::not_found)) // <- catch-all

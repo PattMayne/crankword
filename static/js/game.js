@@ -43,10 +43,16 @@ const message_p = document.getElementById("message_p")
 
 // Game id is in the path (game/id)
 const game_id = () => {
+    if (!!game_id_storage) {
+        return game_id_storage
+    }
+
     const path = window.location.pathname
     const parts = path.split('/')
     return parts.length > 0 ? parts[parts.length - 1] : null
 }
+
+let game_id_storage = null
 
 window.addEventListener("load", () => start_game())
 window.addEventListener("keydown", (event) => key_pressed(event));
@@ -109,7 +115,6 @@ const set_sizes = () => {
  * 
  * 
  */
-
 
 
 // This is how we set the colors for each letter
@@ -522,8 +527,7 @@ const unset_current_tile_classes = () => {
 const settle_old_scores = async () => {
 
     // get the list of guess results
-    const game_id = document.getElementById("game_id").value
-    const scores_obj = await io.get_guess_scores(game_id)
+    const scores_obj = await io.get_guess_scores(game_id())
 
     // set the results into the grid
 
@@ -572,6 +576,70 @@ const settle_old_scores = async () => {
 }
 
 
+const refresh_players = async () => {
+    const players_obj = await io.refresh_players(game_id())
+
+    console.log("PLAYERS DATA: " + JSON.stringify(players_obj))
+
+    if (
+        !players_obj.current_turn_id ||
+        !players_obj.players ||
+        players_obj.players.length == 0
+    ) {
+        console.log("MISSING PLAYERS DATA")
+        return
+    }
+    
+
+    // We have the players.
+    // They're already sorted, but we have to start with the current turn id.
+    // Do two loops, first to catch the current player and their following players,
+    // second to get any preceding players missed on the first loop.
+
+    const player_names = []
+    let current_turn_found = false
+    let current_player_name = ""
+
+    // Get current turn player and following players
+    players_obj.players.map(player_obj => {
+        if (player_obj.user_id == players_obj.current_turn_id) {
+            current_turn_found = true
+            player_names.push(player_obj.username)
+            current_player_name = player_obj.username
+        } else if (current_turn_found) {
+            player_names.push(player_obj.username)
+        }
+    })
+
+
+    current_turn_found = false
+    // 2nd loop: get the usernames preceding the current_turn_id
+    players_obj.players.map(player_obj => {
+        if (player_obj.user_id == players_obj.current_turn_id) {
+            current_turn_found = true
+        } else if (!current_turn_found) {
+            player_names.push(player_obj.username)
+        }
+    })
+
+    // player_names is now arranged properly.
+    // Set the names in the list.
+
+    let players_html = ""
+
+    player_names.map(name => {
+        let name_html = "<p " +
+            (name == current_player_name ?
+                "id='current_player_label'" :
+                "class='player_label'") +
+            ">" + name + "</p>"
+        players_html += name_html
+    })
+
+    const players_list_element = document.getElementById("players_list")
+    players_list_element.innerHTML = players_html
+}
+
 /**
  * TODO:
  * 
@@ -586,7 +654,12 @@ const settle_old_scores = async () => {
 
 
 document.addEventListener('DOMContentLoaded', () => {
+    game_id_storage = document.getElementById("game_id").value
+    console.log("game id: " + game_id())
     settle_old_scores()
+
+    // Check every 3 seconds for new users or updated game_status
+    setInterval(refresh_players, 3000);
 })
 
 

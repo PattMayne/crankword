@@ -304,3 +304,51 @@ export const check_guess_io = async (guess_word, game_id) => {
 
     return response_obj
 }
+
+
+/**
+ * update the data about the pregame-status game.
+ * 
+ * @param {int} game_id 
+ * @returns obj
+ */
+export const refresh_players = async game_id => {
+    const route = "/game_in/refresh_in_prog_players"
+    const input = {
+        "game_id": parseInt(game_id)
+    }
+
+    const response_obj = {
+        players: [],
+        current_turn_id: null
+    }
+
+    await utils.fetch_json_post(route, input)
+    .then(response => {
+        if(!response.ok) {
+            response.json().then(data => {
+                console.log("NOT OK")
+                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                msg += (!!data.error) ? data.error : " Error occurred"
+                response_obj.error = msg
+            })
+
+            throw new Error("Unable to refresh game, or error on server.")
+        }
+        return response.json()
+    }).then(data => {
+        if (!!data.current_turn_id && !!data.players) {
+            response_obj.players = data.players
+            response_obj.current_turn_id = data.current_turn_id
+        } else {
+            console.log("DID NOT REFRESH PLAYERS DATA")
+            response_obj.error = !!data.error ? data.error : "DID NOT REFRESH PLAYERS DATA"
+        }        
+    }).catch(error => {
+        console.log('Error: ', error)
+    })
+
+    console.log(JSON.stringify(response_obj))
+
+    return response_obj
+}

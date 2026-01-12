@@ -376,9 +376,7 @@ pub async fn get_game_by_id(game_id: i32) -> Result<Game> {
         game_id
     ).fetch_one(&pool).await?;
 
-    let game: Game = Game::new(&raw_game);
-
-    Ok(game)
+    Ok(Game::new(&raw_game))
 }
 
 
