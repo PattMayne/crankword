@@ -6,21 +6,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
     <link rel="stylesheet" href="../static/css/foundation.min.css">
-        <link rel="stylesheet" href="/static/css/app.css?id=4">
-    <link rel="stylesheet" href="../static/css/game.css?id=14">
+        <link rel="stylesheet" href="/static/css/app.css?id=5">
+    <link rel="stylesheet" href="../static/css/game.css?id=29">
     <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
   </head>
 
 <body>
     {% include "header.html" %}
     <div id="cranktable">
-        <div id="players-board">
-            <h3>PLAYERS</h3>
-            <div id="players_list">
-                
-            </div>
-
+<div class="top-bar">
+    <div class="top-bar-left">
+        <ul class="dropdown menu game_menu" data-dropdown-menu>
+            <li><a href="#">TURN:</a></li>
+            <li id="player_turn_label">
+                <a href="#" id="player_turn_li">Item 1</a>
+                <ul class="menu" id="players_list">
+                </ul>
+            </li>
+        </ul>
         </div>
+        </div>
+
+        <!-- PLAYERS LIST -->
+
         <div id="board-panel">
             <h1 id="headline">{{ title }}</h1>
 

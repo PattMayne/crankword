@@ -14,20 +14,75 @@
  *
  */
 
+
+/* RAW COLORS */
 $jet: #423841ff;
 $lapis-lazuli: #2e5c8aff;
 $timberwolf: #d6d6d6ff;
 $forest-green: #248232ff;
 $dartmouth-green: #1A6025; /* darker green */
 $bronze: #c97c18ff;
-$very-light-gray: #f0f0f0;
 $pastel-blue: #5a639e;
+$yellow: #bdf000;
+$very-light-gray: #f0f0f0;
+
+
+
+/* COLOR SCHEME 
+        https://coolors.co/423841-2e5c8a-d6d6d6-248232-c97c18
+*/
+
+$white: $very-light-gray;
 $black: #111111;
+
+$player_turn_color: $yellow;
+
+
+/* CUSTOM FONTS */
+
+@font-face {
+  font-family: nue-gothic-reg;
+  src: url(../fonts/nue-gothic-reg.ttf);
+}
+
 
 @font-face {
   font-family: nue-gothic-round;
-  src: url('../fonts/nue-gothic-round.ttf');
+  src: url(../fonts/nue-gothic-round.ttf);
 }
+
+@font-face {
+  font-family: 'lato';
+  src: url(../fonts/lato-med.woff2);
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'lato';
+  src: url(../fonts/lato-bold.woff2);
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'lato';
+  src: url(../fonts/lato-med-italic.woff2);
+  font-weight: normal;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'lato';
+  src: url(../fonts/lato-bold-italic.woff2);
+  font-weight: bold;
+  font-style: italic;
+}
+
+
+$text-font: lato;
+$button-font: lato;
+
 
 @font-face {
   font-family: alte;
@@ -166,11 +221,6 @@ body {
     left: 0;
 }
 
-#current_player_label {
-    background-color: #bdf000;
-    color: $black;
-}
-
 
 
 #message_modal {
@@ -181,8 +231,40 @@ body {
 }
 
 
-#players_list {
+#players_list_bk {
     width: 100%;
     margin: 0px;
     padding: 0px;
+}
+
+.game_menu {
+    width: auto!important;
+    font-family: $text-font;
+    background-color: transparent!important;
+}
+
+.game_menu li a {
+    color: white;
+}
+
+.game_menu li a:hover {
+    cursor: default;
+}
+
+#player_turn_li {
+    color: white;
+    font-family: $text-font;
+    text-transform: uppercase;
+}
+
+#player_turn_li {
+    color: $player_turn_color;
+    font-family: $text-font;
+    text-transform: uppercase;
+}
+
+.player_label {
+    cursor: default;
+    color: white;
+    text-transform: uppercase;
 }

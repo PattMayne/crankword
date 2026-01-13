@@ -494,7 +494,6 @@ pub async fn refresh_in_prog_players(
     req: HttpRequest,
     game_id: web::Json<GameId>
 ) -> HttpResponse {
-    println!("REFRESHING LIST OF PLAYERS DURING IN-PROGRESS GAME");
     // Make sure it's a real user
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
     let player_id: i32 = match user_req_data.id {

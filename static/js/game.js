@@ -282,6 +282,8 @@ const check_guess = async () => {
     remove_tabindexes() // remove old (all) tabindexes
     set_tabindexes() // set NEW tabindexes
     current_tile.element.focus()
+
+    refresh_players()
 }
 
 
@@ -627,18 +629,25 @@ const refresh_players = async () => {
 
     let players_html = ""
 
-    player_names.map(name => {
-        let name_html = "<p " +
-            (name == current_player_name ?
-                "id='current_player_label'" :
-                "class='player_label'") +
-            ">" + name + "</p>"
-        players_html += name_html
+    player_names.map((name, index) => {
+
+        if (index == 0) {
+            const player_turn_li_element = document.getElementById("player_turn_li")
+            player_turn_li_element.innerHTML = name
+        } else {
+            players_html += build_player_li(name)
+        }
+
     })
 
     const players_list_element = document.getElementById("players_list")
     players_list_element.innerHTML = players_html
 }
+
+const build_player_li = username => "<li " +
+    "class='player_label'" +
+    ">" + username + "</li>"
+
 
 /**
  * TODO:
@@ -657,6 +666,7 @@ document.addEventListener('DOMContentLoaded', () => {
     game_id_storage = document.getElementById("game_id").value
     console.log("game id: " + game_id())
     settle_old_scores()
+    refresh_players()
 
     // Check every 3 seconds for new users or updated game_status
     setInterval(refresh_players, 3000);

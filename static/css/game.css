@@ -12,10 +12,43 @@
  *  wrong place (dark blue):    0008dd
  *
  */
+/* RAW COLORS */
 /* darker green */
+/* COLOR SCHEME 
+        https://coolors.co/423841-2e5c8a-d6d6d6-248232-c97c18
+*/
+/* CUSTOM FONTS */
+@font-face {
+  font-family: nue-gothic-reg;
+  src: url(../fonts/nue-gothic-reg.ttf);
+}
 @font-face {
   font-family: nue-gothic-round;
-  src: url("../fonts/nue-gothic-round.ttf");
+  src: url(../fonts/nue-gothic-round.ttf);
+}
+@font-face {
+  font-family: "lato";
+  src: url(../fonts/lato-med.woff2);
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "lato";
+  src: url(../fonts/lato-bold.woff2);
+  font-weight: bold;
+  font-style: normal;
+}
+@font-face {
+  font-family: "lato";
+  src: url(../fonts/lato-med-italic.woff2);
+  font-weight: normal;
+  font-style: italic;
+}
+@font-face {
+  font-family: "lato";
+  src: url(../fonts/lato-bold-italic.woff2);
+  font-weight: bold;
+  font-style: italic;
 }
 @font-face {
   font-family: alte;
@@ -145,16 +178,49 @@ body {
   left: 0;
 }
 
-#current_player_label {
-  background-color: #bdf000;
-  color: #111111;
-}
-
 #message_modal {
   background-color: #0008dd;
   color: #bdf000;
   border: 2px solid #000000;
   text-align: center;
+}
+
+#players_list_bk {
+  width: 100%;
+  margin: 0px;
+  padding: 0px;
+}
+
+.game_menu {
+  width: auto !important;
+  font-family: lato;
+  background-color: transparent !important;
+}
+
+.game_menu li a {
+  color: white;
+}
+
+.game_menu li a:hover {
+  cursor: default;
+}
+
+#player_turn_li {
+  color: white;
+  font-family: lato;
+  text-transform: uppercase;
+}
+
+#player_turn_li {
+  color: #bdf000;
+  font-family: lato;
+  text-transform: uppercase;
+}
+
+.player_label {
+  cursor: default;
+  color: white;
+  text-transform: uppercase;
 }
 
 /*# sourceMappingURL=game.css.map */
