@@ -80,7 +80,7 @@ pub struct PreGameRefresh {
 }
 
 #[derive(Serialize)]
-pub struct PlayersAndCurrentPlayerId {
+pub struct InProgRefresh {
     pub current_turn_id: i32,
     pub players: Vec<PlayerInfo>,
 }

@@ -250,6 +250,12 @@ async fn go_to_inprogress_game(
 }
 
 
+/**
+ * NOT A ROUTE
+ * This provides an HttpResponse for a user
+ * requesting to visit a game which is
+ * already finished/completed.
+ */
 async fn go_to_finished_game(
     the_game: db::GameAndPlayers,
     user_req_data: auth::UserReqData
@@ -270,6 +276,13 @@ async fn go_to_finished_game(
         .body(post_game_template.render().unwrap());
 }
 
+
+/**
+ * NOT A ROUTE
+ * This provides an HttpResponse for a user
+ * requesting to visit a game which
+ * has been cancelled (not completed).
+ */
 async fn go_to_cancelled_game(
     the_game: db::GameAndPlayers,
     user_req_data: auth::UserReqData
@@ -488,6 +501,9 @@ pub fn redirect_to_login() -> HttpResponse {
  * We will NOT sort players here. We'll offload that onto the client.
  * Instead we will just send a list of players, and the current_player_id.
  * the current_player_id is what will change most often.
+ * 
+ * Each player object will also have a list of scores from their guesses,
+ * so the user can see how the opponents are doing.
  */
 #[post("refresh_in_prog_players")]
 pub async fn refresh_in_prog_players(
@@ -517,7 +533,7 @@ pub async fn refresh_in_prog_players(
         None => return return_unauthorized_err_json(&user_req_data)
     };
 
-    let players_and_curr_player_id: PlayersAndCurrentPlayerId = PlayersAndCurrentPlayerId {
+    let players_and_curr_player_id: InProgRefresh = InProgRefresh {
         current_turn_id,
         players: the_game.players,
     };
@@ -542,10 +558,11 @@ pub async fn refresh_pregame(
         return return_unauthorized_err_json(&user_req_data);
     }
 
-    let the_game: db::GameAndPlayers = match db::get_game_and_players(game_id.game_id).await {
-        Ok(gap) => gap,
-        Err(_e) => return return_internal_err_json()
-    };
+    let the_game: db::GameAndPlayers =
+        match db::get_game_and_players(game_id.game_id).await {
+            Ok(gap) => gap,
+            Err(_e) => return return_internal_err_json()
+        };
 
     let refresh_data: PreGameRefresh = PreGameRefresh {
         game_status: the_game.game.game_status,

@@ -694,10 +694,12 @@ const show_oppo_scores = (username, scores) => {
     
     // draw the scores
     const rect_width = (player_canvas.width -
-        ((OPPO_SCORE_DATA.rects_per_line + 1) * OPPO_SCORE_DATA.border_size))
-         / OPPO_SCORE_DATA.rects_per_line
+        ((OPPO_SCORE_DATA.rects_per_line + 1) * OPPO_SCORE_DATA.border_size)) /
+        OPPO_SCORE_DATA.rects_per_line
 
-    // TODO: put this into maps instead
+
+    const max_words = 5
+    
     for (let i=0; i<scores.length; i++) {
         const word = scores[i]
 
@@ -709,6 +711,16 @@ const show_oppo_scores = (username, scores) => {
             context.fillRect(x, y, rect_width, rect_width)
         }
     }
+
+    for (let i=scores.length - 1; i<max_words; i++) {
+        for (let k=0; k<OPPO_SCORE_DATA.rects_per_line; k++) {
+            const x = OPPO_SCORE_DATA.border_size + (k * (OPPO_SCORE_DATA.border_size + rect_width))
+            const y = OPPO_SCORE_DATA.border_size + (i * (OPPO_SCORE_DATA.border_size + rect_width))
+            context.strokeStyle = OPPO_SCORE_DATA.COLORS["dud"]
+            context.strokeRect(x, y, rect_width, rect_width)
+        }
+    }
+
 }
 
 
