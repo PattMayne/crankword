@@ -7,6 +7,7 @@ $timberwolf: #d6d6d6ff;
 $forest-green: #248232ff;
 $dartmouth-green: #1A6025; /* darker green */
 $bronze: #c97c18ff;
+$yellow: #bdf000;
 
 $very-light-gray: #f0f0f0;
 
@@ -124,8 +125,9 @@ h1, h2, h3, h4, h5, h6 {
 
 .top-bar,
 .top-bar-right,
-.top-bar-left{
-  background-color: transparent;
+.top-bar-left,
+.header_menu {
+  background-color: transparent!important;
 }
 
 .menu,
@@ -138,8 +140,16 @@ h1, h2, h3, h4, h5, h6 {
 
 
 .nav-button {
-  background-color: transparent;
+  background-color: transparent!important;
   border: none;
   border-radius: 0px;
 }
 
+.username_btn {
+  color: $yellow;
+  cursor: default;
+}
+
+.username_btn:hover {
+  color: $black;
+}

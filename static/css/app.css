@@ -86,8 +86,9 @@ h1, h2, h3, h4, h5, h6 {
 
 .top-bar,
 .top-bar-right,
-.top-bar-left {
-  background-color: transparent;
+.top-bar-left,
+.header_menu {
+  background-color: transparent !important;
 }
 
 .menu,
@@ -97,9 +98,18 @@ h1, h2, h3, h4, h5, h6 {
 
 /* CUSTOM CLASSES */
 .nav-button {
-  background-color: transparent;
+  background-color: transparent !important;
   border: none;
   border-radius: 0px;
+}
+
+.username_btn {
+  color: #bdf000;
+  cursor: default;
+}
+
+.username_btn:hover {
+  color: #111111;
 }
 
 /*# sourceMappingURL=app.css.map */

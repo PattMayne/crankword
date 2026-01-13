@@ -574,6 +574,14 @@ const settle_old_scores = async () => {
         current_tile.element.classList.add("current_guess")
         set_tabindexes()
         current_tile.element.focus()
+
+        // TESTING DESIGN
+        const test_scores = []
+        scores_obj.scores.map(this_score => {
+            test_scores.push(this_score.score)
+        })
+
+        show_oppo_scores("ok", test_scores)
     }
 }
 
@@ -652,14 +660,58 @@ const build_player_li = username => "<li " +
 /**
  * TODO:
  * 
- * INCORPORATING BACKEND:
- * * API returns list of LetterStates (real word is never shared, obviously)
- * * Make this a MODULE (so we can import files and interact with API)
- * 
+ * SHOW OPPONENT SCORES
+ * END GAME UPON CORRECT ANSWER OR ALL PLAYERS FAIL
+ * TIMER
  * 
  * 
  * 
  */
+
+
+/**
+ * DISPLAY OPPONENT SCORES
+*/
+
+const OPPO_SCORE_DATA = {
+    COLORS: {
+        "dud": "#111111",
+        "wrong_spot": "#0008dd",
+        "right_spot": "#60f000",
+        "future": "transparent"
+    },
+    border_size: 5,
+    rects_per_line: 5
+}
+
+const show_oppo_scores = (username, scores) => {
+    // We will create the entire div here (with username h3),
+    // BUT FOR NOW just draw the 25 squares
+
+    const player_canvas = document.getElementById("player_canvas")
+    const context = player_canvas.getContext("2d")
+    console.log("canvas size: " + player_canvas.width + ", " + player_canvas.height)
+    
+    // draw the scores
+    const rect_width = (player_canvas.width -
+        ((OPPO_SCORE_DATA.rects_per_line + 1) * OPPO_SCORE_DATA.border_size))
+         / OPPO_SCORE_DATA.rects_per_line
+
+    // TODO: put this into maps instead
+    for (let i=0; i<scores.length; i++) {
+        const word = scores[i]
+
+        for (let k=0; k<word.length; k++) {
+            const score = word[k]
+            const x = OPPO_SCORE_DATA.border_size + (k * (OPPO_SCORE_DATA.border_size + rect_width))
+            const y = OPPO_SCORE_DATA.border_size + (i * (OPPO_SCORE_DATA.border_size + rect_width))
+            context.fillStyle = OPPO_SCORE_DATA.COLORS[score]
+            context.fillRect(x, y, rect_width, rect_width)
+        }
+    }
+}
+
+
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -669,7 +721,7 @@ document.addEventListener('DOMContentLoaded', () => {
     refresh_players()
 
     // Check every 3 seconds for new users or updated game_status
-    setInterval(refresh_players, 3000);
+    //setInterval(refresh_players, 3000);
 })
 
 
