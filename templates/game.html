@@ -7,7 +7,7 @@
     <title>{{ title }}</title>
     <link rel="stylesheet" href="../static/css/foundation.min.css">
     <link rel="stylesheet" href="/static/css/app.css?id=11">
-    <link rel="stylesheet" href="../static/css/game.css?id=18">
+    <link rel="stylesheet" href="../static/css/game.css?id=20">
     <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
   </head>
 
@@ -25,12 +25,9 @@
                 <ul class="menu" id="players_list">
                 </ul>
             </li>
-
-            <li><a href="#" id="toggle_button">TOGGLE</a></li>
+            <li><a href="#" id="scores_toggle">SCORES</a></li>
         </ul>
-
     </div>
-
 </div>
 
 <!-- OPPONENT SCORES -->
@@ -42,8 +39,8 @@
             <canvas
                 class="oppo_canvas"
                 id="{{ player.username }}_canvas"
-                width="300"
-                height="300"
+                width="200"
+                height="200"
             >
             </canvas>
         </div>

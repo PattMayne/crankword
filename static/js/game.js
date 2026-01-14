@@ -41,6 +41,8 @@ const headline = document.getElementById("headline")
 const message_modal = $('#message_modal') // Foundation demands jquery for this
 const message_p = document.getElementById("message_p")
 
+let show_scores = true
+
 // Game id is in the path (game/id)
 const game_id = () => {
     if (!!game_id_storage) {
@@ -691,7 +693,6 @@ const show_oppo_scores = (players) => {
     const max_words = 5
 
     players.map(player => {
-        console.log("number of scores for " + player.username + ": " + player.scores.length)
         const label_id = player.username + "_label"
         const canvas_id = player.username + "_canvas"
 
@@ -713,7 +714,6 @@ const show_oppo_scores = (players) => {
         
         for (let i=0; i<word_scores.length; i++) {
             const letter_scores = word_scores[i].score
-            console.log("PRINTING SCORE: " + JSON.stringify(letter_scores))
 
             for (let k=0; k<letter_scores.length; k++) {
                 const letter_score = letter_scores[k]
@@ -740,15 +740,27 @@ const show_oppo_scores = (players) => {
     })
 }
 
+function toggle_scores() {
+    if (show_scores) {
+        show_scores = false
+        document.getElementById("oppo_scores").style.display = "none"
+        document.getElementById("scores_toggle").innerHTML = "SHOW SCORES"
+    } else {
+        show_scores = true
+        document.getElementById("oppo_scores").style.display = ""
+        document.getElementById("scores_toggle").innerHTML = "HIDE SCORES"
+    }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('scores_toggle').addEventListener('click', toggle_scores)
     game_id_storage = document.getElementById("game_id").value
-    console.log("game id: " + game_id())
     settle_old_scores()
     refresh_players()
 
     // Check every 3 seconds for new users or updated game_status
     setInterval(refresh_players, 3000);
+    toggle_scores()
 })
 
 

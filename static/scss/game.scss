@@ -269,12 +269,11 @@ body {
     text-transform: uppercase;
 }
 
-
-#toggle_button {
+#scores_toggle {
     border-left: 2px solid $black;
 }
 
-#toggle_button:hover {
+#scores_toggle:hover {
     background-color: $jet;
     cursor: pointer;
 }
@@ -289,10 +288,6 @@ body {
 
 .oppo_panel {
     background-color: $lapis-lazuli;
-    /*
-    padding: 10px 5px 0px 5px;
-    margin: 5px;
-    */
     margin: 5px 0px 5px 5px;
     padding: 15px 0px 0px 0px;
     text-align: center;
@@ -306,8 +301,8 @@ body {
 }
 
 .oppo_canvas {
-    width: 300px!important;;
-    height: 300px!important;
+    width: 200px!important;
+    height: 200px!important;
     background-color: transparent;
     margin: 0px;
     padding: 0px;

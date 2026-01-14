@@ -100,7 +100,6 @@ export const join_game = async (game_id) => {
         return response.json()
     }).then(data => {
         if (data.success) {
-            console.log("JOINED GAME")
             response_obj.success = true
         } else {
             console.log("DID NOT JOIN GAME")
@@ -145,7 +144,6 @@ export const start_game = async game_id => {
         return response.json()
     }).then(data => {
         if (data.success) {
-            console.log("STARTED GAME")
             response_obj.success = true
         } else {
             console.log("DID NOT START GAME")
@@ -238,10 +236,7 @@ export const get_guess_scores = async game_id => {
         return response.json()
     }).then(data => {
 
-        console.log("RAW DATA: " + JSON.stringify(data))
-
         if (!!data.scores) {
-            console.log("got the scores")
             response_obj.scores = data.scores
         } else {
             console.log("DID NOT GET GUESS DATA")
@@ -251,7 +246,6 @@ export const get_guess_scores = async game_id => {
         console.log('Error: ', error)
     )
 
-    console.log("THIS should happen AFTER 'RAW DATA'")
     return response_obj
 }
 
@@ -285,18 +279,13 @@ export const check_guess_io = async (guess_word, game_id) => {
         return response.json()
     }).then(guess_map => {
         if (!!guess_map.fake_word) {
-            console.log("FAKE WORD")
             response_obj.fake_word = true
         } else if (!!guess_map.max_guesses) {
-            console.log("MAX GUESSES")
             response_obj.max_guesses = true
         } else if (!!guess_map.wrong_turn) {
-            console.log("WRONG TURN")
             response_obj.wrong_turn = true
         } else {
-            console.log("Guess Map: ", guess_map)
             response_obj.letter_states = guess_map
-            console.log("return length 1: " + guess_map.length)
         }        
     }).catch(error => {
         console.log('Error: ', error)
@@ -347,8 +336,6 @@ export const refresh_players = async game_id => {
     }).catch(error => {
         console.log('Error: ', error)
     })
-
-    console.log(JSON.stringify(response_obj))
 
     return response_obj
 }
