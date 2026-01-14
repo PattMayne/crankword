@@ -518,27 +518,34 @@ pub async fn refresh_in_prog_players(
     };
 
     // get the game
-    let the_game: db::GameAndPlayers = match db::get_game_and_players(game_id.game_id).await {
-        Ok(gap) => gap,
-        Err(_e) => return return_internal_err_json()
+    let the_game: db::Game = match db::get_game_by_id(game_id.game_id).await {
+        Ok(g) => g,
+        Err(_) => return return_unauthorized_err_json(&user_req_data)
     };
 
-    // make sure they're a player of this game
-    if !the_game.user_id_is_player(player_id) {
-        return return_unauthorized_err_json(&user_req_data);
-    }
+    // Get the players with their scores, but no words in the scores
+    let players: Vec<db::PlayerRefreshData> =
+        match db::get_players_refresh_data_by_game_id(&the_game).await {
+            Ok(p) => p,
+            Err(_) => return return_unauthorized_err_json(&user_req_data)
+        };
 
-    let current_turn_id: i32 = match the_game.game.turn_user_id {
+    // Client must know whose turn it is
+    let current_turn_id: i32 = match the_game.turn_user_id {
         Some(id) => id,
         None => return return_unauthorized_err_json(&user_req_data)
     };
 
-    let players_and_curr_player_id: InProgRefresh = InProgRefresh {
+    let in_prog_refresh: InProgRefresh = InProgRefresh {
         current_turn_id,
-        players: the_game.players,
+        players: players,
     };
 
-    HttpResponse::Ok().json(players_and_curr_player_id)
+    // only send the data if the user really belongs to this game
+    match in_prog_refresh.user_id_is_player(player_id) {
+        true => HttpResponse::Ok().json(in_prog_refresh),
+        false => return_unauthorized_err_json(&user_req_data)
+    }    
 }
 
 
@@ -558,11 +565,10 @@ pub async fn refresh_pregame(
         return return_unauthorized_err_json(&user_req_data);
     }
 
-    let the_game: db::GameAndPlayers =
-        match db::get_game_and_players(game_id.game_id).await {
-            Ok(gap) => gap,
-            Err(_e) => return return_internal_err_json()
-        };
+    let the_game: db::GameAndPlayers = match db::get_game_and_players(game_id.game_id).await {
+        Ok(gap) => gap,
+        Err(_e) => return return_internal_err_json()
+    };
 
     let refresh_data: PreGameRefresh = PreGameRefresh {
         game_status: the_game.game.game_status,

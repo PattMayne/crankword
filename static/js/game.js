@@ -580,16 +580,12 @@ const settle_old_scores = async () => {
         scores_obj.scores.map(this_score => {
             test_scores.push(this_score.score)
         })
-
-        show_oppo_scores("ok", test_scores)
     }
 }
 
 
 const refresh_players = async () => {
     const players_obj = await io.refresh_players(game_id())
-
-    console.log("PLAYERS DATA: " + JSON.stringify(players_obj))
 
     if (
         !players_obj.current_turn_id ||
@@ -606,7 +602,7 @@ const refresh_players = async () => {
     // Do two loops, first to catch the current player and their following players,
     // second to get any preceding players missed on the first loop.
 
-    const player_names = []
+    const players = []
     let current_turn_found = false
     let current_player_name = ""
 
@@ -614,10 +610,10 @@ const refresh_players = async () => {
     players_obj.players.map(player_obj => {
         if (player_obj.user_id == players_obj.current_turn_id) {
             current_turn_found = true
-            player_names.push(player_obj.username)
+            players.push(player_obj)
             current_player_name = player_obj.username
         } else if (current_turn_found) {
-            player_names.push(player_obj.username)
+            players.push(player_obj)
         }
     })
 
@@ -628,28 +624,30 @@ const refresh_players = async () => {
         if (player_obj.user_id == players_obj.current_turn_id) {
             current_turn_found = true
         } else if (!current_turn_found) {
-            player_names.push(player_obj.username)
+            players.push(player_obj)
         }
     })
 
-    // player_names is now arranged properly.
+    // players is now arranged properly.
     // Set the names in the list.
 
     let players_html = ""
 
-    player_names.map((name, index) => {
+    players.map((player, index) => {
 
         if (index == 0) {
             const player_turn_li_element = document.getElementById("player_turn_li")
-            player_turn_li_element.innerHTML = name
+            player_turn_li_element.innerHTML = player.username
         } else {
-            players_html += build_player_li(name)
+            players_html += build_player_li(player.username)
         }
 
     })
 
     const players_list_element = document.getElementById("players_list")
     players_list_element.innerHTML = players_html
+
+    show_oppo_scores(players)
 }
 
 const build_player_li = username => "<li " +
@@ -684,46 +682,63 @@ const OPPO_SCORE_DATA = {
     rects_per_line: 5
 }
 
-const show_oppo_scores = (username, scores) => {
-    // We will create the entire div here (with username h3),
-    // BUT FOR NOW just draw the 25 squares
 
-    const player_canvas = document.getElementById("player_canvas")
-    const context = player_canvas.getContext("2d")
-    console.log("canvas size: " + player_canvas.width + ", " + player_canvas.height)
-    
-    // draw the scores
-    const rect_width = (player_canvas.width -
-        ((OPPO_SCORE_DATA.rects_per_line + 1) * OPPO_SCORE_DATA.border_size)) /
-        OPPO_SCORE_DATA.rects_per_line
+const show_oppo_scores = (players) => {
+    // We expect each player to have an oppo_panel containing an oppo_panel and oppo_canvas
+    // For each oppo_panel we set their scores in the squares
 
-
+    let rect_width = null // fill on first loop, then read from filled variable
     const max_words = 5
-    
-    for (let i=0; i<scores.length; i++) {
-        const word = scores[i]
 
-        for (let k=0; k<word.length; k++) {
-            const score = word[k]
-            const x = OPPO_SCORE_DATA.border_size + (k * (OPPO_SCORE_DATA.border_size + rect_width))
-            const y = OPPO_SCORE_DATA.border_size + (i * (OPPO_SCORE_DATA.border_size + rect_width))
-            context.fillStyle = OPPO_SCORE_DATA.COLORS[score]
-            context.fillRect(x, y, rect_width, rect_width)
+    players.map(player => {
+        console.log("number of scores for " + player.username + ": " + player.scores.length)
+        const label_id = player.username + "_label"
+        const canvas_id = player.username + "_canvas"
+
+        const oppo_label = document.getElementById(label_id)
+        oppo_label.innerHTML = player.username
+
+        const oppo_canvas = document.getElementById(canvas_id)
+        const word_scores = player.scores
+
+        const context = oppo_canvas.getContext("2d")
+        context.clearRect(0, 0, oppo_canvas.width, oppo_canvas.height);
+        
+        // draw the scores
+        rect_width = (rect_width != null) ?
+            rect_width :
+            (oppo_canvas.width -
+                ((OPPO_SCORE_DATA.rects_per_line + 1) * OPPO_SCORE_DATA.border_size)) /
+                OPPO_SCORE_DATA.rects_per_line
+        
+        for (let i=0; i<word_scores.length; i++) {
+            const letter_scores = word_scores[i].score
+            console.log("PRINTING SCORE: " + JSON.stringify(letter_scores))
+
+            for (let k=0; k<letter_scores.length; k++) {
+                const letter_score = letter_scores[k]
+                const x = OPPO_SCORE_DATA.border_size + (k * (OPPO_SCORE_DATA.border_size + rect_width))
+                const y = OPPO_SCORE_DATA.border_size + (i * (OPPO_SCORE_DATA.border_size + rect_width))
+                context.fillStyle = OPPO_SCORE_DATA.COLORS[letter_score]
+                context.fillRect(x, y, rect_width, rect_width)
+            }
         }
-    }
 
-    for (let i=scores.length - 1; i<max_words; i++) {
-        for (let k=0; k<OPPO_SCORE_DATA.rects_per_line; k++) {
-            const x = OPPO_SCORE_DATA.border_size + (k * (OPPO_SCORE_DATA.border_size + rect_width))
-            const y = OPPO_SCORE_DATA.border_size + (i * (OPPO_SCORE_DATA.border_size + rect_width))
-            context.strokeStyle = OPPO_SCORE_DATA.COLORS["dud"]
-            context.strokeRect(x, y, rect_width, rect_width)
+        const index_start =
+            word_scores.length > 0 ?
+            word_scores.length - 1 :
+            0
+
+        for (let i=index_start; i<max_words; i++) {
+            for (let k=0; k<OPPO_SCORE_DATA.rects_per_line; k++) {
+                const x = OPPO_SCORE_DATA.border_size + (k * (OPPO_SCORE_DATA.border_size + rect_width))
+                const y = OPPO_SCORE_DATA.border_size + (i * (OPPO_SCORE_DATA.border_size + rect_width))
+                context.strokeStyle = OPPO_SCORE_DATA.COLORS["dud"]
+                context.strokeRect(x, y, rect_width, rect_width)
+            }
         }
-    }
-
+    })
 }
-
-
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -733,7 +748,7 @@ document.addEventListener('DOMContentLoaded', () => {
     refresh_players()
 
     // Check every 3 seconds for new users or updated game_status
-    //setInterval(refresh_players, 3000);
+    setInterval(refresh_players, 3000);
 })
 
 

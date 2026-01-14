@@ -26,6 +26,11 @@ pub struct GuessAndScore {
     pub score: Vec<LetterScore>,
 }
 
+#[derive(Serialize, PartialEq)]
+pub struct WordlessScore {
+    pub score: Vec<LetterScore>,
+}
+
 
 
 impl GameStatus {

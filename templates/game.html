@@ -7,7 +7,7 @@
     <title>{{ title }}</title>
     <link rel="stylesheet" href="../static/css/foundation.min.css">
     <link rel="stylesheet" href="/static/css/app.css?id=11">
-    <link rel="stylesheet" href="../static/css/game.css?id=55">
+    <link rel="stylesheet" href="../static/css/game.css?id=18">
     <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
   </head>
 
@@ -25,24 +25,32 @@
                 <ul class="menu" id="players_list">
                 </ul>
             </li>
+
+            <li><a href="#" id="toggle_button">TOGGLE</a></li>
         </ul>
+
     </div>
+
 </div>
 
 <!-- OPPONENT SCORES -->
 <div id="oppo_scores">
-    <div class="oppo_table" id="player_score_test">
-        <h3>USERNAME</h3>
-        <canvas
-            class="oppo_canvas"
-            id="player_canvas"
-            width="300"
-            height="300"
-        >
-        </canvas>
-    </div>
-</div>
 
+    {% for player in game.players %}
+        <div class="oppo_panel">
+            <h3 id="{{ player.username }}_label">{{ player.username }}</h3>
+            <canvas
+                class="oppo_canvas"
+                id="{{ player.username }}_canvas"
+                width="300"
+                height="300"
+            >
+            </canvas>
+        </div>
+
+    {% endfor %}
+
+</div>
 
 <div id="cranktable">
 
@@ -107,7 +115,7 @@
 <script src="../static/js/vendor/jquery.js"></script>
 <script src="../static/js/vendor/what-input.js"></script>
 <script src="../static/js/vendor/foundation.min.js"></script>
-<script type="module" src="../static/js/game.js?id=1"></script>
+<script type="module" src="../static/js/game.js?id=2"></script>
 
 </body>
 </html>

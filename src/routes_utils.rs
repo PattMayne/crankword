@@ -8,7 +8,7 @@ use actix_web::{
 
 use crate::{
     game_logic::{ self,GameStatus },
-    db::{ self, PlayerInfo },
+    db::{ self, PlayerInfo,PlayerRefreshData },
     auth, resource_mgr::{*},
     resources::get_translation
 };
@@ -82,7 +82,7 @@ pub struct PreGameRefresh {
 #[derive(Serialize)]
 pub struct InProgRefresh {
     pub current_turn_id: i32,
-    pub players: Vec<PlayerInfo>,
+    pub players: Vec<PlayerRefreshData>,
 }
 
 
@@ -155,6 +155,19 @@ impl WrongTurn {
         WrongTurn {
             wrong_turn: true
         }
+    }
+}
+
+impl InProgRefresh {
+
+    pub fn user_id_is_player(&self, player_id: i32) -> bool {
+        for player_info in &self.players {
+            if player_info.user_id == player_id {
+                return true;
+            }
+        }
+
+        false
     }
 }
 

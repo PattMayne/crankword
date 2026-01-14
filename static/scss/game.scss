@@ -270,11 +270,46 @@ body {
 }
 
 
+#toggle_button {
+    border-left: 2px solid $black;
+}
+
+#toggle_button:hover {
+    background-color: $jet;
+    cursor: pointer;
+}
+
 /*    Opponents' scores screen.    */
 
-.oppo_canvas {
-    width: 300px;
-    height: 300px!important;
-    border: 1px dotted white;
+#oppo_table {
+    display: flex;
+    width: 100%;
+    background-color: $black;
+}
+
+.oppo_panel {
     background-color: $lapis-lazuli;
+    /*
+    padding: 10px 5px 0px 5px;
+    margin: 5px;
+    */
+    margin: 5px 0px 5px 5px;
+    padding: 15px 0px 0px 0px;
+    text-align: center;
+    display: inline-block;
+    width: auto;
+    height: auto;
+}
+
+.oppo_panel_label {
+    text-align: center;
+}
+
+.oppo_canvas {
+    width: 300px!important;;
+    height: 300px!important;
+    background-color: transparent;
+    margin: 0px;
+    padding: 0px;
+    display: block;
 }

@@ -6,7 +6,7 @@ use sqlx::{ MySqlPool };
 use time::{ OffsetDateTime };
 use rand::Rng;
 
-use crate::{ auth, game_logic::{self, GameStatus, GuessAndScore}, words_solutions };
+use crate::{ auth, game_logic::{self, GameStatus, GuessAndScore, LetterScore, WordlessScore}, words_solutions };
 
 
 /* 
@@ -104,6 +104,14 @@ pub struct Guess {
 pub struct PlayerInfo {
     pub user_id: i32,
     pub username: String,
+}
+
+/* Simple identifiers for a Player  */
+#[derive(PartialEq, Serialize)]
+pub struct PlayerRefreshData {
+    pub user_id: i32,
+    pub username: String,
+    pub scores: Vec<WordlessScore>,
 }
 
 
@@ -223,6 +231,35 @@ pub async fn get_guess_scores(game_id: i32, user_id: i32) -> Result<Vec<game_log
     Ok(all_scores)
 }
 
+/**
+ * We're not directly calling the DB here.
+ * Instead, we're calling other DB functions to collect some data and return it.
+ * We want to ONLY deliver the score, because this is FOR DISPLAY for the other players.
+ * 
+ * 1. get all words guessed by this user for this game
+ * 2. get a vector of LetterScore structs for each guess
+ * 3. return a vec of all those vecs
+ */
+pub async fn get_wordless_guess_scores(
+    the_game: &Game,
+    user_id: i32
+) -> Result<Vec<game_logic::WordlessScore>> {
+    // Get the full guess so we can get the score
+    let guesses: Vec<Guess> = get_guesses(the_game.id, user_id).await?;
+    // Deliver only the score, without the word
+    let all_scores: Vec<game_logic::WordlessScore> = 
+        guesses
+        .iter()
+        .map(
+            |guess|
+                game_logic::WordlessScore {
+                    score: game_logic::check_guess(&guess.word, &the_game.word)
+                }                
+        ).collect();
+
+    Ok(all_scores)
+}
+
 
 /**
  * Returns number of PreGame or InProgress games the user is registered for.
@@ -268,11 +305,9 @@ pub async fn next_turn(game_id: i32) -> Result<i32> {
     };
 
     // get the vector index of the current turn
-    let mut current_user_vec_index: usize = 0;
     let mut index_count: usize = 0;
     for player in &players {
         if player.user_id == current_user_id {
-            current_user_vec_index = index_count;
             break;
         } else {
             index_count += 1;
@@ -286,7 +321,7 @@ pub async fn next_turn(game_id: i32) -> Result<i32> {
 
     let new_user_turn_id: i32 = players[vec_index_of_new_turn_id].user_id;
 
-    let result: sqlx::mysql::MySqlQueryResult = sqlx::query(
+    let _result: sqlx::mysql::MySqlQueryResult = sqlx::query(
     "UPDATE games SET turn_user_id = ? WHERE id = ?")
         .bind(new_user_turn_id)
         .bind(game_id)
@@ -394,9 +429,55 @@ pub async fn get_players_by_game_id(game_id: i32) -> Result<Vec<PlayerInfo>> {
 }
 
 
+/**
+ * This gets the WORDLESS guess scores along with basic player info
+ * for displaying OPPONENT info on player's page during in-progress games.
+ */
+pub async fn get_players_refresh_data_by_game_id(game: &Game) -> Result<Vec<PlayerRefreshData>> {
+    let pool: MySqlPool = create_pool().await?;
+
+    // First just get the PlayerInfo
+    let player_info_vec: Vec<PlayerInfo> = sqlx::query_as!(
+        PlayerInfo,
+        "SELECT user_id, username FROM game_users WHERE game_id = ?
+            ORDER BY turn_order ASC",
+        game.id
+    ).fetch_all(&pool).await?;
+
+    let mut players_refresh_data: Vec<PlayerRefreshData> = Vec::new();
+
+    for player_info in player_info_vec {
+        let scores: Vec<WordlessScore> = match get_wordless_guess_scores(&game, player_info.user_id).await {
+            Ok(scores) => scores,
+            Err(_) => Vec::new()
+        };
+
+        players_refresh_data.push(PlayerRefreshData {
+            user_id: player_info.user_id,
+            username: player_info.username,
+            scores,
+        });
+    }
+
+    Ok(players_refresh_data)
+}
+
+
+
 pub async fn get_game_and_players(game_id: i32) -> Result<GameAndPlayers> {
     let game: Game = get_game_by_id(game_id).await?;
     let players: Vec<PlayerInfo> = get_players_by_game_id(game_id).await?;
+
+    // THIS IS THE CRUCIAL MOMENT
+    // THIS is where we will also get the guesses for every player and
+    // add them to the PlayerInfo struct.
+
+    // THIS gets guess AND score:
+    // get_guess_scores(game_id: i32, user_id: i32)
+    // But WE just want the GUESS
+    // So we will get the guess and score AND THEN
+    // just take the SCORES
+
     Ok(GameAndPlayers { game, players })
 }
 
