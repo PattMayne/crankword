@@ -271,6 +271,7 @@ body {
 
 #scores_toggle {
     border-left: 2px solid $black;
+    transition: background-color 0.25s;
 }
 
 #scores_toggle:hover {
@@ -307,4 +308,26 @@ body {
     margin: 0px;
     padding: 0px;
     display: block;
+}
+
+#oppo_scores {
+    text-align: center;
+}
+
+#oppo_scores h3 {
+    text-align: center;
+}
+
+#scores_toggle_2 {
+    text-align: center;
+    background-color: $lapis-lazuli;
+}
+
+#scores_toggle_2:hover {
+    background-color: $jet;
+    transition: background-color 0.25s;
+}
+
+.scores_toggle_container {
+    text-align: center;
 }

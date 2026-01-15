@@ -41,7 +41,8 @@ const headline = document.getElementById("headline")
 const message_modal = $('#message_modal') // Foundation demands jquery for this
 const message_p = document.getElementById("message_p")
 
-let show_scores = true
+let showing_scores = true
+let game_id_storage = null
 
 // Game id is in the path (game/id)
 const game_id = () => {
@@ -54,7 +55,6 @@ const game_id = () => {
     return parts.length > 0 ? parts[parts.length - 1] : null
 }
 
-let game_id_storage = null
 
 window.addEventListener("load", () => start_game())
 window.addEventListener("keydown", (event) => key_pressed(event));
@@ -70,16 +70,16 @@ window.addEventListener("resize", () => {
 // Match font sizes (for tiles and headline) fit their containers.
 const set_sizes = () => {
     // using body width because widnow width acts weird in dev/inspect mode
-    const body_width = document.body.clientWidth;
+    const board_width = document.getElementById("crank_cell").offsetWidth
 
-    if (body_width < 500) {
+    if (board_width < 500) {
 
         // resize title
-        let new_tile_font_size = Math.round(body_width / 8.7).toString() + "px"
+        let new_tile_font_size = Math.round(board_width / 8.7).toString() + "px"
         board.style.fontSize = new_tile_font_size
 
         // resize headline
-        let new_headline_font_size = Math.round(body_width / 5).toString() + "px"
+        let new_headline_font_size = Math.round(board_width / 5).toString() + "px"
         headline.style.fontSize = new_headline_font_size
 
         // remove margins from board panel
@@ -654,7 +654,7 @@ const refresh_players = async () => {
 
 const build_player_li = username => "<li " +
     "class='player_label'" +
-    ">" + username + "</li>"
+    ">&nbsp;" + username + "</li>"
 
 
 /**
@@ -684,7 +684,13 @@ const OPPO_SCORE_DATA = {
     rects_per_line: 5
 }
 
-
+/**
+ * When we get updated data about the players' scores,
+ * this function represents those scores on little cards.
+ * The canvases are coded into HTML from the template,
+ * but this function draws the scores onto the canvases.
+ * @param {list} players 
+ */
 const show_oppo_scores = (players) => {
     // We expect each player to have an oppo_panel containing an oppo_panel and oppo_canvas
     // For each oppo_panel we set their scores in the squares
@@ -703,7 +709,7 @@ const show_oppo_scores = (players) => {
         const word_scores = player.scores
 
         const context = oppo_canvas.getContext("2d")
-        context.clearRect(0, 0, oppo_canvas.width, oppo_canvas.height);
+        context.clearRect(0, 0, oppo_canvas.width, oppo_canvas.height)
         
         // draw the scores
         rect_width = (rect_width != null) ?
@@ -741,27 +747,41 @@ const show_oppo_scores = (players) => {
 }
 
 function toggle_scores() {
-    if (show_scores) {
-        show_scores = false
-        document.getElementById("oppo_scores").style.display = "none"
-        document.getElementById("scores_toggle").innerHTML = "SHOW SCORES"
+    if (!showing_scores) {
+        show_scores()
     } else {
-        show_scores = true
-        document.getElementById("oppo_scores").style.display = ""
-        document.getElementById("scores_toggle").innerHTML = "HIDE SCORES"
+        hide_scores()
     }
+}
+
+function show_scores() {
+    showing_scores = true
+    document.getElementById("oppo_scores").style.display = ""
+    document.getElementById("scores_toggle").innerHTML = "HIDE SCORES"
+    document.getElementById("scores_toggle_2").innerHTML = "HIDE SCORES"
+    document.getElementById("crank_cell").className = "large-7 medium-12 small-12 cell"
+    document.getElementById("oppo_cell").style.display = ""
+}
+
+function hide_scores() {
+    showing_scores = false
+    document.getElementById("oppo_scores").style.display = "none"
+    document.getElementById("scores_toggle").innerHTML = "SHOW SCORES"
+    document.getElementById("scores_toggle_2").innerHTML = "SHOW SCORES"
+    document.getElementById("crank_cell").className = "large-12 cell"
+    document.getElementById("oppo_cell").style.display = "none"
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('scores_toggle').addEventListener('click', toggle_scores)
+    document.getElementById('scores_toggle_2').addEventListener('click', toggle_scores)
     game_id_storage = document.getElementById("game_id").value
     settle_old_scores()
     refresh_players()
 
     // Check every 3 seconds for new users or updated game_status
-    setInterval(refresh_players, 3000);
-    toggle_scores()
+    setInterval(refresh_players, 3000)
+    hide_scores()
 })
-
 
 window.check_guess = check_guess

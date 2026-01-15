@@ -19,6 +19,7 @@ $very-light-gray: #f0f0f0;
 
 $white: $very-light-gray;
 $black: #111111;
+$extra-black: #000000;
 
 
 /* CUSTOM FONTS */
@@ -105,17 +106,18 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .callout.primary label {
-    color: $black;
+  color: $black;
 }
 
 .button {
-    border: 1px solid $black;
-    border-radius: 5px;
-    background-color: $forest-green;
-    color: $white;
-    font-family: $button-font, arial;
-    font-weight: bold;
-    text-transform: uppercase;
+  border: 1px solid $black;
+  border-radius: 5px;
+  background-color: $forest-green;
+  color: $white;
+  font-family: $button-font, arial;
+  font-weight: bold;
+  text-transform: uppercase;
+  transition: background-color 0.55s;
 }
 
 .button:hover, .button:focus {
@@ -140,9 +142,14 @@ h1, h2, h3, h4, h5, h6 {
 
 
 .nav-button {
-  background-color: transparent!important;
+  background-color: $lapis-lazuli!important;
+  transition: background-color 0.25s;
   border: none;
   border-radius: 0px;
+}
+
+.nav-button:hover {
+  background-color: $jet!important;
 }
 
 .username_btn {
@@ -151,5 +158,5 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .username_btn:hover {
-  color: $black;
+  color: $extra-black;
 }
