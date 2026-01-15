@@ -70,16 +70,17 @@ window.addEventListener("resize", () => {
 // Match font sizes (for tiles and headline) fit their containers.
 const set_sizes = () => {
     // using body width because widnow width acts weird in dev/inspect mode
-    const board_width = document.getElementById("crank_cell").offsetWidth
+    const panel_width = document.getElementById("board-panel").offsetWidth
+    document.getElementById("game_menu_container").style.width = "" + panel_width + "px"
 
-    if (board_width < 500) {
+    if (panel_width < 500) {
 
         // resize title
-        let new_tile_font_size = Math.round(board_width / 8.7).toString() + "px"
+        let new_tile_font_size = Math.round(panel_width / 8.7).toString() + "px"
         board.style.fontSize = new_tile_font_size
 
         // resize headline
-        let new_headline_font_size = Math.round(board_width / 5).toString() + "px"
+        let new_headline_font_size = Math.round(panel_width / 5).toString() + "px"
         headline.style.fontSize = new_headline_font_size
 
         // remove margins from board panel

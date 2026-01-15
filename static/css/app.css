@@ -52,7 +52,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* FOUNDATION OVERRIDES */
 .callout {
-  background-color: #2e5c8a;
+  background-color: #5a639e;
   color: #f0f0f0;
 }
 
@@ -94,19 +94,20 @@ h1, h2, h3, h4, h5, h6 {
 
 .menu,
 .menu li {
-  background-color: #2e5c8a;
+  background-color: #423841;
 }
 
 /* CUSTOM CLASSES */
 .nav-button {
-  background-color: #2e5c8a !important;
+  background-color: #423841 !important;
   transition: background-color 0.25s;
+  color: #f0f0f0;
   border: none;
   border-radius: 0px;
 }
 
 .nav-button:hover {
-  background-color: #423841 !important;
+  background-color: #5a639e !important;
 }
 
 .username_btn {

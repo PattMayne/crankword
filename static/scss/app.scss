@@ -8,6 +8,7 @@ $forest-green: #248232ff;
 $dartmouth-green: #1A6025; /* darker green */
 $bronze: #c97c18ff;
 $yellow: #bdf000;
+$pastel-blue: #5a639e;
 
 $very-light-gray: #f0f0f0;
 
@@ -20,6 +21,7 @@ $very-light-gray: #f0f0f0;
 $white: $very-light-gray;
 $black: #111111;
 $extra-black: #000000;
+$extra-white: #ffffff;
 
 
 /* CUSTOM FONTS */
@@ -92,7 +94,7 @@ h1, h2, h3, h4, h5, h6 {
 /* FOUNDATION OVERRIDES */
 
 .callout {
-    background-color: $lapis-lazuli;
+    background-color: $pastel-blue;
     color: $white;
 }
 
@@ -135,21 +137,22 @@ h1, h2, h3, h4, h5, h6 {
 .menu,
 .menu li
 {
-  background-color: $lapis-lazuli;
+  background-color: $jet;
 }
 
 /* CUSTOM CLASSES */
 
 
 .nav-button {
-  background-color: $lapis-lazuli!important;
+  background-color: $jet!important;
   transition: background-color 0.25s;
+  color: $white;
   border: none;
   border-radius: 0px;
 }
 
 .nav-button:hover {
-  background-color: $jet!important;
+  background-color: $pastel-blue!important;
 }
 
 .username_btn {

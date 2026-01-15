@@ -191,30 +191,34 @@ body {
   padding: 0px;
 }
 
-.game_menu {
+#game_menu_container {
+  padding: 0px;
+  margin: auto;
+  text-align: left;
+  border-bottom: 1px solid #111111;
+}
+
+#game_menu {
   width: auto !important;
   font-family: lato;
   background-color: transparent !important;
+  margin: auto !important;
+  text-align: left;
 }
 
-.game_menu li a {
-  color: white;
+#game_menu li a {
+  color: #f0f0f0;
 }
 
-.game_menu li a:hover {
+#game_menu li a:hover {
   cursor: default;
 }
 
 #player_turn_li {
-  color: white;
   font-family: lato;
   text-transform: uppercase;
-}
-
-#player_turn_li {
-  color: #bdf000;
-  font-family: lato;
-  text-transform: uppercase;
+  border-right: 2px solid #111111;
+  color: #bdf000 !important;
 }
 
 .player_label {
@@ -224,12 +228,11 @@ body {
 }
 
 #scores_toggle {
-  border-left: 2px solid #111111;
   transition: background-color 0.25s;
 }
 
 #scores_toggle:hover {
-  background-color: #423841;
+  background-color: #5a639e;
   cursor: pointer;
 }
 
@@ -241,7 +244,7 @@ body {
 }
 
 .oppo_panel {
-  background-color: #2e5c8a;
+  background-color: #5a639e;
   margin: 5px 0px 5px 5px;
   padding: 15px 0px 0px 0px;
   text-align: center;
@@ -273,7 +276,7 @@ body {
 
 #scores_toggle_2 {
   text-align: center;
-  background-color: #2e5c8a;
+  background-color: #5a639e;
 }
 
 #scores_toggle_2:hover {
@@ -283,6 +286,10 @@ body {
 
 .scores_toggle_container {
   text-align: center;
+}
+
+.oppo_label {
+  color: #111111;
 }
 
 /*# sourceMappingURL=game.css.map */
