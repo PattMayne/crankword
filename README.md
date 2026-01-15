@@ -10,3 +10,12 @@ Crankword is a turn-based multiplayer word-guessing game.
  * * This is declared at the beginning of the routes/middleware chain
  * * THIS IS VERY IMPORTANT
 * only make "enter" submit check_guess when a tile is focused (for accessibility)
+* Show "current games" in dashboard
+* Find a way to share games or find games.
+* * Messages in inbox?
+* * Invitations?
+* * * Start typing and hit "invite"
+* * * Invite code/URL?
+* Mask ID?
+* * three randomized numbers followed by ( ID * 374 ) plus three randomized numbers
+* * * Then to read the URL just remove first 3, last 3, and divide by 374
