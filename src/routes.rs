@@ -659,10 +659,7 @@ pub async fn start_game(
     // NOW call the db to change the status of the game
 
     let update_result: Result<u8, anyhow::Error> =
-        db::update_game_status(
-            the_game.id,
-            GameStatus::InProgress
-        ).await;
+        db::start_game(the_game.id).await;
 
     match update_result {
         Ok(rows_affected) => {
@@ -822,22 +819,27 @@ pub async fn check_guess(
     let guess_result: game_logic::CheckGuessResult =
         game_logic::check_guess(&word_json.guess_word, &winning_word);
     
+    // Do we have a winner?
     if guess_result.is_winner {
-        // TO DO: update game in DATABASE
-        // ALSO: make sure to process this correctly on front-end
-        println!("GAME OVER WINNER");
-    }
-
-    // make it the next player's turn:
-    let _next_turn_user_id: i32 = match db::next_turn(word_json.game_id).await {
-        Ok(new_id) => new_id,
-        Err(_) => {
-            eprintln!("Error switching turns.");
+        let finish_game_result: Result<u8, anyhow::Error> =
+            db::finish_game(word_json.game_id, Some(user_id)).await;
+        
+        if finish_game_result.is_err() {
             return return_internal_err_json();
         }
-    };
+        println!("GAME OVER WINNER");
+    } else {
+        // make it the next player's turn:
+        let _next_turn_user_id: i32 = match db::next_turn(word_json.game_id).await {
+            Ok(new_id) => new_id,
+            Err(_) => {
+                eprintln!("Error switching turns.");
+                return return_internal_err_json();
+            }
+        };
+    }
 
-    HttpResponse::Ok().json(guess_result.score)
+    HttpResponse::Ok().json(guess_result)
 }
 
 

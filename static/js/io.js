@@ -262,6 +262,8 @@ export const check_guess_io = async (guess_word, game_id) => {
         fake_word: false,
         max_guesses: false,
         wrong_turn: false,
+        game_over: false,
+        is_winner: false,
         error: null
     }
 
@@ -277,15 +279,20 @@ export const check_guess_io = async (guess_word, game_id) => {
             throw new Error("Unable to check word, or error on server.")
         }
         return response.json()
-    }).then(guess_map => {
-        if (!!guess_map.fake_word) {
+    }).then(guess_result => {
+        if (!!guess_result.fake_word) {
             response_obj.fake_word = true
-        } else if (!!guess_map.max_guesses) {
+        } else if (!!guess_result.max_guesses) {
             response_obj.max_guesses = true
-        } else if (!!guess_map.wrong_turn) {
+        } else if (!!guess_result.wrong_turn) {
             response_obj.wrong_turn = true
         } else {
-            response_obj.letter_states = guess_map
+            if (guess_result.is_winner) {
+                response_obj.is_winner = guess_result.is_winner
+                response_obj.game_over = true
+            }
+            
+            response_obj.letter_states = guess_result.score
         }        
     }).catch(error => {
         console.log('Error: ', error)

@@ -266,7 +266,7 @@ const check_guess = async () => {
         }
     })
 
-    if (full_word_correct) {
+    if (letter_states_obj.game_over) {
         end_game(true, full_word)
         return
     }
@@ -300,6 +300,10 @@ const end_game = (victory, word) => {
     unset_current_tile_classes()
     remove_tabindexes()
     new_message(endgame_msg)
+
+    // TO DO: set a short timeout
+    // and reload the page
+    // should bring user to FinishedGame page
 }
 
 
