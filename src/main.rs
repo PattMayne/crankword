@@ -91,7 +91,7 @@ async fn main() -> std::io::Result<()> {
     let word: String = words_solutions::get_random_word();
     //let word: &str = "hghgh";
     println!("{}", word);
-    let word_exists: bool = words_all::check_word(&word);
+    let word_exists: bool = words_all::is_real_word(&word);
 
     if word_exists {
         println!("{} exists", word);

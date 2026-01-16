@@ -786,23 +786,15 @@ pub async fn check_guess(
     };
 
     if player_guess_count > 4 {
-        println!(
-            "TOO MANY GUESSES. user_id: {}, game_id: {}",
-            user_id,
-            game_and_players.game.id
-        );
         return HttpResponse::Ok().json(MaxGuesses::new());
     }
 
-
     // make sure guess word is REAL WORD
-    if !words_all::check_word(&word_json.guess_word) {
-        println!("NOT A REAL WORD");
+    if !words_all::is_real_word(&word_json.guess_word) {
         return HttpResponse::Ok().json(FakeWord::new());
     }
 
     // add guess to the DB
-
     let add_guess_result: Result<i64, anyhow::Error> = db::new_guess(
         user_id,
         game_and_players.game.id,
@@ -827,8 +819,14 @@ pub async fn check_guess(
         }
     };
 
-    let guess_result: Vec<LetterScore> =
+    let guess_result: game_logic::CheckGuessResult =
         game_logic::check_guess(&word_json.guess_word, &winning_word);
+    
+    if guess_result.is_winner {
+        // TO DO: update game in DATABASE
+        // ALSO: make sure to process this correctly on front-end
+        println!("GAME OVER WINNER");
+    }
 
     // make it the next player's turn:
     let _next_turn_user_id: i32 = match db::next_turn(word_json.game_id).await {
@@ -839,7 +837,7 @@ pub async fn check_guess(
         }
     };
 
-    HttpResponse::Ok().json(guess_result)
+    HttpResponse::Ok().json(guess_result.score)
 }
 
 

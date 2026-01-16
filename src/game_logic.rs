@@ -1,6 +1,8 @@
 use serde::{ Serialize };
 use std::collections::BTreeMap;
 
+
+
     
 #[derive(Serialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
@@ -31,6 +33,11 @@ pub struct WordlessScore {
     pub score: Vec<LetterScore>,
 }
 
+#[derive(Serialize)]
+pub struct CheckGuessResult {
+    pub score: Vec<LetterScore>,
+    pub is_winner: bool,
+}
 
 
 impl GameStatus {
@@ -118,13 +125,15 @@ fn letter_is_right_spot(
 pub fn check_guess(
     guess_word: &String,
     winning_word: &String
-) -> Vec<LetterScore> {
+) -> CheckGuessResult {
     // Create default vector with size based on guess word size
     let mut guess_map: Vec<LetterScore> = Vec::new();
     for _ in guess_word.chars() {
         guess_map.push(LetterScore::Dud);
     }
 
+    // Assume winning conditions, but set to false if any letter breaks perfect placement
+    let mut is_winner: bool = true;
     let mut letter_counts: BTreeMap<char, u8> = get_letter_counts(winning_word);
 
     // Check each letter for perfect placement
@@ -147,6 +156,8 @@ pub fn check_guess(
 
             // decrement count
             letter_counts.insert(letter.clone(), count - 1);
+        } else {
+            is_winner = false;
         }
     }
 
@@ -168,6 +179,9 @@ pub fn check_guess(
             }
         }
     }
-    
-    guess_map
+
+    CheckGuessResult {
+        score: guess_map,
+        is_winner
+    }
 }

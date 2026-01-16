@@ -221,11 +221,15 @@ pub async fn get_guess_scores(game_id: i32, user_id: i32) -> Result<Vec<game_log
         guesses
         .iter()
         .map(
-            |guess|
-                GuessAndScore {
-                    word: guess.word.to_string(),
-                    score: game_logic::check_guess(&guess.word, &the_game.word)
-                }                
+            |guess| {
+                let word: String = guess.word.to_string();
+                let score: Vec<LetterScore> =
+                    game_logic::check_guess(
+                        &guess.word, &the_game.word
+                    ).score;
+
+                GuessAndScore {word, score}
+            }
         ).collect();
 
     Ok(all_scores)
@@ -251,10 +255,15 @@ pub async fn get_wordless_guess_scores(
         guesses
         .iter()
         .map(
-            |guess|
-                game_logic::WordlessScore {
-                    score: game_logic::check_guess(&guess.word, &the_game.word)
-                }                
+            |guess| {
+                let score: Vec<LetterScore> =
+                    game_logic::check_guess(
+                        &guess.word, &the_game.word
+                    ).score;
+
+                game_logic::WordlessScore { score }
+            }
+                
         ).collect();
 
     Ok(all_scores)
