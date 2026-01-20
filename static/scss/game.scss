@@ -25,6 +25,14 @@ $bronze: #c97c18ff;
 $pastel-blue: #5a639e;
 $yellow: #bdf000;
 $very-light-gray: #f0f0f0;
+$light-gray: #9a9a9a;
+$gray: #6b6b6b;
+
+$letter_right_spot: #60f000;
+//$letter_wrong_spot: #0008dd;
+$letter_wrong_spot: #0008dd;
+$letter_dud: #111111;
+$letter_current_guess: #ffffff;
 
 
 
@@ -177,20 +185,20 @@ body {
 
 .wrong_spot {
     /* color: #0008dd; */
-    color: #0008dd;
+    color: $letter_wrong_spot;
 }
 
 .right_spot {
-    color: #60f000;
+    color: $letter_right_spot;
     /* color: #bdf000; */
 }
 
 .current_guess {
-    color: #ffffff;
+    color: $letter_current_guess;
 }
 
 .dud {
-    color: #111111;
+    color: $letter_dud;
 }
 
 
@@ -372,10 +380,22 @@ body {
     font-size: 20px;
 }
 
-.letter_used {
-    background-color: $black;
-    color: $jet;
+.letter_right_spot {
+    background-color: $letter_right_spot;
+    color: $black;
     border: 1px solid $jet;
+}
+
+.letter_wrong_spot {
+    background-color: $letter_wrong_spot;
+    color: $very-light-gray;
+    border: 1px solid $light-gray;
+}
+
+.letter_dud {
+    background-color: $letter_dud;
+    color: $gray;
+    border: 1px solid $gray;
 }
 
 .letter_not_used {

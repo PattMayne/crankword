@@ -3,7 +3,10 @@ use std::collections::BTreeMap;
 
 
 
-    
+/**
+ * the snake_case macro turns RightSpot into "right_spot" string
+ * which matches what we see in the JS on the front-end.
+ */
 #[derive(Serialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum LetterScore {

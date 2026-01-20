@@ -263,7 +263,11 @@ const check_guess = async () => {
         if (letter_state != LetterState.RIGHT_SPOT) {
             full_word_correct = false
         }
+
+        update_keyboard_letter(tile.letter, letter_state)
     })
+
+    create_keyboard_element()
 
     if (letter_states_obj.game_over) {
         end_game(true, full_word)
@@ -558,7 +562,7 @@ const settle_old_scores = async () => {
             current_tile.element.classList.add(current_tile.state)
 
             // update KEYBOARD_LETTERS
-            update_keyboard_letters(guess.word[k])
+            update_keyboard_letter(guess.word[k], guess.score[k])
         }
     }
 
@@ -764,8 +768,8 @@ function toggle_scores() {
 function show_scores() {
     showing_scores = true
     document.getElementById("oppo_scores").style.display = ""
-    document.getElementById("scores_toggle").innerHTML = "HIDE SCORES"
-    document.getElementById("scores_toggle_2").innerHTML = "HIDE SCORES"
+    document.getElementById("scores_toggle").innerHTML = "HIDE STATS"
+    document.getElementById("scores_toggle_2").innerHTML = "HIDE STATS"
     document.getElementById("crank_cell").className = "large-7 medium-12 small-12 cell"
     document.getElementById("stats_cell").style.display = ""
 }
@@ -773,8 +777,8 @@ function show_scores() {
 function hide_scores() {
     showing_scores = false
     document.getElementById("oppo_scores").style.display = "none"
-    document.getElementById("scores_toggle").innerHTML = "SHOW SCORES"
-    document.getElementById("scores_toggle_2").innerHTML = "SHOW SCORES"
+    document.getElementById("scores_toggle").innerHTML = "SHOW STATS"
+    document.getElementById("scores_toggle_2").innerHTML = "SHOW STATS"
     document.getElementById("crank_cell").className = "large-12 cell"
     document.getElementById("stats_cell").style.display = "none"
 }
@@ -831,9 +835,13 @@ const KEYBOARD_LETTERS = {
     "m": false
 }
 
-const update_keyboard_letters = letter => {
+const update_keyboard_letter = (letter, score) => {
     letter = letter.toLowerCase()
-    KEYBOARD_LETTERS[letter] = true 
+
+    // do not override "right spot" status
+    if (KEYBOARD_LETTERS[letter] != LetterState.RIGHT_SPOT) {
+        KEYBOARD_LETTERS[letter] = score
+    }
 }
 
 
@@ -870,22 +878,19 @@ const create_keyboard_element = () => {
 
 }
 
-const create_keyboard_letter_div = (letter, is_used) => {
-    let html = is_used ? "<div class='kb_letter letter_used'>" : "<div class='kb_letter letter_not_used'>"
+const create_keyboard_letter_div = (letter, state) => {
+    let html = state == false ? "<div class='kb_letter letter_not_used'>" :
+        state == LetterState.RIGHT_SPOT ? "<div class='kb_letter letter_right_spot'>" :
+        state == LetterState.WRONG_SPOT ? "<div class='kb_letter letter_wrong_spot'>" :
+        state == LetterState.DUD ? "<div class='kb_letter letter_dud'>" :
+        "<div>"
     html += letter.toUpperCase() + "</div>"
 
     return html
 }
 
 
-
-
-
-
-
-
-
-
+// SETUP STUFF
 
 
 document.addEventListener('DOMContentLoaded', () => {
