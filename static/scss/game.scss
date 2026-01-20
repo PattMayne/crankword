@@ -343,30 +343,43 @@ body {
 // keyboard used letter keyboard div
 
 #used_keys_board_container {
-    border: 1px solid $black;
-    background-color: $pastel-blue;
+    background-color: transparent;
     text-align: center;
-    width: auto;
+    width: 100%;
     margin: auto;
+    display: inline-block;
+    margin-top: 60px;
 }
 
 .keyboard_row {
+    display: inline;
     text-align: center;
     width: auto;
     display: flex;
-    margin: auto;
-    margin-bottom: 5px;
+    justify-content: center;
 }
 
-.kb_letter_div_used {
-    border: 1px solid $black;
+.kb_letter {
+    font-family: alte;
+    width: 31px;
+    height: 31px;
+    font-size: 20px;
+    text-align: center;
+    vertical-align: middle;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+    margin: 2px;
+    font-size: 20px;
+}
+
+.letter_used {
+    background-color: $black;
+    color: $jet;
+    border: 1px solid $jet;
+}
+
+.letter_not_used {
     background-color: $very-light-gray;
     color: $black;
-    padding: 2px;
-}
-
-.kb_letter_div_not_used {
     border: 1px solid $black;
-    background-color: $dartmouth-green;
-    color: $white;
 }

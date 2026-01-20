@@ -807,6 +807,7 @@ const KEYBOARD_LETTERS = {
     "e": false,
     "r": false,
     "t": false,
+    "y": false,
     "q": false,
     "u": false,
     "i": false,
@@ -843,8 +844,8 @@ const create_keyboard_element = () => {
 
     let html = ""
     const first_row_starts = 0
-    const second_row_starts = 9
-    const third_row_starts = 18
+    const second_row_starts = 10
+    const third_row_starts = 19
 
     let key_count = 0
 
@@ -867,16 +868,11 @@ const create_keyboard_element = () => {
 
     used_keys_board.innerHTML = html
 
-    // KEYBOARD_LETTERS should already be updated by calls to
-    // settle_old_scores and check_guess
-
-
 }
 
 const create_keyboard_letter_div = (letter, is_used) => {
-    let html = is_used ? "<div class='kb_letter_div_used'>" : "<div class='kb_letter_div_not_used'>"
-    html += "<p>" + letter.toUpperCase() + "</p>"
-    html += "</div>"
+    let html = is_used ? "<div class='kb_letter letter_used'>" : "<div class='kb_letter letter_not_used'>"
+    html += letter.toUpperCase() + "</div>"
 
     return html
 }

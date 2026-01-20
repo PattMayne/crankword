@@ -293,32 +293,45 @@ body {
 }
 
 #used_keys_board_container {
-  border: 1px solid #111111;
-  background-color: #5a639e;
+  background-color: transparent;
   text-align: center;
-  width: auto;
+  width: 100%;
   margin: auto;
+  display: inline-block;
+  margin-top: 30px;
 }
 
 .keyboard_row {
+  display: inline;
   text-align: center;
   width: auto;
   display: flex;
-  margin: auto;
-  margin-bottom: 5px;
+  justify-content: center;
 }
 
-.kb_letter_div_used {
-  border: 1px solid #111111;
+.kb_letter {
+  font-family: alte;
+  width: 31px;
+  height: 31px;
+  font-size: 20px;
+  text-align: center;
+  vertical-align: middle;
+  overflow: hidden;
+  aspect-ratio: 1/1;
+  margin: 2px;
+  font-size: 20px;
+}
+
+.letter_used {
+  background-color: #111111;
+  color: #423841;
+  border: 1px solid #423841;
+}
+
+.letter_not_used {
   background-color: #f0f0f0;
   color: #111111;
-  padding: 2px;
-}
-
-.kb_letter_div_not_used {
   border: 1px solid #111111;
-  background-color: #1A6025;
-  color: #f0f0f0;
 }
 
 /*# sourceMappingURL=game.css.map */
