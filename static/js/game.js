@@ -257,7 +257,6 @@ const check_guess = async () => {
     // map result onto tiles
     letter_states_obj.letter_states.map((letter_state, index) => {
         const tile = current_word.tiles[index]
-        //current_word.tiles[index].element.classList.add(letter_state)
         tile.state = letter_state  
         tile.element.classList.remove(LetterState.CURRENT)  
         tile.element.classList.add(tile.state)  
@@ -545,8 +544,6 @@ const settle_old_scores = async () => {
     current_word = guess_map.words[word_index]
     current_tile = current_word.tiles[letter_index]
 
-    //current_tile.set_letter(key)
-
     for (let i=0; i<scores_obj.scores.length; i++) {
         const guess = scores_obj.scores[i]
         word_index = i
@@ -559,8 +556,13 @@ const settle_old_scores = async () => {
             current_tile.element.classList.remove(LetterState.CURRENT)
             current_tile.state = guess.score[k]
             current_tile.element.classList.add(current_tile.state)
+
+            // update KEYBOARD_LETTERS
+            update_keyboard_letters(guess.word[k])
         }
     }
+
+    create_keyboard_element()
 
     if (word_index > 3) {
         // If all guesses are full, remove all interactiveness
@@ -765,7 +767,7 @@ function show_scores() {
     document.getElementById("scores_toggle").innerHTML = "HIDE SCORES"
     document.getElementById("scores_toggle_2").innerHTML = "HIDE SCORES"
     document.getElementById("crank_cell").className = "large-7 medium-12 small-12 cell"
-    document.getElementById("oppo_cell").style.display = ""
+    document.getElementById("stats_cell").style.display = ""
 }
 
 function hide_scores() {
@@ -774,8 +776,121 @@ function hide_scores() {
     document.getElementById("scores_toggle").innerHTML = "SHOW SCORES"
     document.getElementById("scores_toggle_2").innerHTML = "SHOW SCORES"
     document.getElementById("crank_cell").className = "large-12 cell"
-    document.getElementById("oppo_cell").style.display = "none"
+    document.getElementById("stats_cell").style.display = "none"
 }
+
+
+
+
+/* 
+ * 
+ * 
+ * 
+ * 
+ * =============================
+ * =============================
+ * =====                   =====
+ * =====  VISUAL KEYBOARD  =====
+ * =====                   =====
+ * =============================
+ * =============================
+ * 
+ * 
+ * 
+ * 
+*/
+
+
+const KEYBOARD_LETTERS = {
+    "q": false,
+    "w": false,
+    "e": false,
+    "r": false,
+    "t": false,
+    "q": false,
+    "u": false,
+    "i": false,
+    "o": false,
+    "p": false,
+    "a": false,
+    "s": false,
+    "d": false,
+    "f": false,
+    "g": false,
+    "h": false,
+    "j": false,
+    "k": false,
+    "l": false,
+    "z": false,
+    "x": false,
+    "c": false,
+    "v": false,
+    "b": false,
+    "n": false,
+    "m": false
+}
+
+const update_keyboard_letters = letter => {
+    letter = letter.toLowerCase()
+    KEYBOARD_LETTERS[letter] = true 
+}
+
+
+const create_keyboard_element = () => {
+    // get the element where we will draw the keyboard
+    const used_keys_board = document.getElementById("used_keys_board_container")
+
+
+    let html = ""
+    const first_row_starts = 0
+    const second_row_starts = 9
+    const third_row_starts = 18
+
+    let key_count = 0
+
+    Object.entries(KEYBOARD_LETTERS).forEach(([key, value]) => {
+        if (key_count == first_row_starts) {
+            html += "<div class='keyboard_row'>"
+        } else if (key_count == second_row_starts || key_count == third_row_starts) {
+            html += "</div><div class='keyboard_row'>"
+        }
+
+        //console.log(key, value);
+        html += create_keyboard_letter_div(key, value)
+
+        key_count ++
+
+        if (key_count >= Object.keys(KEYBOARD_LETTERS).length) {
+            html += "</div>"
+        }
+    });   
+
+    used_keys_board.innerHTML = html
+
+    // KEYBOARD_LETTERS should already be updated by calls to
+    // settle_old_scores and check_guess
+
+
+}
+
+const create_keyboard_letter_div = (letter, is_used) => {
+    let html = is_used ? "<div class='kb_letter_div_used'>" : "<div class='kb_letter_div_not_used'>"
+    html += "<p>" + letter.toUpperCase() + "</p>"
+    html += "</div>"
+
+    return html
+}
+
+
+
+
+
+
+
+
+
+
+
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('scores_toggle').addEventListener('click', toggle_scores)
@@ -788,5 +903,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(refresh_players, 3000)
     hide_scores()
 })
+
 
 window.check_guess = check_guess

@@ -7,7 +7,7 @@
     <title>{{ title }}</title>
     <link rel="stylesheet" href="../static/css/foundation.min.css">
     <link rel="stylesheet" href="/static/css/app.css?id=axl7vf7">
-    <link rel="stylesheet" href="../static/css/game.css?id=14">
+    <link rel="stylesheet" href="../static/css/game.css?id=15">
     <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
   </head>
 
@@ -83,7 +83,13 @@
     </div>
 
 
-    <div class="large-5 medium-12 small-12 cell" id="oppo_cell">
+    <div class="large-5 medium-12 small-12 cell" id="stats_cell">
+        <!-- USED KEYS KEYBOARD -->
+         <div id="used_keys_board_container">
+
+         </div>
+
+
         <!-- OPPONENT SCORES -->
         <div id="oppo_scores">
             <p class="hide-for-large-only">&nbsp;</p>
@@ -107,10 +113,8 @@
                 <a class="button small" id="scores_toggle_2" tabindex="0">SCORES</a>
                 <p>&nbsp;</p>
             </div>
-
         </div>
     </div>
-
 </div>
 
 <input type="hidden" id="game_id" value="{{ game.game.id }}">

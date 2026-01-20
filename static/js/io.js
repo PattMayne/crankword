@@ -249,7 +249,12 @@ export const get_guess_scores = async game_id => {
     return response_obj
 }
 
-
+/**
+ * Check a particular guess (word) and get a result for that word
+ * @param {*} guess_word 
+ * @param {*} game_id 
+ * @returns 
+ */
 export const check_guess_io = async (guess_word, game_id) => {
     const check_guess_route = "/game_in/check_guess"
     const guess_obj = {

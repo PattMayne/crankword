@@ -339,3 +339,34 @@ body {
 .oppo_label {
     color: $black;
 }
+
+// keyboard used letter keyboard div
+
+#used_keys_board_container {
+    border: 1px solid $black;
+    background-color: $pastel-blue;
+    text-align: center;
+    width: auto;
+    margin: auto;
+}
+
+.keyboard_row {
+    text-align: center;
+    width: auto;
+    display: flex;
+    margin: auto;
+    margin-bottom: 5px;
+}
+
+.kb_letter_div_used {
+    border: 1px solid $black;
+    background-color: $very-light-gray;
+    color: $black;
+    padding: 2px;
+}
+
+.kb_letter_div_not_used {
+    border: 1px solid $black;
+    background-color: $dartmouth-green;
+    color: $white;
+}
