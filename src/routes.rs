@@ -905,7 +905,6 @@ pub async fn check_guess(
                     db::finish_game(word_json.game_id, None).await;
                 guess_result.game_over = true;
             }
-
         }
     }
 

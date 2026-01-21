@@ -270,7 +270,7 @@ const check_guess = async () => {
     create_keyboard_element()
 
     if (letter_states_obj.game_over) {
-        end_game(letter_states_obj.is_winner, full_word)
+        end_game(letter_states_obj.is_winner)
         return
     }
 
@@ -278,10 +278,10 @@ const check_guess = async () => {
     letter_index = 0
     word_index ++
 
-    if (word_index > 4) {
-        end_game(false, full_word)
-        return
-    }
+    // if (word_index > 4) {
+    //     end_game(false)
+    //     return
+    // }
 
     current_word = guess_map.words[word_index]
     set_current_tile(current_word.tiles[letter_index])
@@ -293,21 +293,16 @@ const check_guess = async () => {
 }
 
 
-const end_game = (victory, word) => {
+const end_game = (victory) => {
     const endgame_msg = "You " + 
-        (victory ? "Win!" : "Lose!") +
-        "<br/>The word was " +
-        "<h3>" + word + "<h3>"
+        (victory ? "Win!" : "Lose!")
     current_word = null
     set_current_tile(null)
     unset_current_tile_classes()
     remove_tabindexes()
     new_message(endgame_msg)
 
-    // TO DO: set a short timeout
-    // and reload the page
-    // should bring user to FinishedGame page
-
+    // Give player time to see result, then reload to FinishedGame page
     setTimeout(() => {
         location.reload();
     }, 2000)
