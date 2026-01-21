@@ -267,15 +267,37 @@ async fn go_to_finished_game(
         false
     );
 
-    let post_game_template: PostGameTemplate = PostGameTemplate {
+    let winner_name: Option<String> = match the_game.game.winner_id {
+        None => None,
+        Some(winner_id) => {
+            // winner_id exists
+            // get their info from the players' list
+            let winner_info_option: Option<&db::PlayerInfo> =
+                the_game.players
+                    .iter()
+                    .find(
+                        |player|
+                            player.user_id == winner_id
+                    );
+            
+            // if winner info exists in players' list, get their username
+            match winner_info_option {
+                None => None,
+                Some(winner_info) => Some(winner_info.username.to_owned())
+            }
+        }
+    };
+
+    let finished_game_template: FinishedGameTemplate = FinishedGameTemplate {
         texts: post_game_texts,
         user: user_req_data,
-        game: the_game
+        game: the_game,
+        winner_name
     };
 
     return HttpResponse::Ok()
         .content_type("text/html")
-        .body(post_game_template.render().unwrap());
+        .body(finished_game_template.render().unwrap());
 }
 
 
@@ -289,13 +311,14 @@ async fn go_to_cancelled_game(
     the_game: db::GameAndPlayers,
     user_req_data: auth::UserReqData
 ) -> HttpResponse {
-    println!("{}", the_game.game.game_status.to_string());
+    println!("GAME STATUS: {}", the_game.game.game_status.to_string());
     let post_game_texts: PostGameTexts = resource_mgr::PostGameTexts::new(
         &user_req_data,
         None,
         true
     );
-    let post_game_template: PostGameTemplate = PostGameTemplate {
+
+    let cancelled_game_template: CancelledGameTemplate = CancelledGameTemplate {
         texts: post_game_texts,
         user: user_req_data,
         game: the_game
@@ -303,7 +326,7 @@ async fn go_to_cancelled_game(
 
     return HttpResponse::Ok()
         .content_type("text/html")
-        .body(post_game_template.render().unwrap());
+        .body(cancelled_game_template.render().unwrap());
 }
 
 

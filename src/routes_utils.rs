@@ -221,11 +221,20 @@ pub struct PreGameTemplate {
 }
 
 #[derive(Template)]
-#[template(path="post_game.html")]
-pub struct PostGameTemplate {
+#[template(path="cancelled_game.html")]
+pub struct CancelledGameTemplate {
     pub texts: PostGameTexts,
     pub user: auth::UserReqData,
     pub game: db::GameAndPlayers,
+}
+
+#[derive(Template)]
+#[template(path="finished_game.html")]
+pub struct FinishedGameTemplate {
+    pub texts: PostGameTexts,
+    pub user: auth::UserReqData,
+    pub game: db::GameAndPlayers,
+    pub winner_name: Option<String>,
 }
 
 
