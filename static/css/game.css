@@ -346,4 +346,23 @@ body {
   border: 1px solid #111111;
 }
 
+/* 
+ * 
+ * =============================
+ * =============================
+ * =====                   =====
+ * =====  POST-GAME PAGES  =====
+ * =====                   =====
+ * =============================
+ * =============================
+ * 
+*/
+#winning_word_won_label {
+  color: #60f000;
+}
+
+#winning_word_lostlabel {
+  color: #111111;
+}
+
 /*# sourceMappingURL=game.css.map */

@@ -12,6 +12,10 @@ $pastel-blue: #5a639e;
 
 $very-light-gray: #f0f0f0;
 
+$winning_word: #60f000;
+$losing_word: #e02f2f;
+
+
 
 
 /* COLOR SCHEME 
@@ -162,4 +166,46 @@ h1, h2, h3, h4, h5, h6 {
 
 .username_btn:hover {
   color: $extra-black;
+}
+
+
+
+/* 
+ * 
+ * =============================
+ * =============================
+ * =====                   =====
+ * =====  POST-GAME PAGES  =====
+ * =====                   =====
+ * =============================
+ * =============================
+ * 
+*/
+
+
+
+#winning_word_won_label {
+    color: $winning_word;
+    background-color: #000000;
+    padding: 5px;
+    padding-left: 7px;
+    display: inline-block;
+}
+
+
+#winning_word_lost_label {
+    color: $losing_word;
+    background-color: #000000;
+    padding: 5px;
+    padding-left: 7px;
+    display: inline-block;
+}
+
+#winner_name {
+    color: $winning_word;
+    background-color: #000000;
+    padding: 5px;
+    padding-left: 7px;
+    display: inline-block;
+    font-weight: bold;
 }
