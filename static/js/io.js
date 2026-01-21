@@ -295,6 +295,8 @@ export const check_guess_io = async (guess_word, game_id) => {
             if (guess_result.is_winner) {
                 response_obj.is_winner = guess_result.is_winner
                 response_obj.game_over = true
+            } else if (guess_result.game_over) {
+                response_obj.game_over = true
             }
             
             response_obj.letter_states = guess_result.score

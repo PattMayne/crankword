@@ -1,7 +1,7 @@
 use serde::{ Serialize };
 use std::collections::BTreeMap;
 
-
+pub const MAX_TURNS: u8 = 5;
 
 /**
  * the snake_case macro turns RightSpot into "right_spot" string
@@ -37,9 +37,16 @@ pub struct WordlessScore {
 }
 
 #[derive(Serialize)]
+pub struct CheckGuessResultBasic {
+    pub score: Vec<LetterScore>,
+    pub is_winner: bool,
+}
+
+#[derive(Serialize)]
 pub struct CheckGuessResult {
     pub score: Vec<LetterScore>,
     pub is_winner: bool,
+    pub game_over: bool,
 }
 
 
@@ -64,6 +71,16 @@ impl GameStatus {
     }
 }
 
+
+impl CheckGuessResult {
+    pub fn new(basic_result: CheckGuessResultBasic, game_over: bool) -> CheckGuessResult {
+        CheckGuessResult {
+            score: basic_result.score,
+            is_winner: basic_result.is_winner,
+            game_over
+        }
+    }
+}
 
 /**
  * We need occurrences of each letter so we can highlight the correct
@@ -128,7 +145,7 @@ fn letter_is_right_spot(
 pub fn check_guess(
     guess_word: &String,
     winning_word: &String
-) -> CheckGuessResult {
+) -> CheckGuessResultBasic {
     // Create default vector with size based on guess word size
     let mut guess_map: Vec<LetterScore> = Vec::new();
     for _ in guess_word.chars() {
@@ -183,7 +200,7 @@ pub fn check_guess(
         }
     }
 
-    CheckGuessResult {
+    CheckGuessResultBasic {
         score: guess_map,
         is_winner
     }

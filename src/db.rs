@@ -386,23 +386,12 @@ pub async fn get_players_refresh_data_by_game_id(game: &Game) -> Result<Vec<Play
 }
 
 
-
 pub async fn get_game_and_players(game_id: i32) -> Result<GameAndPlayers> {
     let game: Game = get_game_by_id(game_id).await?;
     let players: Vec<PlayerInfo> = get_players_by_game_id(game_id).await?;
-
-    // THIS IS THE CRUCIAL MOMENT
-    // THIS is where we will also get the guesses for every player and
-    // add them to the PlayerInfo struct.
-
-    // THIS gets guess AND score:
-    // get_guess_scores(game_id: i32, user_id: i32)
-    // But WE just want the GUESS
-    // So we will get the guess and score AND THEN
-    // just take the SCORES
-
     Ok(GameAndPlayers { game, players })
 }
+
 
 pub async fn get_current_games(user_id: i32) -> Result<Vec<GameItemData>> {
     let pool: MySqlPool = create_pool().await?;
@@ -441,6 +430,22 @@ pub async fn get_current_games(user_id: i32) -> Result<Vec<GameItemData>> {
     // }))
 
     Ok(games)
+}
+
+
+/**
+ * Check if any players still have turns left to play.
+ */
+pub async fn somebody_can_play(game_id: i32) -> Result<bool> {
+    let players: Vec<PlayerInfo> = get_players_by_game_id(game_id).await?;
+    for player in players {
+        let guess_count: u8 = get_guess_count(game_id, player.user_id).await?;
+        if guess_count < game_logic::MAX_TURNS {
+            return Ok(true)
+        }
+    }
+
+    Ok(false)
 }
 
 /* 

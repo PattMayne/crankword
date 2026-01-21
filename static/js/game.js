@@ -270,7 +270,7 @@ const check_guess = async () => {
     create_keyboard_element()
 
     if (letter_states_obj.game_over) {
-        end_game(true, full_word)
+        end_game(letter_states_obj.is_winner, full_word)
         return
     }
 
@@ -307,6 +307,10 @@ const end_game = (victory, word) => {
     // TO DO: set a short timeout
     // and reload the page
     // should bring user to FinishedGame page
+
+    setTimeout(() => {
+        location.reload();
+    }, 2000)
 }
 
 

@@ -283,7 +283,8 @@ async fn go_to_finished_game(
             // if winner info exists in players' list, get their username
             match winner_info_option {
                 None => None,
-                Some(winner_info) => Some(winner_info.username.to_owned())
+                Some(winner_info) =>
+                    Some(winner_info.username.to_owned())
             }
         }
     };
@@ -803,12 +804,13 @@ pub async fn check_guess(
     }
 
     // get the NUMBER of player guesses.
-    let player_guess_count: u8 = match db::get_guess_count(word_json.game_id, user_id).await {
-        Ok(count) => count,
-        Err(_e) => return return_internal_err_json()
-    };
+    let player_guess_count: u8 =
+        match db::get_guess_count(word_json.game_id, user_id).await {
+            Ok(count) => count,
+            Err(_e) => return return_internal_err_json()
+        };
 
-    if player_guess_count > 4 {
+    if player_guess_count >= game_logic::MAX_TURNS {
         return HttpResponse::Ok().json(MaxGuesses::new());
     }
 
@@ -842,9 +844,15 @@ pub async fn check_guess(
         }
     };
 
-    let guess_result: game_logic::CheckGuessResult =
+    let guess_result_basic: game_logic::CheckGuessResultBasic =
         game_logic::check_guess(&word_json.guess_word, &winning_word);
     
+    let mut guess_result: game_logic::CheckGuessResult = 
+        game_logic::CheckGuessResult::new(
+            guess_result_basic,
+            false
+        );
+
     // Do we have a winner?
     if guess_result.is_winner {
         let finish_game_result: Result<u8, anyhow::Error> =
@@ -853,16 +861,52 @@ pub async fn check_guess(
         if finish_game_result.is_err() {
             return return_internal_err_json();
         }
+
+        guess_result.game_over = true;
+
         println!("GAME OVER WINNER");
+
     } else {
+
         // make it the next player's turn:
-        let _next_turn_user_id: i32 = match db::next_turn(word_json.game_id).await {
-            Ok(new_id) => new_id,
-            Err(_) => {
-                eprintln!("Error switching turns.");
+        let _next_turn_user_id: i32 =
+            match db::next_turn(word_json.game_id).await {
+                Ok(new_id) => new_id,
+                Err(_) => {
+                    eprintln!("Error switching turns.");
+                    return return_internal_err_json();
+                }
+            };
+
+        // check if game is over
+        // 1. check if this was player's final turn
+        // 2. if so, check if anybody else has remaining turns
+        // 3. if nobody else can play, game over (no winner)
+
+        if player_guess_count + 1 >= game_logic::MAX_TURNS {
+            /*
+             * This was the final turn, and NOT the correct guess.
+             * So it's game over for this player.
+             * So check if anybody else still has a turn.
+             */
+
+            let turns_still_exist_result: Result<bool, anyhow::Error> =
+                db::somebody_can_play(word_json.game_id).await;
+
+            if turns_still_exist_result.is_err() {
                 return return_internal_err_json();
             }
-        };
+            
+            let turns_still_exist: bool = turns_still_exist_result.unwrap();
+
+            if !turns_still_exist {
+                // game is over.
+                let _finish_game_result: Result<u8, anyhow::Error> =
+                    db::finish_game(word_json.game_id, None).await;
+                guess_result.game_over = true;
+            }
+
+        }
     }
 
     HttpResponse::Ok().json(guess_result)
