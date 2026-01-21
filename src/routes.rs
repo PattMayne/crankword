@@ -563,9 +563,12 @@ pub async fn refresh_in_prog_players(
         None => return return_unauthorized_err_json(&user_req_data)
     };
 
+    let game_over: bool = the_game.game_status != GameStatus::InProgress;
+
     let in_prog_refresh: InProgRefresh = InProgRefresh {
         current_turn_id,
-        players: players,
+        players,
+        game_over,
     };
 
     // only send the data if the user really belongs to this game

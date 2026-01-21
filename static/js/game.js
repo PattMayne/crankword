@@ -599,6 +599,8 @@ const settle_old_scores = async () => {
 const refresh_players = async () => {
     const players_obj = await io.refresh_players(game_id())
 
+    console.log("players_obj: " + JSON.stringify(players_obj))
+
     if (
         !players_obj.current_turn_id ||
         !players_obj.players ||
@@ -606,6 +608,8 @@ const refresh_players = async () => {
     ) {
         console.log("MISSING PLAYERS DATA")
         return
+    } else if (players_obj.game_over) {
+        end_game(false)
     }
     
 

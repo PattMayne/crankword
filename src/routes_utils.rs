@@ -83,6 +83,7 @@ pub struct PreGameRefresh {
 pub struct InProgRefresh {
     pub current_turn_id: i32,
     pub players: Vec<PlayerRefreshData>,
+    pub game_over: bool,
 }
 
 

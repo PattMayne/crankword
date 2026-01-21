@@ -184,28 +184,33 @@ h1, h2, h3, h4, h5, h6 {
 
 
 
-#winning_word_won_label {
-    color: $winning_word;
-    background-color: #000000;
-    padding: 5px;
-    padding-left: 7px;
-    display: inline-block;
+.winning_word_won_label {
+  color: $winning_word;
+  background-color: #000000;
+  padding: 5px;
+  padding-left: 7px;
+  display: inline-block;
 }
 
 
-#winning_word_lost_label {
-    color: $losing_word;
-    background-color: #000000;
-    padding: 5px;
-    padding-left: 7px;
-    display: inline-block;
+.winning_word_lost_label {
+  color: $losing_word;
+  background-color: #000000;
+  padding: 5px;
+  padding-left: 7px;
+  display: inline-block;
 }
 
-#winner_name {
-    color: $winning_word;
-    background-color: #000000;
-    padding: 5px;
-    padding-left: 7px;
-    display: inline-block;
-    font-weight: bold;
+.winner_name {
+  color: $winning_word;
+  background-color: #000000;
+  padding: 5px;
+  padding-left: 7px;
+  display: inline-block;
+  font-weight: bold;
+}
+
+#players_list {
+  list-style-type: none;
+  padding-left: 0;
 }

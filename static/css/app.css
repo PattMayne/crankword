@@ -130,7 +130,7 @@ h1, h2, h3, h4, h5, h6 {
  * =============================
  * 
 */
-#winning_word_won_label {
+.winning_word_won_label {
   color: #60f000;
   background-color: #000000;
   padding: 5px;
@@ -138,7 +138,7 @@ h1, h2, h3, h4, h5, h6 {
   display: inline-block;
 }
 
-#winning_word_lost_label {
+.winning_word_lost_label {
   color: #e02f2f;
   background-color: #000000;
   padding: 5px;
@@ -146,13 +146,18 @@ h1, h2, h3, h4, h5, h6 {
   display: inline-block;
 }
 
-#winner_name {
+.winner_name {
   color: #60f000;
   background-color: #000000;
   padding: 5px;
   padding-left: 7px;
   display: inline-block;
   font-weight: bold;
+}
+
+#players_list {
+  list-style-type: none;
+  padding-left: 0;
 }
 
 /*# sourceMappingURL=app.css.map */

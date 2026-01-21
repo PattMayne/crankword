@@ -7,34 +7,69 @@
         <title>{{ texts.title }}</title>
         <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
         <link rel="stylesheet" href="../static/css/foundation.min.css">
-        <link rel="stylesheet" href="../static/css/app.css?id=11">
+        <link rel="stylesheet" href="../static/css/app.css?id=1111">
     </head>
 
     <body>
     {% include "header.html" %}
     <div class="grid-container">
         <div class="grid-x grid-padding-x">
+
             <div class="large-12 cell">
-                <div class="callout">
-                    <h4>GAME IS OVER</h4>
+                <h4>GAME OVER</h4>
+            </div>
 
-                    {% match winner_name %}
-                    {% when Some with (name) %}
-                        <p>The winner is <span id="winner_name">{{ name }}.</span></p>
-
-                        <h6>The answer was:</h6>
-                        <h4 id="winning_word_won_label">{{ game.game.word }}</h4>
-
-                    {% when None %}
-                        <p>Nobody won this game.</p>
-
-                        <h6>The answer was:</h6>
-                        <h4 id="winning_word_lost_label">{{ game.game.word }}</h4>
                         
-                    {% endmatch %}
+            <div class="large-3 medium-4 small-6 cell">
+                <div class="callout primary">
 
+                {% match winner_name %}
+                {% when Some with (name) %}
+                    <h5>WINNER:</h5>
+                    <h4 class="winner_name">{{ name }}.</h4>
+
+                {% when None %}
+                    <h5>NO WINNER.</h5>
+                    
+                {% endmatch %}
+                </div>
+
+            </div>
+
+                                    
+            <div class="large-3 medium-4 small-6 cell">
+                <div class="callout primary">
+
+                {% match winner_name %}
+                {% when Some with (name) %}
+                    <h5>ANSWER:</h5>
+                    <h4 class="winning_word_won_label">{{ game.game.word }}</h4>
+
+                {% when None %}
+                    <h5>ANSWER:</h5>
+                    <h4 class="winning_word_lost_label">{{ game.game.word }}</h4>
+                    
+                {% endmatch %}
+                </div>
+
+            </div>
+
+            <div class="large-3 medium-4 small-12 cell">
+                <div class="callout primary">
+                    <h5>PLAYERS:</h5>
+                    <ul id="players_list">
+                        {% for player in game.players %}
+                            <li>{{ player.username }}</li>
+                        {% endfor %}
+                    </ul>
                 </div>
             </div>
+
+            <div class="large-3 show-for-large-only cell">
+                &nbsp;
+            </div>
+
+
         </div> <!-- end of grid-x -->
 
     </div><!-- end of grid-container -->            
@@ -42,7 +77,6 @@
         <script src="../static/js/vendor/jquery.js"></script>
         <script src="../static/js/vendor/what-input.js"></script>
         <script src="../static/js/vendor/foundation.min.js"></script>
-        <script type="module" src="../static/js/dashboard.js"></script>
 
     </body>
 

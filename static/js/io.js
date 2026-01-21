@@ -323,7 +323,8 @@ export const refresh_players = async game_id => {
 
     const response_obj = {
         players: [],
-        current_turn_id: null
+        current_turn_id: null,
+        game_over: false
     }
 
     await utils.fetch_json_post(route, input)
@@ -343,6 +344,7 @@ export const refresh_players = async game_id => {
         if (!!data.current_turn_id && !!data.players) {
             response_obj.players = data.players
             response_obj.current_turn_id = data.current_turn_id
+            response_obj.game_over = !!data.game_over
         } else {
             console.log("DID NOT REFRESH PLAYERS DATA")
             response_obj.error = !!data.error ? data.error : "DID NOT REFRESH PLAYERS DATA"
