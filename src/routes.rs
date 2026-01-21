@@ -260,15 +260,17 @@ async fn go_to_finished_game(
     the_game: db::GameAndPlayers,
     user_req_data: auth::UserReqData
 ) -> HttpResponse {
-    println!("{}", the_game.game.game_status.to_string());
+    println!("GAME STATUS: {}", the_game.game.game_status.to_string());
     let post_game_texts: PostGameTexts = resource_mgr::PostGameTexts::new(
         &user_req_data,
         None,
         false
     );
+
     let post_game_template: PostGameTemplate = PostGameTemplate {
         texts: post_game_texts,
-        user: user_req_data
+        user: user_req_data,
+        game: the_game
     };
 
     return HttpResponse::Ok()
@@ -295,7 +297,8 @@ async fn go_to_cancelled_game(
     );
     let post_game_template: PostGameTemplate = PostGameTemplate {
         texts: post_game_texts,
-        user: user_req_data
+        user: user_req_data,
+        game: the_game
     };
 
     return HttpResponse::Ok()

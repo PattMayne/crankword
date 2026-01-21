@@ -233,7 +233,7 @@ body {
 
 #scores_toggle:hover {
   background-color: #5a639e;
-  cursor: pointer;
+  cursor: pointer !important;
 }
 
 /*    Opponents' scores screen.    */

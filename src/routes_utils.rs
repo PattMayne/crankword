@@ -225,6 +225,7 @@ pub struct PreGameTemplate {
 pub struct PostGameTemplate {
     pub texts: PostGameTexts,
     pub user: auth::UserReqData,
+    pub game: db::GameAndPlayers,
 }
 
 

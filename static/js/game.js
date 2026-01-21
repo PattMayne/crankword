@@ -835,6 +835,8 @@ const KEYBOARD_LETTERS = {
     "m": false
 }
 
+// Update an individual letter in the keyboard which displays
+// which letters have been used.
 const update_keyboard_letter = (letter, score) => {
     letter = letter.toLowerCase()
 
@@ -845,6 +847,8 @@ const update_keyboard_letter = (letter, score) => {
 }
 
 
+// Create the keyboard element which displays
+// which letters have been used.
 const create_keyboard_element = () => {
     // get the element where we will draw the keyboard
     const used_keys_board = document.getElementById("used_keys_board_container")
@@ -878,6 +882,8 @@ const create_keyboard_element = () => {
 
 }
 
+
+// create the individual div for an individual letter.
 const create_keyboard_letter_div = (letter, state) => {
     let html = state == false ? "<div class='kb_letter letter_not_used'>" :
         state == LetterState.RIGHT_SPOT ? "<div class='kb_letter letter_right_spot'>" :
@@ -902,7 +908,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Check every 3 seconds for new users or updated game_status
     setInterval(refresh_players, 3000)
-    hide_scores()
+    show_scores()
 })
 
 
