@@ -19,3 +19,8 @@ Crankword is a turn-based multiplayer word-guessing game.
 * Mask ID?
 * * three randomized numbers followed by ( ID * 374 ) plus three randomized numbers
 * * * Then to read the URL just remove first 3, last 3, and divide by 374
+* Invite codes (actually the masked ID)
+* * code and route (URL) to read code
+* * In-game invitation
+* * Send email invitations (only will work when online)
+* * * will probably have to go through crankade auth app
