@@ -599,8 +599,6 @@ const settle_old_scores = async () => {
 const refresh_players = async () => {
     const players_obj = await io.refresh_players(hashed_game_id())
 
-    console.log("players_obj: " + JSON.stringify(players_obj))
-
     if (
         !players_obj.current_turn_id ||
         !players_obj.players ||
@@ -871,9 +869,7 @@ const create_keyboard_element = () => {
             html += "</div><div class='keyboard_row'>"
         }
 
-        //console.log(key, value);
         html += create_keyboard_letter_div(key, value)
-
         key_count ++
 
         if (key_count >= Object.keys(KEYBOARD_LETTERS).length) {

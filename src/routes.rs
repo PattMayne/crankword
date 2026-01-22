@@ -703,7 +703,7 @@ pub async fn join_game(
     req: HttpRequest,
     game_join_hash_id: web::Json<HashedGameId>
 ) -> HttpResponse {
-    println!("JOINING GAME {}", game_join_hash_id.hashed_game_id);
+    println!("JOINING GAME");
     // Make sure it's a real user
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
     if user_req_data.get_role() == "guest" {
@@ -720,9 +720,6 @@ pub async fn join_game(
         },
         Err(_e) => return return_internal_err_json()
     };
-
-
-    println!("JOINING GAME {}", game_id);
 
     // Make sure they're not already in a pregame or inprogress game.
     let games_count: u8 = 

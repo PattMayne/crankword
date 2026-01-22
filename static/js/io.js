@@ -166,7 +166,7 @@ export const start_game = async hashed_game_id => {
 export const refresh_pregame = async hashed_game_id => {
     const route = "/game_in/refresh_pregame"
     const input = {
-        "hashed_game_id": parseInt(hashed_game_id)
+        "hashed_game_id": String(hashed_game_id)
     }
 
     const response_obj = {
@@ -213,7 +213,7 @@ export const refresh_pregame = async hashed_game_id => {
 export const get_guess_scores = async hashed_game_id => {
     const route = "/game_in/get_guess_scores"
     const input = {
-        "hashed_game_id": parseInt(hashed_game_id)
+        "hashed_game_id": String(hashed_game_id)
     }
 
     const response_obj = {
@@ -259,7 +259,7 @@ export const check_guess_io = async (guess_word, hashed_game_id) => {
     const check_guess_route = "/game_in/check_guess"
     const guess_obj = {
         "guess_word": guess_word,
-        "hashed_game_id": parseInt(hashed_game_id)
+        "hashed_game_id": String(hashed_game_id)
     }
 
     const response_obj = {
@@ -318,7 +318,7 @@ export const check_guess_io = async (guess_word, hashed_game_id) => {
 export const refresh_players = async hashed_game_id => {
     const route = "/game_in/refresh_in_prog_players"
     const input = {
-        "hashed_game_id": parseInt(hashed_game_id)
+        "hashed_game_id": String(hashed_game_id)
     }
 
     const response_obj = {
