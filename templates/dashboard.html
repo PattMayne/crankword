@@ -27,7 +27,7 @@
                     <h4>{{ texts.current_games }}:</h4>
                     <span>
                         {% for game in current_games %}
-                            <a class="button small" href="/game/{{ game.id }}">{{ game.id }}</a>
+                            <a class="button small" href="/game/{{ game.hashid }}">{{ game.game_status }}: {{ game.hashid }}</a>
                         {% endfor %}
                     </span>
                 </div>

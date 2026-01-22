@@ -45,7 +45,7 @@ let showing_scores = true
 let game_id_storage = null
 
 // Game id is in the path (game/id)
-const game_id = () => {
+const hashed_game_id = () => {
     if (!!game_id_storage) {
         return game_id_storage
     }
@@ -217,7 +217,7 @@ const check_guess = async () => {
 
     // Make word from chars
     const full_word = current_word.tiles.reduce((str, tile) => str + tile.letter, "")
-    const letter_states_obj = await io.check_guess_io(full_word, game_id())
+    const letter_states_obj = await io.check_guess_io(full_word, hashed_game_id())
 
     // Show Error
     if (!!letter_states_obj.error) {
@@ -538,7 +538,7 @@ const unset_current_tile_classes = () => {
 const settle_old_scores = async () => {
 
     // get the list of guess results
-    const scores_obj = await io.get_guess_scores(game_id())
+    const scores_obj = await io.get_guess_scores(hashed_game_id())
 
     // set the results into the grid
 
@@ -597,7 +597,7 @@ const settle_old_scores = async () => {
 
 
 const refresh_players = async () => {
-    const players_obj = await io.refresh_players(game_id())
+    const players_obj = await io.refresh_players(hashed_game_id())
 
     console.log("players_obj: " + JSON.stringify(players_obj))
 
@@ -905,7 +905,7 @@ const create_keyboard_letter_div = (letter, state) => {
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('scores_toggle').addEventListener('click', toggle_scores)
     document.getElementById('scores_toggle_2').addEventListener('click', toggle_scores)
-    game_id_storage = document.getElementById("game_id").value
+    game_id_storage = document.getElementById("hashed_game_id").value
     settle_old_scores()
     refresh_players()
 

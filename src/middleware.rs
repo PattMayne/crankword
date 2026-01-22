@@ -21,7 +21,7 @@ use actix_web::{
     middleware::{ Next }
 };
 
-use crate::{ auth, io,
+use crate::{ auth, crankword_io,
     auth_code_shared::{ 
             RefreshCheckSuccess,
             RefreshCheckRequest,
@@ -148,7 +148,7 @@ async fn get_user_req_data_from_opt(
     };
 
     let refresh_check_result: Result<RefreshCheckSuccess, anyhow::Error> =
-        io::check_refresh_code(&refresh_check_data).await;
+        crankword_io::check_refresh_code(&refresh_check_data).await;
 
     if refresh_check_result.is_err() {
         // TO DO: send to ERROR PAGE

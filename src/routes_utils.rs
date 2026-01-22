@@ -51,7 +51,7 @@ use crate::{
 #[derive(Deserialize)]
 pub struct WordToCheck {
     pub guess_word: String,
-    pub game_id: i32,
+    pub hashed_game_id: String,
 }
 
 #[derive(Deserialize)]
@@ -119,6 +119,13 @@ pub struct StartGameSuccess {
 pub struct GameId {
     pub game_id: i32,
 }
+
+
+#[derive(Serialize, Deserialize)]
+pub struct HashedGameId {
+    pub hashed_game_id: String,
+}
+
 
 #[derive(Serialize)]
 pub struct FakeWord {
@@ -209,7 +216,8 @@ pub struct GameTemplate {
     pub title: String,
     pub user: auth::UserReqData,
     pub game: db::GameAndPlayers,
-    pub texts: GameTexts
+    pub texts: GameTexts,
+    pub hashed_game_id: String,
 }
 
 
@@ -219,6 +227,7 @@ pub struct PreGameTemplate {
     pub texts: PreGameTexts,
     pub user: auth::UserReqData,
     pub game: db::GameAndPlayers,
+    pub hashed_game_id: String,
 }
 
 #[derive(Template)]
@@ -246,7 +255,7 @@ pub struct FinishedGameTemplate {
 pub struct DashboardTemplate {
     pub texts: DashTexts,
     pub user: auth::UserReqData,
-    pub current_games: Vec<db::GameItemData>,
+    pub current_games: Vec<db::GameLinkData>,
     pub stats: db::PlayerStats,
 }
 

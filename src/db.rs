@@ -62,6 +62,12 @@ pub struct GameItemData {
     pub winner_id: Option<i32>,
 }
 
+pub struct GameLinkData {
+    pub hashid: String,
+    pub game_status: String,
+}
+
+
 #[derive(Debug)]
 struct Count {
     count: i64,

@@ -528,6 +528,7 @@ dependencies = [
  "argon2",
  "askama",
  "dotenvy",
+ "hash-ids",
  "jsonwebtoken",
  "password-hash",
  "phf",
@@ -1037,6 +1038,12 @@ dependencies = [
  "tokio-util",
  "tracing",
 ]
+
+[[package]]
+name = "hash-ids"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e637affe86ae6203fb90b3802aa235f00910799b60fbead4d770c42d3495a3af"
 
 [[package]]
 name = "hashbrown"

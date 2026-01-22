@@ -4,6 +4,7 @@ use actix_web::{
     cookie::{ Cookie }
 };
 use askama::Template;
+use hash_ids::HashIds;
 
 use crate::{
     auth, auth_code_shared::{ 
@@ -11,7 +12,7 @@ use crate::{
         AuthCodeSuccess
     }, db::{self, GameAndPlayers, GameItemData, PlayerStats},
     game_logic::{ self, GameStatus },
-    io, resource_mgr::{self, *}, resources::get_translation,
+    crankword_io, resource_mgr::{self, *}, resources::get_translation,
     routes_utils::*, utils::{ self, SupportedLangs }, words_all
 };
 
@@ -178,16 +179,32 @@ async fn game_root(req: HttpRequest) -> HttpResponse {
  }
 
 
- #[get("/game/{game_id}")]
- async fn game(req: HttpRequest, path: web::Path<String>) -> HttpResponse {
+ #[get("/game/{hashed_game_id}")]
+ async fn game(
+    hash_ids: web::Data<HashIds>,
+    req: HttpRequest,
+    path: web::Path<String>
+) -> HttpResponse {
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
     if user_req_data.role == "guest" || user_req_data.id.is_none() {
         return redirect_to_login();
     }
 
-    let game_id: i32 = match path.into_inner().parse::<i32>() {
-        Ok(id) => id,
-        Err(_) => return redirect_to_err("400")
+    let hashed_game_id: String = match path.into_inner().parse::<String>() {
+        Ok(hashid) => hashid,
+        Err(_) => "400".to_string()
+    };
+
+    // The URL is hashed. Decode it.
+    let game_id: i32 = match hash_ids.decode(&hashed_game_id) {
+        Ok(hash_ids) => {
+            if hash_ids.len() > 0 {
+                hash_ids[0] as i32
+            } else {
+                return redirect_to_err("404")
+            }
+        },
+        Err(_e) => return redirect_to_err("404")
     };
 
     let game: db::GameAndPlayers = match db::get_game_and_players(game_id).await {
@@ -199,9 +216,9 @@ async fn game_root(req: HttpRequest) -> HttpResponse {
     // Each option is in a function
     match game.game.game_status {
         game_logic::GameStatus::PreGame =>
-            go_to_pregame(game, user_req_data).await,
+            go_to_pregame(&hashed_game_id, game, user_req_data).await,
         game_logic::GameStatus::InProgress =>
-            go_to_inprogress_game(game, user_req_data).await,
+            go_to_inprogress_game(&hashed_game_id, game, user_req_data).await,
         game_logic::GameStatus::Finished =>
             go_to_finished_game(game, user_req_data).await,
         game_logic::GameStatus::Cancelled =>
@@ -212,6 +229,7 @@ async fn game_root(req: HttpRequest) -> HttpResponse {
 /* FUNCTIONS TO SUPPORT THE /game/{game_id} ROUTE */
 
 async fn go_to_pregame(
+    hashed_game_id: &String,
     the_game: db::GameAndPlayers,
     user_req_data: auth::UserReqData
 ) -> HttpResponse {
@@ -220,7 +238,8 @@ async fn go_to_pregame(
     let pre_game_template: PreGameTemplate = PreGameTemplate {
         texts: resource_mgr::PreGameTexts::new(&user_req_data),
         game: the_game,
-        user: user_req_data
+        user: user_req_data,
+        hashed_game_id: hashed_game_id.to_owned()
     };
 
     return HttpResponse::Ok()
@@ -230,6 +249,7 @@ async fn go_to_pregame(
 
 
 async fn go_to_inprogress_game(
+    hashed_game_id: &String,
     the_game: db::GameAndPlayers,
     user_req_data: auth::UserReqData
 ) -> HttpResponse {
@@ -239,7 +259,8 @@ async fn go_to_inprogress_game(
         title: "CRANKWORD".to_string(),
         user: user_req_data,
         game: the_game,
-        texts
+        texts,
+        hashed_game_id: hashed_game_id.to_owned()
     };
 
     return HttpResponse::Ok()
@@ -332,7 +353,10 @@ async fn go_to_cancelled_game(
 
 /* PLAYER DASHBOARD ROUTE */
 #[get("/dashboard")]
-async fn dashboard(req: HttpRequest) -> HttpResponse {
+async fn dashboard(
+    hash_ids: web::Data<HashIds>,
+    req: HttpRequest
+) -> HttpResponse {
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
 
     if user_req_data.role == "guest" || user_req_data.id.is_none() {
@@ -350,7 +374,7 @@ async fn dashboard(req: HttpRequest) -> HttpResponse {
     let mut wins: u32 = 0;
     let mut past_games: u32 = 0;
     let mut cancelled_games: u32 = 0;
-    let mut current_games: Vec<GameItemData> = Vec::new();
+    let mut current_games: Vec<db::GameLinkData> = Vec::new();
 
     for user_game in all_user_games {
 
@@ -358,7 +382,11 @@ async fn dashboard(req: HttpRequest) -> HttpResponse {
         if user_game.game_status == game_logic::GameStatus::InProgress.to_string() ||
             user_game.game_status == game_logic::GameStatus::PreGame.to_string()
         {
-            current_games.push(GameItemData::new_from(&user_game));
+            current_games.push(db::GameLinkData {
+                hashid: hash_ids.encode(&[user_game.id as u64]),
+                game_status: user_game.game_status
+            });
+
             continue;
         }
 
@@ -429,7 +457,7 @@ async fn reception(query: web::Query<AuthCodeQuery>) -> HttpResponse {
     };
 
     let auth_code_response: Result<AuthCodeSuccess, anyhow::Error> = 
-        io::check_auth_code(client_auth_data).await;
+        crankword_io::check_auth_code(client_auth_data).await;
 
     match auth_code_response {
         Ok(success) => {
@@ -569,8 +597,9 @@ pub fn redirect_to_login() -> HttpResponse {
  */
 #[post("refresh_in_prog_players")]
 pub async fn refresh_in_prog_players(
+    hash_ids: web::Data<HashIds>,
     req: HttpRequest,
-    game_id: web::Json<GameId>
+    hashed_game_id: web::Json<HashedGameId>
 ) -> HttpResponse {
     // Make sure it's a real user
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
@@ -579,8 +608,19 @@ pub async fn refresh_in_prog_players(
         None => return return_unauthorized_err_json(&user_req_data)
     };
 
+    let game_id: i32 = match hash_ids.decode(&hashed_game_id.hashed_game_id) {
+        Ok(ids) => {
+            if ids.len() > 0 {
+                ids[0] as i32
+            } else {
+                return return_internal_err_json()
+            }
+        },
+        Err(_e) => return return_internal_err_json()
+    };
+
     // get the game
-    let the_game: db::Game = match db::get_game_by_id(game_id.game_id).await {
+    let the_game: db::Game = match db::get_game_by_id(game_id).await {
         Ok(g) => g,
         Err(_) => return return_unauthorized_err_json(&user_req_data)
     };
@@ -620,8 +660,9 @@ pub async fn refresh_in_prog_players(
  */
 #[post("/refresh_pregame")]
 pub async fn refresh_pregame(
+    hash_ids: web::Data<HashIds>,
     req: HttpRequest,
-    game_id: web::Json<GameId>
+    hashed_game_id: web::Json<HashedGameId>
 ) -> HttpResponse {
     println!("REFRESHING GAME");
     // Make sure it's a real user
@@ -630,7 +671,18 @@ pub async fn refresh_pregame(
         return return_unauthorized_err_json(&user_req_data);
     }
 
-    let the_game: db::GameAndPlayers = match db::get_game_and_players(game_id.game_id).await {
+    let game_id: i32 = match hash_ids.decode(&hashed_game_id.hashed_game_id) {
+        Ok(ids) => {
+            if ids.len() > 0 {
+                ids[0] as i32
+            } else {
+                return return_internal_err_json()
+            }
+        },
+        Err(_e) => return return_internal_err_json()
+    };
+
+    let the_game: db::GameAndPlayers = match db::get_game_and_players(game_id).await {
         Ok(gap) => gap,
         Err(_e) => return return_internal_err_json()
     };
@@ -647,16 +699,30 @@ pub async fn refresh_pregame(
 
 #[post("/join_game")]
 pub async fn join_game(
+    hash_ids: web::Data<HashIds>,
     req: HttpRequest,
-    game_join_id: web::Json<GameId>
+    game_join_hash_id: web::Json<HashedGameId>
 ) -> HttpResponse {
-    println!("JOINING GAME");
+    println!("JOINING GAME {}", game_join_hash_id.hashed_game_id);
     // Make sure it's a real user
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
     if user_req_data.get_role() == "guest" {
         return return_unauthorized_err_json(&user_req_data);
     }
 
+    let game_id: i32 = match hash_ids.decode(&game_join_hash_id.hashed_game_id) {
+        Ok(ids) => {
+            if ids.len() > 0 {
+                ids[0] as i32
+            } else {
+                return return_internal_err_json()
+            }
+        },
+        Err(_e) => return return_internal_err_json()
+    };
+
+
+    println!("JOINING GAME {}", game_id);
 
     // Make sure they're not already in a pregame or inprogress game.
     let games_count: u8 = 
@@ -675,7 +741,7 @@ pub async fn join_game(
     // Use may join
     let user_joined_game: bool = match db::user_join_game(
         &user_req_data,
-        game_join_id.game_id
+        game_id
     ).await {
         Ok(joined) => joined,
         Err(e) => {
@@ -692,8 +758,9 @@ pub async fn join_game(
 
 #[post("/start_game")]
 pub async fn start_game(
+    hash_ids: web::Data<HashIds>,
     req: HttpRequest,
-    game_start_id: web::Json<GameId>
+    game_start_id: web::Json<HashedGameId>
 ) -> HttpResponse {
     println!("STARTING GAME");
     // Make sure it's a real user
@@ -702,7 +769,18 @@ pub async fn start_game(
         return return_unauthorized_err_json(&user_req_data);
     }
 
-    let the_game: db::Game = match db::get_game_by_id(game_start_id.game_id).await {
+    let game_id: i32 = match hash_ids.decode(&game_start_id.hashed_game_id) {
+        Ok(ids) => {
+            if ids.len() > 0 {
+                ids[0] as i32
+            } else {
+                return return_internal_err_json()
+            }
+        },
+        Err(_e) => return return_internal_err_json()
+    };
+
+    let the_game: db::Game = match db::get_game_by_id(game_id).await {
         Ok(the_game) => the_game,
         Err(_e) => return return_internal_err_json()
     };
@@ -738,7 +816,10 @@ pub async fn start_game(
 
 
 #[post("/new_game")]
-pub async fn new_game(req: HttpRequest) -> HttpResponse {
+pub async fn new_game(
+    hash_ids: web::Data<HashIds>,
+    req: HttpRequest
+) -> HttpResponse {
     // make sure it's a real user
     // make the game and get the id
     // redirect user to game page
@@ -778,7 +859,9 @@ pub async fn new_game(req: HttpRequest) -> HttpResponse {
 
     // send back the game_id so the front-end can redirect.
     println!("created game object: {}", game_id);
-    HttpResponse::Ok().json(GameId { game_id })
+    HttpResponse::Ok().json(HashedGameId { 
+        hashed_game_id: hash_ids.encode(&[game_id as u64])
+     })
 }
 
 /**
@@ -792,6 +875,7 @@ pub async fn new_game(req: HttpRequest) -> HttpResponse {
  */
 #[post("/check_guess")]
 pub async fn check_guess(
+    hash_ids: web::Data<HashIds>,
     req: HttpRequest,
     word_json: web::Json<WordToCheck>
 ) -> HttpResponse {
@@ -808,10 +892,21 @@ pub async fn check_guess(
             });
     }};
 
+    let game_id: i32 = match hash_ids.decode(&word_json.hashed_game_id) {
+        Ok(ids) => {
+            if ids.len() > 0 {
+                ids[0] as i32
+            } else {
+                return return_internal_err_json()
+            }
+        },
+        Err(_e) => return return_internal_err_json()
+    };
+
     // User is logged in
     // Get the game
     let game_and_players: GameAndPlayers =
-        match db::get_game_and_players(word_json.game_id).await {
+        match db::get_game_and_players(game_id).await {
             Ok(data) => data,
             Err(_e) => return return_internal_err_json()
         };
@@ -843,7 +938,7 @@ pub async fn check_guess(
 
     // get the NUMBER of player guesses.
     let player_guess_count: u8 =
-        match db::get_guess_count(word_json.game_id, user_id).await {
+        match db::get_guess_count(game_id, user_id).await {
             Ok(count) => count,
             Err(_e) => return return_internal_err_json()
         };
@@ -872,7 +967,7 @@ pub async fn check_guess(
     
     // TODO: ADD AUTH CHECKS (user belongs to game, it is user's turn).
     // If it's not the user's turn, return a json object which indicates that.
-    let winning_word: String = match db::get_winning_word(word_json.game_id).await {
+    let winning_word: String = match db::get_winning_word(game_id).await {
         Ok(word) => word,
         Err(_e) => {
             return HttpResponse::Unauthorized().json(ErrorResponse{
@@ -894,7 +989,7 @@ pub async fn check_guess(
     // Do we have a winner?
     if guess_result.is_winner {
         let finish_game_result: Result<u8, anyhow::Error> =
-            db::finish_game(word_json.game_id, Some(user_id)).await;
+            db::finish_game(game_id, Some(user_id)).await;
         
         if finish_game_result.is_err() {
             return return_internal_err_json();
@@ -908,7 +1003,7 @@ pub async fn check_guess(
 
         // make it the next player's turn:
         let _next_turn_user_id: i32 =
-            match db::next_turn(word_json.game_id).await {
+            match db::next_turn(game_id).await {
                 Ok(new_id) => new_id,
                 Err(_) => {
                     eprintln!("Error switching turns.");
@@ -929,7 +1024,7 @@ pub async fn check_guess(
              */
 
             let turns_still_exist_result: Result<bool, anyhow::Error> =
-                db::somebody_can_play(word_json.game_id).await;
+                db::somebody_can_play(game_id).await;
 
             if turns_still_exist_result.is_err() {
                 return return_internal_err_json();
@@ -940,7 +1035,7 @@ pub async fn check_guess(
             if !turns_still_exist {
                 // game is over.
                 let _finish_game_result: Result<u8, anyhow::Error> =
-                    db::finish_game(word_json.game_id, None).await;
+                    db::finish_game(game_id, None).await;
                 guess_result.game_over = true;
             }
         }
@@ -956,8 +1051,9 @@ pub async fn check_guess(
  */
 #[post("/get_guess_scores")]
 pub async fn get_guess_scores(
+    hash_ids: web::Data<HashIds>,
     req: HttpRequest,
-    game_id: web::Json<GameId>
+    hashed_game_id: web::Json<HashedGameId>
 ) -> HttpResponse {
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
     let user_id: i32 = match user_req_data.id {
@@ -965,8 +1061,19 @@ pub async fn get_guess_scores(
         None => { return return_unauthorized_err_json(&user_req_data); }
     };
 
+    let game_id: i32 = match hash_ids.decode(&hashed_game_id.hashed_game_id) {
+        Ok(ids) => {
+            if ids.len() > 0 {
+                ids[0] as i32
+            } else {
+                return return_internal_err_json()
+            }
+        },
+        Err(_e) => return return_internal_err_json()
+    };
+
     let all_scores: Vec<game_logic::GuessAndScore> =
-        match db::get_guess_scores(game_id.game_id, user_id).await {
+        match db::get_guess_scores(game_id, user_id).await {
             Ok(scores) => scores,
             Err(_e) => return return_unauthorized_err_json(&user_req_data)
         };

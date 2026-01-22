@@ -3,6 +3,8 @@
 use actix_web::{ App, HttpServer, middleware::{from_fn}, web };
 use actix_files::Files;
 use dotenvy;
+use std::io;
+use hash_ids::HashIds;
 
 mod routes;
 mod routes_utils;
@@ -10,7 +12,7 @@ mod game_logic;
 mod db;
 mod auth_code_shared;
 mod auth;
-mod io;
+mod crankword_io;
 mod utils;
 mod middleware;
 mod resources;
@@ -23,30 +25,38 @@ pub struct AppConfig {
 }
 
 
-/*
- * TO DO (in this order):
- * -- askama template for game
- * -- provide word from backend (hardcoded for now)
- * -- connect with backend to check guesses
- * -- create AUTH script for user to login
- * -- create single-player version for logged-in person
- * ---- create DB
- * ---- user can win game
- * -- create multi-player version
- * 
- * 
- * 
- * */
+/* 
+ * ===========================
+ * ===========================
+ * =====                 =====
+ * =====  MAIN FUNCTION  =====
+ * =====                 =====
+ * ===========================
+ * ===========================
+*/
 
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    // Prepare data for storage in app data and other universal utils
+
     // dotenvy loads env variables for whole app
     // after this, just call std::env::var(variable_name)
     dotenvy::dotenv().ok();
 
-    HttpServer::new(|| {
+    // Prepare the hash
+    let hashid_secret: String = match std::env::var("HASHID_SECRET") {
+        Ok(secret) => secret,
+        Err(_e) => return hashid_secret_err().await
+    };
+
+    let hash_ids = HashIds::builder()
+        .with_salt(&hashid_secret)
+        .finish();
+
+    HttpServer::new(move || {
         App::new()
+            .app_data(web::Data::new(hash_ids.clone()))
             .service(Files::new("/static", "./static"))
             .wrap(from_fn(middleware::login_status_middleware))
             .service(routes::error_root)
@@ -79,6 +89,15 @@ async fn main() -> std::io::Result<()> {
 }
 
 
+async fn hashid_secret_err() -> std::io::Result<()> {
+    eprintln!("ERROR: NO HASH ID SECRET.");
+    return Err(
+        io::Error::new(
+            io::ErrorKind::NotFound, "HASHID_SECRET not set")
+    );
+}
+
+
 /*
  * ROUTES SCHEME:
  *      /game/{}            -- get user_id from JSON web token from cookie
@@ -89,7 +108,6 @@ async fn main() -> std::io::Result<()> {
 
  fn check_words() {
     let word: String = words_solutions::get_random_word();
-    //let word: &str = "hghgh";
     println!("{}", word);
     let word_exists: bool = words_all::is_real_word(&word);
 

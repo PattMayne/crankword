@@ -51,12 +51,12 @@ export const new_game = async () => {
     let data = await response.json()
 
     let return_obj = {
-        game_id: 0,
+        hashed_game_id: 0,
         error: null
     }
 
-    if (data.game_id !== undefined) {
-        return_obj.game_id = data.game_id
+    if (data.hashed_game_id !== undefined) {
+        return_obj.hashed_game_id = data.hashed_game_id
     } else if (!!data.error) {
         return_obj.error = data.error
     } else {
@@ -71,13 +71,13 @@ export const new_game = async () => {
 /**
  * When the user wants to join the game.
  * 
- * @param {int} game_id 
+ * @param {int} hashed_game_id 
  * @returns obj
  */
-export const join_game = async (game_id) => {
+export const join_game = async (hashed_game_id) => {
     const route = "/game_in/join_game"
     const input = {
-        "game_id": parseInt(game_id)
+        "hashed_game_id": String(hashed_game_id)
     }
 
     const response_obj = {
@@ -115,13 +115,13 @@ export const join_game = async (game_id) => {
 /**
  * When the owner of the game wants to transition from pre-game to in-progress.
  * 
- * @param {int} game_id 
+ * @param {int} hashed_game_id 
  * @returns json object
  */
-export const start_game = async game_id => {
+export const start_game = async hashed_game_id => {
     const route = "/game_in/start_game"
     const input = {
-        "game_id": parseInt(game_id)
+        "hashed_game_id": String(hashed_game_id)
     }
 
     const response_obj = {
@@ -160,13 +160,13 @@ export const start_game = async game_id => {
 /**
  * update the data about the pregame-status game.
  * 
- * @param {int} game_id 
+ * @param {int} hashed_game_id 
  * @returns obj
  */
-export const refresh_pregame = async game_id => {
+export const refresh_pregame = async hashed_game_id => {
     const route = "/game_in/refresh_pregame"
     const input = {
-        "game_id": parseInt(game_id)
+        "hashed_game_id": parseInt(hashed_game_id)
     }
 
     const response_obj = {
@@ -207,13 +207,13 @@ export const refresh_pregame = async game_id => {
  * Get all of the current player's previous guesses and their scores
  * from the database.
  * 
- * @param {int} game_id 
+ * @param {int} hashed_game_id 
  * @returns obj
  */
-export const get_guess_scores = async game_id => {
+export const get_guess_scores = async hashed_game_id => {
     const route = "/game_in/get_guess_scores"
     const input = {
-        "game_id": parseInt(game_id)
+        "hashed_game_id": parseInt(hashed_game_id)
     }
 
     const response_obj = {
@@ -252,14 +252,14 @@ export const get_guess_scores = async game_id => {
 /**
  * Check a particular guess (word) and get a result for that word
  * @param {*} guess_word 
- * @param {*} game_id 
+ * @param {*} hashed_game_id 
  * @returns 
  */
-export const check_guess_io = async (guess_word, game_id) => {
+export const check_guess_io = async (guess_word, hashed_game_id) => {
     const check_guess_route = "/game_in/check_guess"
     const guess_obj = {
         "guess_word": guess_word,
-        "game_id": parseInt(game_id)
+        "hashed_game_id": parseInt(hashed_game_id)
     }
 
     const response_obj = {
@@ -312,13 +312,13 @@ export const check_guess_io = async (guess_word, game_id) => {
 /**
  * update the data about the pregame-status game.
  * 
- * @param {int} game_id 
+ * @param {int} hashed_game_id 
  * @returns obj
  */
-export const refresh_players = async game_id => {
+export const refresh_players = async hashed_game_id => {
     const route = "/game_in/refresh_in_prog_players"
     const input = {
-        "game_id": parseInt(game_id)
+        "hashed_game_id": parseInt(hashed_game_id)
     }
 
     const response_obj = {
