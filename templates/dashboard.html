@@ -23,15 +23,23 @@
                 <a class="button" id="new_game_button">{{ texts.new_game }}</a>
             </div>
 
-            <div class="large-12 cell">
-                <div class="callout">
+            <div class="large-4 medium-6 small-12 cell">
+                <div class="callout primary">
                     <h4>{{ texts.current_games }}:</h4>
+                    <span>
+                        {% for game in current_games %}
+                            <a class="button small" href="/game/{{ game.id }}">{{ game.id }}</a>
+                        {% endfor %}
+                    </span>
                 </div>
             </div>
 
-            <div class="large-12 cell">
-                <div class="callout">
+            <div class="large-4 medium-6 small-12 cell">
+                <div class="callout primary">
                     <h4>{{ texts.stats }}:</h4>
+                    <h6>PAST GAMES: {{ stats.past_games }}</h6>
+                    <h6>WINS: {{ stats.wins }}</h6>
+                    <h6>CANCELLED GAMES: {{ stats.cancelled_games }}</h6>
                 </div>
             </div>
 

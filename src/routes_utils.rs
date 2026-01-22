@@ -238,13 +238,16 @@ pub struct FinishedGameTemplate {
     pub winner_name: Option<String>,
 }
 
-
+// GameItemData should have list of player names
+// It should also have stats:
+// (number of finished games, number of wins, number of cancellations)
 #[derive(Template)]
 #[template(path="dashboard.html")]
 pub struct DashboardTemplate {
     pub texts: DashTexts,
     pub user: auth::UserReqData,
     pub current_games: Vec<db::GameItemData>,
+    pub stats: db::PlayerStats,
 }
 
 
@@ -258,13 +261,23 @@ pub struct ErrorTemplate {
 
 
 
-// OTHER STRUCTS & ENUMS
+/* 
+ * EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+ * EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+ * EEEEE                         EEEEE
+ * EEEEE  OTHER STRUCTS & ENUMS  EEEEE
+ * EEEEE                         EEEEE
+ * EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+ * EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+*/
+
 
 
 struct TwoAuthCookies {
     pub jwt_cookie: Cookie<'static>,
     pub refresh_token_cookie: Cookie<'static>,
 }
+
 
 
 

@@ -9,12 +9,10 @@ use crate::{
     auth, auth_code_shared::{ 
         AuthCodeRequest,
         AuthCodeSuccess
-    }, db::{self, GameAndPlayers},
-    game_logic::{ self, GameStatus, LetterScore },
-    io, resource_mgr::{self, *},
-    resources::get_translation,
-    utils::{ self, SupportedLangs },
-    words_all, routes_utils::{*}
+    }, db::{self, GameAndPlayers, GameItemData, PlayerStats},
+    game_logic::{ self, GameStatus },
+    io, resource_mgr::{self, *}, resources::get_translation,
+    routes_utils::*, utils::{ self, SupportedLangs }, words_all
 };
 
 /* 
@@ -337,14 +335,51 @@ async fn go_to_cancelled_game(
 async fn dashboard(req: HttpRequest) -> HttpResponse {
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
 
-    if user_req_data.role == "guest" {
+    if user_req_data.role == "guest" || user_req_data.id.is_none() {
         return redirect_to_login();
     }
+
+    let user_id: i32 = user_req_data.id.unwrap();
+
+    let all_user_games: Vec<db::GameItemData> = match db::get_current_games(user_id).await {
+        Ok(games) => games,
+        Err(_e) => return redirect_to_err("500")
+    };
+
+    // Create stats object
+    let mut wins: u32 = 0;
+    let mut past_games: u32 = 0;
+    let mut cancelled_games: u32 = 0;
+    let mut current_games: Vec<GameItemData> = Vec::new();
+
+    for user_game in all_user_games {
+
+        // rule out current games (in progress and pre-game)
+        if user_game.game_status == game_logic::GameStatus::InProgress.to_string() ||
+            user_game.game_status == game_logic::GameStatus::PreGame.to_string()
+        {
+            current_games.push(GameItemData::new_from(&user_game));
+            continue;
+        }
+
+        past_games += 1;
+        
+        if user_game.game_status == game_logic::GameStatus::Cancelled.to_string() {
+            cancelled_games += 1;
+        } else if user_game.winner_id.is_some() {
+            if user_game.winner_id.unwrap() == user_id {
+                wins += 1;
+            }
+        }
+    }
+
+    let stats: PlayerStats = PlayerStats { wins, past_games, cancelled_games };
 
     let dash_template: DashboardTemplate = DashboardTemplate {
         texts: DashTexts::new(&user_req_data),
         user: user_req_data,
-        current_games: Vec::new(),
+        current_games,
+        stats
     };
 
     HttpResponse::Ok()

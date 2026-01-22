@@ -57,15 +57,25 @@ struct UserId {
 
 // For referential items in a list of games
 pub struct GameItemData {
-    game_id: i32,
-    game_status: game_logic::GameStatus,
-    number_of_players: u8,
+    pub id: i32,
+    pub game_status: String,
+    pub winner_id: Option<i32>,
 }
 
 #[derive(Debug)]
 struct Count {
     count: i64,
 }
+
+
+
+#[derive(Serialize)]
+pub struct PlayerStats {
+    pub wins: u32,
+    pub past_games: u32,
+    pub cancelled_games: u32,
+}
+
 
 
 // raw DB data for one game to populate Game
@@ -136,6 +146,17 @@ impl Game {
 }
 
 
+impl GameItemData {
+    pub fn new_from(item: &GameItemData) -> GameItemData {
+        GameItemData {
+            id: item.id,
+            game_status: item.game_status.to_owned(),
+            winner_id: item.winner_id
+        }
+    }
+}
+
+
 impl UserId {
     pub fn new(id: i32) -> UserId {
         UserId { user_id: id as i64 }
@@ -189,6 +210,13 @@ impl GameAndPlayers {
  * 
  * 
 */
+
+
+// pub async fn get_player_stats(user_id: i32) -> Result<PlayerStats> {
+//     let pool: MySqlPool = create_pool().await?;
+
+// }
+
 
 /**
  * All player's guesses for a given game.
@@ -392,42 +420,30 @@ pub async fn get_game_and_players(game_id: i32) -> Result<GameAndPlayers> {
     Ok(GameAndPlayers { game, players })
 }
 
-
+/**
+ * Get basic data for all of user's current games.
+ */
 pub async fn get_current_games(user_id: i32) -> Result<Vec<GameItemData>> {
     let pool: MySqlPool = create_pool().await?;
-    let games: Vec<GameItemData> = Vec::new();
 
-    // FIRST get each game_id in game_users for the user_id
-
-    let game_ids: Vec<GameId> = sqlx::query_as!(
-        GameId,
-        "SELECT game_id FROM game_users
-            WHERE user_id = ?",
+    let games: Vec<GameItemData> = sqlx::query_as!(
+        GameItemData,
+        r#"
+            SELECT g.id, g.game_status, g.winner_id
+            FROM games g
+            JOIN game_users gu ON g.id = gu.game_id
+            WHERE gu.user_id = ?
+        "#,
         user_id
-    ).fetch_all(&pool).await?;
-
-    for game_id in game_ids {
-
-        // Get each GAME object from the database
-
-        // let game_result = sqlx::query_as!(
-        //     RefreshToken,
-        //     "SELECT id, game_status,
-        //         turn_user_id, created_timestamp
-        //         FROM games WHERE user_id = ? AND client_id = ?",
-        //     user_id, client_id
-        // ).fetch_optional(&pool).await?
-
-    }
+    )
+    .fetch_all(&pool)
+    .await?;
 
 
+    // we have the games
+    // now make the status object
+    // and make the current games
 
-
-    // Ok(Some(GameItemData {
-    //     game_id: 1,
-    //     status: game_logic::GameStatus::PreGame,
-    //     number_of_players: 2
-    // }))
 
     Ok(games)
 }
