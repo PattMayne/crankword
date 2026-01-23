@@ -5,12 +5,13 @@ use actix_web::{
 };
 use askama::Template;
 use hash_ids::HashIds;
+use sqlx::{ MySqlPool };
 
 use crate::{
     auth, auth_code_shared::{ 
         AuthCodeRequest,
         AuthCodeSuccess
-    }, db::{self, GameAndPlayers, GameItemData, PlayerStats},
+    }, db::{self, GameAndPlayers, PlayerStats},
     game_logic::{ self, GameStatus },
     crankword_io, resource_mgr::{self, *}, resources::get_translation,
     routes_utils::*, utils::{ self, SupportedLangs }, words_all
@@ -354,6 +355,7 @@ async fn go_to_cancelled_game(
 /* PLAYER DASHBOARD ROUTE */
 #[get("/dashboard")]
 async fn dashboard(
+    pool: web::Data<MySqlPool>,
     hash_ids: web::Data<HashIds>,
     req: HttpRequest
 ) -> HttpResponse {
@@ -365,7 +367,8 @@ async fn dashboard(
 
     let user_id: i32 = user_req_data.id.unwrap();
 
-    let all_user_games: Vec<db::GameItemData> = match db::get_current_games(user_id).await {
+    let all_user_games: Vec<db::GameItemData> = match db::get_current_games(
+        &pool, user_id).await {
         Ok(games) => games,
         Err(_e) => return redirect_to_err("500")
     };

@@ -6,7 +6,17 @@ use sqlx::{ MySqlPool };
 use time::{ OffsetDateTime };
 use rand::Rng;
 
-use crate::{ auth, game_logic::{self, GameStatus, GuessAndScore, LetterScore, WordlessScore}, words_solutions };
+use crate::{
+    auth,
+    words_solutions,
+    game_logic::{
+        self,
+        GameStatus,
+        GuessAndScore,
+        LetterScore,
+        WordlessScore
+    }
+};
 
 
 /* 
@@ -218,12 +228,6 @@ impl GameAndPlayers {
 */
 
 
-// pub async fn get_player_stats(user_id: i32) -> Result<PlayerStats> {
-//     let pool: MySqlPool = create_pool().await?;
-
-// }
-
-
 /**
  * All player's guesses for a given game.
  */
@@ -429,8 +433,10 @@ pub async fn get_game_and_players(game_id: i32) -> Result<GameAndPlayers> {
 /**
  * Get basic data for all of user's current games.
  */
-pub async fn get_current_games(user_id: i32) -> Result<Vec<GameItemData>> {
-    let pool: MySqlPool = create_pool().await?;
+pub async fn get_current_games(
+    pool: &MySqlPool,
+    user_id: i32
+) -> Result<Vec<GameItemData>> {
 
     let games: Vec<GameItemData> = sqlx::query_as!(
         GameItemData,
@@ -442,14 +448,8 @@ pub async fn get_current_games(user_id: i32) -> Result<Vec<GameItemData>> {
         "#,
         user_id
     )
-    .fetch_all(&pool)
+    .fetch_all(pool)
     .await?;
-
-
-    // we have the games
-    // now make the status object
-    // and make the current games
-
 
     Ok(games)
 }

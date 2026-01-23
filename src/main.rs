@@ -5,6 +5,7 @@ use actix_files::Files;
 use dotenvy;
 use std::io;
 use hash_ids::HashIds;
+use sqlx::{ MySqlPool };
 
 mod routes;
 mod routes_utils;
@@ -40,23 +41,31 @@ pub struct AppConfig {
 async fn main() -> std::io::Result<()> {
     // Prepare data for storage in app data and other universal utils
 
-    // dotenvy loads env variables for whole app
-    // after this, just call std::env::var(variable_name)
+    /* dotenvy loads env variables for whole app
+     * after this, just call std::env::var(variable_name) */
     dotenvy::dotenv().ok();
 
-    // Prepare the hash
+    // Prepare the hash for hashing game_ids and user_ids
     let hashid_secret: String = match std::env::var("HASHID_SECRET") {
         Ok(secret) => secret,
         Err(_e) => return hashid_secret_err().await
     };
 
-    let hash_ids = HashIds::builder()
+    let hash_ids: HashIds = HashIds::builder()
         .with_salt(&hashid_secret)
         .finish();
+
+
+    // Create the database pool that every function will use
+    let pool: MySqlPool = match create_pool().await {
+        Ok(pool) => pool,
+        Err(_e) => return database_pool_err().await
+    };
 
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(hash_ids.clone()))
+            .app_data(web::Data::new(pool.clone()))
             .service(Files::new("/static", "./static"))
             .wrap(from_fn(middleware::login_status_middleware))
             .service(routes::error_root)
@@ -98,6 +107,14 @@ async fn hashid_secret_err() -> std::io::Result<()> {
 }
 
 
+async fn database_pool_err() -> std::io::Result<()> {
+    eprintln!("ERROR: NO HASH ID SECRET.");
+    return Err(
+        io::Error::new(
+            io::ErrorKind::Other, "HASHID_SECRET not set")
+    );
+}
+
 /*
  * ROUTES SCHEME:
  *      /game/{}            -- get user_id from JSON web token from cookie
@@ -117,3 +134,25 @@ async fn hashid_secret_err() -> std::io::Result<()> {
         println!("{} does NOT exist", word);
     }
  }
+
+
+ /**
+  * Create the database thread pool that every function will use
+  */
+pub async fn create_pool() -> Result<MySqlPool, String> {
+
+     // Load environment variables from .env file.
+    // CHECK: Fails if .env file not found, not readable or invalid.
+
+    let database_url: String = match std::env::var("DATABASE_URL") {
+        Ok(url) => url,
+        Err(_e) => return Err("Database Error".to_string())
+    };
+
+    let pool = match MySqlPool::connect(database_url.as_str()).await {
+        Ok(pool) => pool,
+        Err(_e) => return Err("Database Error".to_string())
+    };
+    
+    Ok(pool)
+}
