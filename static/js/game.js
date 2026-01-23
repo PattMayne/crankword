@@ -220,6 +220,8 @@ const check_guess = async () => {
     const full_word = current_word.tiles.reduce((str, tile) => str + tile.letter, "")
     const letter_states_obj = await io.check_guess_io(full_word, hashed_game_id())
 
+    console.log("letter_states_obj::: " + JSON.stringify(letter_states_obj))
+
     // Show Error
     if (!!letter_states_obj.error) {
         console.log("ERROR")
@@ -279,17 +281,16 @@ const check_guess = async () => {
     letter_index = 0
     word_index ++
 
-    // if (word_index > 4) {
-    //     end_game(false)
-    //     return
-    // }
+    if (word_index < 5) {        
+        current_word = guess_map.words[word_index]
+        set_current_tile(current_word.tiles[letter_index])
+        remove_tabindexes() // remove old (all) tabindexes
+        set_tabindexes() // set NEW tabindexes
+        current_tile.element.focus()
+    }
 
-    current_word = guess_map.words[word_index]
-    set_current_tile(current_word.tiles[letter_index])
+
     remove_tabindexes() // remove old (all) tabindexes
-    set_tabindexes() // set NEW tabindexes
-    current_tile.element.focus()
-
     refresh_players()
 }
 
@@ -298,7 +299,7 @@ const end_game = (victory) => {
     if (game_over) {
         return
     }
-    
+
     game_over = true
     const endgame_msg = "You " + 
         (victory ? "Win!" : "Lose!")

@@ -46,15 +46,10 @@ async fn main() -> std::io::Result<()> {
     dotenvy::dotenv().ok();
 
     // Prepare the hash for hashing game_ids and user_ids
-    let hashid_secret: String = match std::env::var("HASHID_SECRET") {
-        Ok(secret) => secret,
+    let hash_ids: HashIds = match get_hashids().await {
+        Ok(ids) => ids,
         Err(_e) => return hashid_secret_err().await
     };
-
-    let hash_ids: HashIds = HashIds::builder()
-        .with_salt(&hashid_secret)
-        .finish();
-
 
     // Create the database pool that every function will use
     let pool: MySqlPool = match create_pool().await {
@@ -139,11 +134,7 @@ async fn database_pool_err() -> std::io::Result<()> {
  /**
   * Create the database thread pool that every function will use
   */
-pub async fn create_pool() -> Result<MySqlPool, String> {
-
-     // Load environment variables from .env file.
-    // CHECK: Fails if .env file not found, not readable or invalid.
-
+async fn create_pool() -> Result<MySqlPool, String> {
     let database_url: String = match std::env::var("DATABASE_URL") {
         Ok(url) => url,
         Err(_e) => return Err("Database Error".to_string())
@@ -155,4 +146,19 @@ pub async fn create_pool() -> Result<MySqlPool, String> {
     };
     
     Ok(pool)
+}
+
+
+// Prepare the hash for hashing game_ids and user_ids
+async fn get_hashids() -> Result<HashIds, String> {
+    let hashid_secret: String = match std::env::var("HASHID_SECRET") {
+        Ok(secret) => secret,
+        Err(_e) => return Err("HASHID_SECRET not set".to_string())
+    };
+
+    let hash_ids: HashIds = HashIds::builder()
+        .with_salt(&hashid_secret)
+        .finish();
+
+    Ok(hash_ids)
 }
