@@ -12,9 +12,9 @@ const create_new_game = async () => {
     msgs.push("NEW GAME CREATING")
 
     const game_data = await io.new_game()
-    const game_id = game_data.game_id
+    const hashed_game_id = game_data.hashed_game_id
 
-    if (!game_id || game_id < 1) {
+    if (!hashed_game_id || hashed_game_id < 1) {
         msgs = []
         msgs.push(game_data.error)
         show_msg_box()
@@ -22,7 +22,7 @@ const create_new_game = async () => {
     }
 
     // Redirect user to game
-    const game_uri = "/game/" + game_id
+    const game_uri = "/game/" + hashed_game_id
     window.location.href = game_uri
 }
 

@@ -40,6 +40,7 @@ const board = document.getElementById("board")
 const headline = document.getElementById("headline")
 const message_modal = $('#message_modal') // Foundation demands jquery for this
 const message_p = document.getElementById("message_p")
+let game_over = false
 
 let showing_scores = true
 let game_id_storage = null
@@ -294,6 +295,11 @@ const check_guess = async () => {
 
 
 const end_game = (victory) => {
+    if (game_over) {
+        return
+    }
+    
+    game_over = true
     const endgame_msg = "You " + 
         (victory ? "Win!" : "Lose!")
     current_word = null
