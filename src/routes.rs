@@ -182,6 +182,7 @@ async fn game_root(req: HttpRequest) -> HttpResponse {
 
  #[get("/game/{hashed_game_id}")]
  async fn game(
+    pool: web::Data<MySqlPool>,
     hash_ids: web::Data<HashIds>,
     req: HttpRequest,
     path: web::Path<String>
@@ -208,7 +209,7 @@ async fn game_root(req: HttpRequest) -> HttpResponse {
         Err(_e) => return redirect_to_err("404")
     };
 
-    let game: db::GameAndPlayers = match db::get_game_and_players(game_id).await {
+    let game: db::GameAndPlayers = match db::get_game_and_players(&pool, game_id).await {
         Ok(game) => game,
         Err(_e) => return redirect_to_err("404")
     };
@@ -600,6 +601,7 @@ pub fn redirect_to_login() -> HttpResponse {
  */
 #[post("refresh_in_prog_players")]
 pub async fn refresh_in_prog_players(
+    pool: web::Data<MySqlPool>,
     hash_ids: web::Data<HashIds>,
     req: HttpRequest,
     hashed_game_id: web::Json<HashedGameId>
@@ -623,14 +625,14 @@ pub async fn refresh_in_prog_players(
     };
 
     // get the game
-    let the_game: db::Game = match db::get_game_by_id(game_id).await {
+    let the_game: db::Game = match db::get_game_by_id(&pool, game_id).await {
         Ok(g) => g,
         Err(_) => return return_unauthorized_err_json(&user_req_data)
     };
 
     // Get the players with their scores, but no words in the scores
     let players: Vec<db::PlayerRefreshData> =
-        match db::get_players_refresh_data_by_game_id(&the_game).await {
+        match db::get_players_refresh_data_by_game_id(&pool, &the_game).await {
             Ok(p) => p,
             Err(_) => return return_unauthorized_err_json(&user_req_data)
         };
@@ -663,6 +665,7 @@ pub async fn refresh_in_prog_players(
  */
 #[post("/refresh_pregame")]
 pub async fn refresh_pregame(
+    pool: web::Data<MySqlPool>,
     hash_ids: web::Data<HashIds>,
     req: HttpRequest,
     hashed_game_id: web::Json<HashedGameId>
@@ -685,7 +688,7 @@ pub async fn refresh_pregame(
         Err(_e) => return return_internal_err_json()
     };
 
-    let the_game: db::GameAndPlayers = match db::get_game_and_players(game_id).await {
+    let the_game: db::GameAndPlayers = match db::get_game_and_players(&pool, game_id).await {
         Ok(gap) => gap,
         Err(_e) => return return_internal_err_json()
     };
@@ -702,6 +705,7 @@ pub async fn refresh_pregame(
 
 #[post("/join_game")]
 pub async fn join_game(
+    pool: web::Data<MySqlPool>,
     hash_ids: web::Data<HashIds>,
     req: HttpRequest,
     game_join_hash_id: web::Json<HashedGameId>
@@ -726,7 +730,7 @@ pub async fn join_game(
 
     // Make sure they're not already in a pregame or inprogress game.
     let games_count: u8 = 
-        match db::get_current_games_count(user_req_data.id.unwrap()).await {
+        match db::get_current_games_count(&pool, user_req_data.id.unwrap()).await {
             Ok(count) => count,
             Err(_e) => return return_internal_err_json()
         };
@@ -740,6 +744,7 @@ pub async fn join_game(
 
     // Use may join
     let user_joined_game: bool = match db::user_join_game(
+        &pool,
         &user_req_data,
         game_id
     ).await {
@@ -758,6 +763,7 @@ pub async fn join_game(
 
 #[post("/start_game")]
 pub async fn start_game(
+    pool: web::Data<MySqlPool>,
     hash_ids: web::Data<HashIds>,
     req: HttpRequest,
     game_start_id: web::Json<HashedGameId>
@@ -780,7 +786,7 @@ pub async fn start_game(
         Err(_e) => return return_internal_err_json()
     };
 
-    let the_game: db::Game = match db::get_game_by_id(game_id).await {
+    let the_game: db::Game = match db::get_game_by_id(&pool, game_id).await {
         Ok(the_game) => the_game,
         Err(_e) => return return_internal_err_json()
     };
@@ -802,7 +808,7 @@ pub async fn start_game(
     // NOW call the db to change the status of the game
 
     let update_result: Result<u8, anyhow::Error> =
-        db::start_game(the_game.id).await;
+        db::start_game(&pool, the_game.id).await;
 
     match update_result {
         Ok(rows_affected) => {
@@ -817,6 +823,7 @@ pub async fn start_game(
 
 #[post("/new_game")]
 pub async fn new_game(
+    pool: web::Data<MySqlPool>,
     hash_ids: web::Data<HashIds>,
     req: HttpRequest
 ) -> HttpResponse {
@@ -836,7 +843,7 @@ pub async fn new_game(
 
     // Make sure they're not already in a pregame or inprogress game.
     let games_count: u8 = 
-        match db::get_current_games_count(user_id).await {
+        match db::get_current_games_count(&pool, user_id).await {
             Ok(count) => count,
             Err(_e) => return return_internal_err_json()
         };
@@ -848,7 +855,7 @@ pub async fn new_game(
         });
     }
 
-    let game_id: i32 = match db::new_game(&user_req_data).await {
+    let game_id: i32 = match db::new_game(&pool, &user_req_data).await {
         Ok(id) => id,
         Err(e) => {
             return HttpResponse::Unauthorized().json(
@@ -875,6 +882,7 @@ pub async fn new_game(
  */
 #[post("/check_guess")]
 pub async fn check_guess(
+    pool: web::Data<MySqlPool>,
     hash_ids: web::Data<HashIds>,
     req: HttpRequest,
     word_json: web::Json<WordToCheck>
@@ -906,7 +914,7 @@ pub async fn check_guess(
     // User is logged in
     // Get the game
     let game_and_players: GameAndPlayers =
-        match db::get_game_and_players(game_id).await {
+        match db::get_game_and_players(&pool, game_id).await {
             Ok(data) => data,
             Err(_e) => return return_internal_err_json()
         };
@@ -938,7 +946,7 @@ pub async fn check_guess(
 
     // get the NUMBER of player guesses.
     let player_guess_count: u8 =
-        match db::get_guess_count(game_id, user_id).await {
+        match db::get_guess_count(&pool, game_id, user_id).await {
             Ok(count) => count,
             Err(_e) => return return_internal_err_json()
         };
@@ -954,6 +962,7 @@ pub async fn check_guess(
 
     // add guess to the DB
     let add_guess_result: Result<i64, anyhow::Error> = db::new_guess(
+        &pool,
         user_id,
         game_and_players.game.id,
         &word_json.guess_word,
@@ -967,7 +976,7 @@ pub async fn check_guess(
     
     // TODO: ADD AUTH CHECKS (user belongs to game, it is user's turn).
     // If it's not the user's turn, return a json object which indicates that.
-    let winning_word: String = match db::get_winning_word(game_id).await {
+    let winning_word: String = match db::get_winning_word(&pool, game_id).await {
         Ok(word) => word,
         Err(_e) => {
             return HttpResponse::Unauthorized().json(ErrorResponse{
@@ -989,7 +998,7 @@ pub async fn check_guess(
     // Do we have a winner?
     if guess_result.is_winner {
         let finish_game_result: Result<u8, anyhow::Error> =
-            db::finish_game(game_id, Some(user_id)).await;
+            db::finish_game(&pool, game_id, Some(user_id)).await;
         
         if finish_game_result.is_err() {
             return return_internal_err_json();
@@ -1003,7 +1012,7 @@ pub async fn check_guess(
 
         // make it the next player's turn:
         let _next_turn_user_id: i32 =
-            match db::next_turn(game_id).await {
+            match db::next_turn(&pool, game_id).await {
                 Ok(new_id) => new_id,
                 Err(_) => {
                     eprintln!("Error switching turns.");
@@ -1024,7 +1033,7 @@ pub async fn check_guess(
              */
 
             let turns_still_exist_result: Result<bool, anyhow::Error> =
-                db::somebody_can_play(game_id).await;
+                db::somebody_can_play(&pool, game_id).await;
 
             if turns_still_exist_result.is_err() {
                 return return_internal_err_json();
@@ -1035,7 +1044,7 @@ pub async fn check_guess(
             if !turns_still_exist {
                 // game is over.
                 let _finish_game_result: Result<u8, anyhow::Error> =
-                    db::finish_game(game_id, None).await;
+                    db::finish_game(&pool, game_id, None).await;
                 guess_result.game_over = true;
             }
         }
@@ -1051,6 +1060,7 @@ pub async fn check_guess(
  */
 #[post("/get_guess_scores")]
 pub async fn get_guess_scores(
+    pool: web::Data<MySqlPool>,
     hash_ids: web::Data<HashIds>,
     req: HttpRequest,
     hashed_game_id: web::Json<HashedGameId>
@@ -1073,7 +1083,7 @@ pub async fn get_guess_scores(
     };
 
     let all_scores: Vec<game_logic::GuessAndScore> =
-        match db::get_guess_scores(game_id, user_id).await {
+        match db::get_guess_scores(&pool, game_id, user_id).await {
             Ok(scores) => scores,
             Err(_e) => return return_unauthorized_err_json(&user_req_data)
         };

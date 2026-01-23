@@ -231,15 +231,14 @@ impl GameAndPlayers {
 /**
  * All player's guesses for a given game.
  */
-pub async fn get_guesses(game_id: i32, user_id: i32) -> Result<Vec<Guess>> {
-    let pool: MySqlPool = create_pool().await?;
+pub async fn get_guesses(pool: &MySqlPool, game_id: i32, user_id: i32) -> Result<Vec<Guess>> {
     let guesses: Vec<Guess> = sqlx::query_as!(
         Guess,
         "SELECT id, game_id, word, guess_number, user_id FROM guesses
             WHERE user_id = ? AND game_id = ?
             ORDER BY guess_number ASC",
         user_id, game_id
-    ).fetch_all(&pool).await?;
+    ).fetch_all(pool).await?;
 
     Ok(guesses)
 }
@@ -252,9 +251,13 @@ pub async fn get_guesses(game_id: i32, user_id: i32) -> Result<Vec<Guess>> {
  * 2. get a vector of LetterScore structs for each guess
  * 3. return a vec of all those vecs
  */
-pub async fn get_guess_scores(game_id: i32, user_id: i32) -> Result<Vec<game_logic::GuessAndScore>> {
-    let the_game: Game = get_game_by_id(game_id).await?;
-    let guesses: Vec<Guess> = get_guesses(game_id, user_id).await?;
+pub async fn get_guess_scores(
+    pool: &MySqlPool,
+    game_id: i32,
+    user_id: i32
+) -> Result<Vec<game_logic::GuessAndScore>> {
+    let the_game: Game = get_game_by_id(pool, game_id).await?;
+    let guesses: Vec<Guess> = get_guesses(pool, game_id, user_id).await?;
     let all_scores: Vec<game_logic::GuessAndScore> = 
         guesses
         .iter()
@@ -283,11 +286,12 @@ pub async fn get_guess_scores(game_id: i32, user_id: i32) -> Result<Vec<game_log
  * 3. return a vec of all those vecs
  */
 pub async fn get_wordless_guess_scores(
+    pool: &MySqlPool,
     the_game: &Game,
     user_id: i32
 ) -> Result<Vec<game_logic::WordlessScore>> {
     // Get the full guess so we can get the score
-    let guesses: Vec<Guess> = get_guesses(the_game.id, user_id).await?;
+    let guesses: Vec<Guess> = get_guesses(pool, the_game.id, user_id).await?;
     // Deliver only the score, without the word
     let all_scores: Vec<game_logic::WordlessScore> = 
         guesses
@@ -312,8 +316,7 @@ pub async fn get_wordless_guess_scores(
  * Returns number of PreGame or InProgress games the user is registered for.
  * (We're only allowed one game at a time)
  */
-pub async fn get_current_games_count(user_id: i32) -> Result<u8> {
-    let pool: MySqlPool = create_pool().await?;
+pub async fn get_current_games_count(pool: &MySqlPool, user_id: i32) -> Result<u8> {
 
     let count_option: Option<Count> = match sqlx::query_as!(
         Count,
@@ -325,7 +328,7 @@ pub async fn get_current_games_count(user_id: i32) -> Result<u8> {
         user_id,
         GameStatus::PreGame.to_string(),
         GameStatus::InProgress.to_string()
-    ).fetch_optional(&pool).await {
+    ).fetch_optional(pool).await {
         Ok(count) => count,
         Err(e) => {
             eprintln!("Failed to fetch games count from DB: {:?}", e);
@@ -340,14 +343,13 @@ pub async fn get_current_games_count(user_id: i32) -> Result<u8> {
 
 
 
-pub async fn get_guess_count(game_id: i32, user_id: i32) -> Result<u8> {
-    let pool: MySqlPool = create_pool().await?;
+pub async fn get_guess_count(pool: &MySqlPool, game_id: i32, user_id: i32) -> Result<u8> {
     let count_option: Option<Count> = match sqlx::query_as!(
         Count,
         "SELECT COUNT(*) as count FROM guesses WHERE game_id = ? AND user_id = ?",
         game_id,
         user_id
-    ).fetch_optional(&pool).await {
+    ).fetch_optional(pool).await {
         Ok(count) => count,
         Err(e) => {
             eprintln!("Failed to fetch guesses count from DB: {:?}", e);
@@ -360,9 +362,7 @@ pub async fn get_guess_count(game_id: i32, user_id: i32) -> Result<u8> {
     Ok(count)
 }
 
-pub async fn get_game_by_id(game_id: i32) -> Result<Game> {
-    let pool: MySqlPool = create_pool().await?;
-
+pub async fn get_game_by_id(pool: &MySqlPool, game_id: i32) -> Result<Game> {
     // RawGame gets the string from game_status, all to populate Game which takes an enum.
     let raw_game: RawGame = sqlx::query_as!(
         RawGame,
@@ -370,21 +370,19 @@ pub async fn get_game_by_id(game_id: i32) -> Result<Game> {
             turn_user_id, created_timestamp FROM games
             WHERE id = ?",
         game_id
-    ).fetch_one(&pool).await?;
+    ).fetch_one(pool).await?;
 
     Ok(Game::new(&raw_game))
 }
 
 
-pub async fn get_players_by_game_id(game_id: i32) -> Result<Vec<PlayerInfo>> {
-    let pool: MySqlPool = create_pool().await?;
-
+pub async fn get_players_by_game_id(pool: &MySqlPool, game_id: i32) -> Result<Vec<PlayerInfo>> {
     let player_info_vec: Vec<PlayerInfo> = sqlx::query_as!(
         PlayerInfo,
         "SELECT user_id, username FROM game_users WHERE game_id = ?
             ORDER BY turn_order ASC",
         game_id
-    ).fetch_all(&pool).await?;
+    ).fetch_all(pool).await?;
 
     Ok(player_info_vec)
 }
@@ -394,21 +392,22 @@ pub async fn get_players_by_game_id(game_id: i32) -> Result<Vec<PlayerInfo>> {
  * This gets the WORDLESS guess scores along with basic player info
  * for displaying OPPONENT info on player's page during in-progress games.
  */
-pub async fn get_players_refresh_data_by_game_id(game: &Game) -> Result<Vec<PlayerRefreshData>> {
-    let pool: MySqlPool = create_pool().await?;
-
+pub async fn get_players_refresh_data_by_game_id(
+    pool: &MySqlPool,
+    game: &Game
+) -> Result<Vec<PlayerRefreshData>> {
     // First just get the PlayerInfo
     let player_info_vec: Vec<PlayerInfo> = sqlx::query_as!(
         PlayerInfo,
         "SELECT user_id, username FROM game_users WHERE game_id = ?
             ORDER BY turn_order ASC",
         game.id
-    ).fetch_all(&pool).await?;
+    ).fetch_all(pool).await?;
 
     let mut players_refresh_data: Vec<PlayerRefreshData> = Vec::new();
 
     for player_info in player_info_vec {
-        let scores: Vec<WordlessScore> = match get_wordless_guess_scores(&game, player_info.user_id).await {
+        let scores: Vec<WordlessScore> = match get_wordless_guess_scores(pool, &game, player_info.user_id).await {
             Ok(scores) => scores,
             Err(_) => Vec::new()
         };
@@ -424,9 +423,9 @@ pub async fn get_players_refresh_data_by_game_id(game: &Game) -> Result<Vec<Play
 }
 
 
-pub async fn get_game_and_players(game_id: i32) -> Result<GameAndPlayers> {
-    let game: Game = get_game_by_id(game_id).await?;
-    let players: Vec<PlayerInfo> = get_players_by_game_id(game_id).await?;
+pub async fn get_game_and_players(pool: &MySqlPool, game_id: i32) -> Result<GameAndPlayers> {
+    let game: Game = get_game_by_id(pool, game_id).await?;
+    let players: Vec<PlayerInfo> = get_players_by_game_id(pool, game_id).await?;
     Ok(GameAndPlayers { game, players })
 }
 
@@ -437,7 +436,6 @@ pub async fn get_current_games(
     pool: &MySqlPool,
     user_id: i32
 ) -> Result<Vec<GameItemData>> {
-
     let games: Vec<GameItemData> = sqlx::query_as!(
         GameItemData,
         r#"
@@ -458,10 +456,10 @@ pub async fn get_current_games(
 /**
  * Check if any players still have turns left to play.
  */
-pub async fn somebody_can_play(game_id: i32) -> Result<bool> {
-    let players: Vec<PlayerInfo> = get_players_by_game_id(game_id).await?;
+pub async fn somebody_can_play(pool: &MySqlPool, game_id: i32) -> Result<bool> {
+    let players: Vec<PlayerInfo> = get_players_by_game_id(pool, game_id).await?;
     for player in players {
-        let guess_count: u8 = get_guess_count(game_id, player.user_id).await?;
+        let guess_count: u8 = get_guess_count(pool, game_id, player.user_id).await?;
         if guess_count < game_logic::MAX_TURNS {
             return Ok(true)
         }
@@ -489,12 +487,12 @@ pub async fn somebody_can_play(game_id: i32) -> Result<bool> {
 */
 
 pub async fn new_guess(
+    pool: &MySqlPool,
     user_id: i32,
     game_id: i32,
     guess_word: &str,
     guess_number: u8
 ) -> Result<i64, anyhow::Error> {
-    let pool: MySqlPool = create_pool().await?;
     let result: sqlx::mysql::MySqlQueryResult = sqlx::query(
         "INSERT INTO guesses (
             game_id, word, guess_number, user_id)
@@ -503,7 +501,7 @@ pub async fn new_guess(
         .bind(guess_word)
         .bind(guess_number)
         .bind(user_id)
-        .execute(&pool).await.map_err(|e| {
+        .execute(pool).await.map_err(|e| {
             eprintln!("Failed to save GUESS to database: {:?}", e);
             anyhow!("Could not save GUESS to database: {e}")
     })?;
@@ -511,9 +509,10 @@ pub async fn new_guess(
     Ok(result.last_insert_id() as i64)
 }
 
-pub async fn new_game(user_req_data: &auth::UserReqData) -> Result<i32, anyhow::Error> {
-    let pool: MySqlPool = create_pool().await?;
-
+pub async fn new_game(
+    pool: &MySqlPool,
+    user_req_data: &auth::UserReqData
+) -> Result<i32, anyhow::Error> {
     // get word
     let word: String = words_solutions::get_random_word();
 
@@ -524,14 +523,12 @@ pub async fn new_game(user_req_data: &auth::UserReqData) -> Result<i32, anyhow::
             VALUES (?, ?)")
         .bind(word)
         .bind(user_req_data.id)
-        .execute(&pool).await.map_err(|e| {
+        .execute(pool).await.map_err(|e| {
             eprintln!("Failed to save game to database: {:?}", e);
             anyhow!("Could not save game to database: {e}")
     })?;
 
     let game_id: i32 = result.last_insert_id() as i32;
-
-    println!("game id {}", game_id);
 
     // Now put owner_id in game_users table
     let game_users_result: sqlx::mysql::MySqlQueryResult = sqlx::query(
@@ -543,12 +540,10 @@ pub async fn new_game(user_req_data: &auth::UserReqData) -> Result<i32, anyhow::
         .bind(game_id)
         .bind(user_req_data.id)
         .bind(user_req_data.get_username())
-        .execute(&pool).await.map_err(|e| {
+        .execute(pool).await.map_err(|e| {
             eprintln!("Failed to save game_user to database: {:?}", e);
             anyhow!("Could not save game_user to database: {e}")
     })?;
-
-    println!("game_ id {}", game_id);
 
     if game_users_result.rows_affected() > 0 {
         Ok(game_id)
@@ -566,10 +561,10 @@ pub async fn new_game(user_req_data: &auth::UserReqData) -> Result<i32, anyhow::
  *  -- check that user isn't already in the game
  */
 pub async fn user_join_game(
+    pool: &MySqlPool,
     user_req_data: &auth::UserReqData,
     game_id: i32
 ) -> Result<bool> {
-    let pool: MySqlPool = create_pool().await?;
     if user_req_data.id.is_none() || user_req_data.get_role() == "guest" {
         return Err(anyhow!("User is not valid"));
     }
@@ -577,7 +572,7 @@ pub async fn user_join_game(
     // get the game and check that it's pregame
     // make sure the user isn't already part of the game
 
-    let game: GameAndPlayers = get_game_and_players(game_id).await?;
+    let game: GameAndPlayers = get_game_and_players(pool, game_id).await?;
     if game.game.game_status != GameStatus::PreGame {
         return Err(anyhow!("Game already started"));
     } else if game.user_id_is_player(user_req_data.id.unwrap()) {
@@ -593,7 +588,7 @@ pub async fn user_join_game(
         .bind(game_id)
         .bind(user_req_data.id.unwrap())
         .bind(user_req_data.get_username())
-        .execute(&pool).await.map_err(|e| {
+        .execute(pool).await.map_err(|e| {
             eprintln!("Failed to save game_user to database: {:?}", e);
             anyhow!("Could not save game_user to database: {e}")
     })?;
@@ -605,17 +600,9 @@ pub async fn user_join_game(
 /**
  * Get winning word from given game_id
  */
-pub async fn get_winning_word(game_id: i32) -> Result<String> {
-    let game: Game = get_game_by_id(game_id).await?;
+pub async fn get_winning_word(pool: &MySqlPool, game_id: i32) -> Result<String> {
+    let game: Game = get_game_by_id(pool, game_id).await?;
     Ok(game.word)
-}
-
-
-pub async fn create_pool() -> Result<MySqlPool> {
-     // Load environment variables from .env file.
-    // CHECK: Fails if .env file not found, not readable or invalid.
-    let database_url: String = std::env::var("DATABASE_URL")?;
-    Ok(MySqlPool::connect(database_url.as_str()).await?)
 }
 
 
@@ -643,10 +630,9 @@ pub async fn create_pool() -> Result<MySqlPool> {
 /**
  * Returns the id of the new current turn user.
  */
-pub async fn next_turn(game_id: i32) -> Result<i32> {
-    let pool: MySqlPool = create_pool().await?;
-    let players: Vec<PlayerInfo> = get_players_by_game_id(game_id).await?;
-    let game: Game = get_game_by_id(game_id).await?;
+pub async fn next_turn(pool: &MySqlPool, game_id: i32) -> Result<i32> {
+    let players: Vec<PlayerInfo> = get_players_by_game_id(pool, game_id).await?;
+    let game: Game = get_game_by_id(pool, game_id).await?;
     let current_user_id: i32 = match game.turn_user_id {
         Some(id) => id,
         None => return Err(anyhow!("No current turn."))
@@ -673,7 +659,7 @@ pub async fn next_turn(game_id: i32) -> Result<i32> {
     "UPDATE games SET turn_user_id = ? WHERE id = ?")
         .bind(new_user_turn_id)
         .bind(game_id)
-        .execute(&pool)
+        .execute(pool)
         .await?;            
 
     Ok(new_user_turn_id)
@@ -682,12 +668,11 @@ pub async fn next_turn(game_id: i32) -> Result<i32> {
 /**
  * When transitioning a game from one stage to the next.
  */
-pub async fn start_game(game_id: i32) -> Result<u8> {
-    let pool: MySqlPool = create_pool().await?;
+pub async fn start_game(pool: &MySqlPool, game_id: i32) -> Result<u8> {
     let mut turn_user_id: i32 = 0;
 
     // set turn orders. Get all players. Scramble their IDs. Scrambled index +1 becomes turn order.
-    let mut players: Vec<PlayerInfo> = get_players_by_game_id(game_id).await?;
+    let mut players: Vec<PlayerInfo> = get_players_by_game_id(pool, game_id).await?;
     let mut scrambled_player_ids: Vec<i32> = Vec::new();
     let number_of_players: usize = players.len();
 
@@ -709,7 +694,7 @@ pub async fn start_game(game_id: i32) -> Result<u8> {
             .bind(turn)
             .bind(game_id)
             .bind(user_id)
-            .execute(&pool)
+            .execute(pool)
             .await?;
     }
 
@@ -718,7 +703,7 @@ pub async fn start_game(game_id: i32) -> Result<u8> {
         .bind(GameStatus::InProgress.to_string())
         .bind(turn_user_id)
         .bind(game_id)
-        .execute(&pool)
+        .execute(pool)
         .await?;
 
     Ok(result.rows_affected() as u8)
@@ -729,9 +714,11 @@ pub async fn start_game(game_id: i32) -> Result<u8> {
  * If we have a winner, send in Some(winner_id).
  * Else, everybody has lost.
  */
-pub async fn finish_game(game_id: i32, winner_id_option: Option<i32>) -> Result<u8> {
-    let pool: MySqlPool = create_pool().await?;
-
+pub async fn finish_game(
+    pool: &MySqlPool,
+    game_id: i32,
+    winner_id_option: Option<i32>
+) -> Result<u8> {
     match winner_id_option {
         Some(winner_id) => {
             let result: sqlx::mysql::MySqlQueryResult = sqlx::query(
@@ -739,7 +726,7 @@ pub async fn finish_game(game_id: i32, winner_id_option: Option<i32>) -> Result<
                 .bind(GameStatus::Finished.to_string())
                 .bind(winner_id)
                 .bind(game_id)
-                .execute(&pool)
+                .execute(pool)
                 .await?;
             Ok(result.rows_affected() as u8)
         }, None => {
@@ -747,7 +734,7 @@ pub async fn finish_game(game_id: i32, winner_id_option: Option<i32>) -> Result<
             "UPDATE games SET game_status = ? WHERE id = ?")
                 .bind(GameStatus::Finished.to_string())
                 .bind(game_id)
-                .execute(&pool)
+                .execute(pool)
                 .await?;
             Ok(result.rows_affected() as u8)
         }
