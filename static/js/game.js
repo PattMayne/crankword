@@ -886,6 +886,14 @@ const create_keyboard_element = () => {
 
     used_keys_board.innerHTML = html
 
+    // The elements exist. Now add event listeners to each one.
+    const kb_letters = document.querySelectorAll(".kb_letter")
+    kb_letters.forEach(kb_letter => {
+        kb_letter.addEventListener("click", () => {
+            const event = { key: kb_letter.innerHTML }
+            key_pressed(event)
+        })
+    })
 }
 
 

@@ -380,6 +380,12 @@ body {
     font-size: 20px;
 }
 
+.kb_letter:hover {
+    cursor: pointer;
+    color: $very-light-gray;
+    background-color: $pastel-blue;
+}
+
 .letter_right_spot {
     background-color: $letter_right_spot;
     color: $black;

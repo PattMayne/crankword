@@ -322,6 +322,12 @@ body {
   font-size: 20px;
 }
 
+.kb_letter:hover {
+  cursor: pointer;
+  color: #f0f0f0;
+  background-color: #5a639e;
+}
+
 .letter_right_spot {
   background-color: #60f000;
   color: #111111;
@@ -344,25 +350,6 @@ body {
   background-color: #f0f0f0;
   color: #111111;
   border: 1px solid #111111;
-}
-
-/* 
- * 
- * =============================
- * =============================
- * =====                   =====
- * =====  POST-GAME PAGES  =====
- * =====                   =====
- * =============================
- * =============================
- * 
-*/
-#winning_word_won_label {
-  color: #60f000;
-}
-
-#winning_word_lostlabel {
-  color: #111111;
 }
 
 /*# sourceMappingURL=game.css.map */
