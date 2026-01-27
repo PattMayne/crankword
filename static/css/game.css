@@ -309,23 +309,122 @@ body {
   justify-content: center;
 }
 
-.kb_letter {
-  font-family: alte;
-  width: 31px;
-  height: 31px;
-  font-size: 20px;
-  text-align: center;
-  vertical-align: middle;
-  overflow: hidden;
-  aspect-ratio: 1/1;
-  margin: 2px;
-  font-size: 20px;
+@media screen and (min-width: 1024px) {
+  /* Medium screen styles here */
+  .kb_letter {
+    font-family: alte;
+    width: 31px;
+    height: 31px;
+    text-align: center;
+    vertical-align: middle;
+    overflow: hidden;
+    aspect-ratio: 1/1;
+    margin: 2px;
+    font-size: 20px;
+  }
+  #back_key,
+  #enter_key {
+    font-family: alte;
+    width: auto;
+    height: 31px;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid #6b6b6b;
+    margin: 5px 2px;
+    padding: 1px 9px 5px 9px;
+    font-size: 18px;
+  }
 }
-
+@media screen and (min-width: 509px) and (max-width: 1023px) {
+  /* Medium screen styles here */
+  .kb_letter {
+    font-family: alte;
+    width: 39px;
+    height: 39px;
+    text-align: center;
+    vertical-align: middle;
+    overflow: hidden;
+    aspect-ratio: 1/1;
+    margin: 5px;
+    font-size: 23px;
+  }
+  #back_key,
+  #enter_key {
+    font-family: alte;
+    width: auto;
+    height: 39px;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid #6b6b6b;
+    margin: 5px 2px;
+    padding: 1px 9px 5px 9px;
+    font-size: 21px;
+  }
+}
+@media screen and (min-width: 419px) and (max-width: 510px) {
+  /* Medium screen styles here */
+  .kb_letter {
+    font-family: alte;
+    width: 34px;
+    height: 34px;
+    text-align: center;
+    vertical-align: middle;
+    overflow: hidden;
+    aspect-ratio: 1/1;
+    margin: 4px;
+    font-size: 21px;
+  }
+  #back_key,
+  #enter_key {
+    font-family: alte;
+    width: auto;
+    height: 39px;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid #6b6b6b;
+    margin: 5px 2px;
+    padding: 1px 9px 5px 9px;
+    font-size: 21px;
+  }
+}
+@media screen and (max-width: 420px) {
+  /* Medium screen styles here */
+  .kb_letter {
+    font-family: alte;
+    width: 31px;
+    height: 31px;
+    text-align: center;
+    vertical-align: middle;
+    overflow: hidden;
+    aspect-ratio: 1/1;
+    margin: 2px;
+    font-size: 20px;
+  }
+  #back_key,
+  #enter_key {
+    font-family: alte;
+    width: auto;
+    height: 31px;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid #6b6b6b;
+    margin: 2px 2px;
+    padding: 1px 9px 5px 9px;
+    font-size: 18px;
+  }
+}
 .kb_letter:hover {
   cursor: pointer;
   color: #f0f0f0;
   background-color: #5a639e;
+}
+
+#back_key:hover,
+#enter_key:hover {
+  cursor: pointer;
+  color: #f0f0f0;
+  background-color: #5a639e;
+  border: 1px solid #5a639e;
 }
 
 .letter_right_spot {

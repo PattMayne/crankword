@@ -882,18 +882,49 @@ const create_keyboard_element = () => {
         if (key_count >= Object.keys(KEYBOARD_LETTERS).length) {
             html += "</div>"
         }
-    });   
+    })
 
+    // enter and backspace keys
+    html += generate_enter_backspace()
     used_keys_board.innerHTML = html
+    add_virtual_keyboard_listeners()
+}
 
-    // The elements exist. Now add event listeners to each one.
+
+// The elements exist. Now add event listeners to each one.
+const add_virtual_keyboard_listeners = () => {
     const kb_letters = document.querySelectorAll(".kb_letter")
+    const back_key = document.getElementById("back_key")
+    const enter_key = document.getElementById("enter_key")
+    
     kb_letters.forEach(kb_letter => {
         kb_letter.addEventListener("click", () => {
             const event = { key: kb_letter.innerHTML }
             key_pressed(event)
         })
     })
+
+    back_key.addEventListener("click", () => {
+        const event = { key: "BACKSPACE" }
+        key_pressed(event)
+    })
+
+    enter_key.addEventListener("click", () => {
+        const event = { key: "ENTER" }
+        key_pressed(event)
+    })
+}
+
+
+// create the "enter" and "back" keys for virtual keyboard
+// return as HTML string
+const generate_enter_backspace = () => {
+    let html = ""
+    html += "<div class='keyboard_row'>"
+    html += "<div id='back_key'>BACK</div>"
+    html += "<div id='enter_key'>ENTER</div>"
+    html += "</div>"
+    return html
 }
 
 
