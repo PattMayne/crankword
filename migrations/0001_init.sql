@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS games (
     winner_id INT, -- nullable
     owner_id INT NOT NULL,
     turn_user_id INT, -- nullable
+    turn_timeout TIMESTAMP NOT NULL DEFAULT UTC_TIMESTAMP,
+    open_game BOOL NOT NULL DEFAULT FALSE,
     created_timestamp TIMESTAMP NOT NULL DEFAULT UTC_TIMESTAMP
 );
 
