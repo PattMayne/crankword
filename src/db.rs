@@ -3,8 +3,8 @@ extern crate rand;
 use anyhow::{ Result, anyhow };
 use serde::Serialize;
 use sqlx::{ MySqlPool };
-use time::{ OffsetDateTime };
 use rand::Rng;
+use time::{ OffsetDateTime };
 
 use crate::{
     auth,
@@ -103,6 +103,7 @@ pub struct RawGame {
     pub winner_id: Option<i32>,
     pub turn_user_id: Option<i32>,
     pub created_timestamp: OffsetDateTime,
+    pub turn_timeout: OffsetDateTime,
 }
 
 // Full data for one game
@@ -114,6 +115,7 @@ pub struct Game {
     pub winner_id: Option<i32>,
     pub turn_user_id: Option<i32>,
     pub created_timestamp: OffsetDateTime,
+    pub turn_timeout: OffsetDateTime,
 }
 
 pub struct Guess {
@@ -157,6 +159,7 @@ impl Game {
             winner_id: raw_game.winner_id,
             turn_user_id: raw_game.turn_user_id,
             created_timestamp: raw_game.created_timestamp,
+            turn_timeout: raw_game.turn_timeout,
         }
     }
 }
@@ -367,7 +370,7 @@ pub async fn get_game_by_id(pool: &MySqlPool, game_id: i32) -> Result<Game> {
     let raw_game: RawGame = sqlx::query_as!(
         RawGame,
         "SELECT id, word, game_status, owner_id, winner_id,
-            turn_user_id, created_timestamp FROM games
+            turn_user_id, turn_timeout, created_timestamp FROM games
             WHERE id = ?",
         game_id
     ).fetch_one(pool).await?;
@@ -654,10 +657,12 @@ pub async fn next_turn(pool: &MySqlPool, game_id: i32) -> Result<i32> {
         else { index_count + 1 };
 
     let new_user_turn_id: i32 = players[vec_index_of_new_turn_id].user_id;
+    let turn_timeout: OffsetDateTime = game_logic::get_turn_timeout();
 
     let _result: sqlx::mysql::MySqlQueryResult = sqlx::query(
-    "UPDATE games SET turn_user_id = ? WHERE id = ?")
+    "UPDATE games SET turn_user_id = ?, turn_timeout = ? WHERE id = ?")
         .bind(new_user_turn_id)
+        .bind(turn_timeout)
         .bind(game_id)
         .execute(pool)
         .await?;            
@@ -698,10 +703,13 @@ pub async fn start_game(pool: &MySqlPool, game_id: i32) -> Result<u8> {
             .await?;
     }
 
+    let turn_timeout: OffsetDateTime = game_logic::get_turn_timeout();
+
     let result: sqlx::mysql::MySqlQueryResult = sqlx::query(
-    "UPDATE games SET game_status = ?, turn_user_id = ? WHERE id = ?")
+    "UPDATE games SET game_status = ?, turn_user_id = ?, turn_timeout = ? WHERE id = ?")
         .bind(GameStatus::InProgress.to_string())
         .bind(turn_user_id)
+        .bind(turn_timeout)
         .bind(game_id)
         .execute(pool)
         .await?;

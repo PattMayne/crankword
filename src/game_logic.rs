@@ -1,5 +1,6 @@
 use serde::{ Serialize };
 use std::collections::BTreeMap;
+use time::{ Duration, OffsetDateTime };
 
 pub const MAX_TURNS: u8 = 5;
 
@@ -99,6 +100,10 @@ fn get_letter_counts(word: &String) -> BTreeMap<char, u8> {
     }
 
     letter_counts
+}
+
+pub fn get_turn_timeout() -> OffsetDateTime {
+    OffsetDateTime::now_utc() + Duration::seconds(90)
 }
 
 

@@ -6,6 +6,7 @@ use actix_web::{
 use askama::Template;
 use hash_ids::HashIds;
 use sqlx::{ MySqlPool };
+use time::OffsetDateTime;
 
 use crate::{
     auth, auth_code_shared::{ 
@@ -625,10 +626,85 @@ pub async fn refresh_in_prog_players(
     };
 
     // get the game
-    let the_game: db::Game = match db::get_game_by_id(&pool, game_id).await {
+    let mut the_game: db::Game = match db::get_game_by_id(&pool, game_id).await {
         Ok(g) => g,
         Err(_) => return return_unauthorized_err_json(&user_req_data)
     };
+
+    // CHECK FOR TIMEOUT AND SWITCH TURN
+    // Only GAME OWNER checks and initiates switch_turn
+    if the_game.owner_id == player_id {
+        let now: OffsetDateTime = OffsetDateTime::now_utc();
+        if now >= the_game.turn_timeout && the_game.turn_user_id.is_some() {
+            println!("TIMEOUT: FORCE CHANGE TURN!");
+            let current_turn_user_id: i32 = the_game.turn_user_id.unwrap();
+
+            // PUT DUDS into player who missed a turn
+            // get the NUMBER of player guesses.
+            let turn_player_guess_count: u8 =
+                match db::get_guess_count(
+                    &pool,
+                    game_id,
+                    current_turn_user_id
+                ).await {
+                    Ok(count) => count,
+                    Err(_e) => return return_internal_err_json()
+                };
+            
+            // Insert dud guess
+            let dud_word: &str = "-----";
+            let _insert_dud_result: i64 = match db::new_guess(
+                &pool,
+                current_turn_user_id,
+                game_id,
+                dud_word,
+                turn_player_guess_count + 1
+            ).await {
+                Ok(new_id) => new_id,
+                Err(_) => return return_internal_err_json()
+            };
+
+            // Actually switch the turn
+            let _next_turn_result: i32 = match db::next_turn(&pool, game_id).await {
+                Ok(new_user_turn_id) => new_user_turn_id,
+                Err(_) => return return_unauthorized_err_json(&user_req_data)
+            };
+
+            // Turn has been switched. Refresh game object.
+            the_game = match db::get_game_by_id(&pool, game_id).await {
+                Ok(g) => g,
+                Err(_) => return return_unauthorized_err_json(&user_req_data)
+            };
+
+            // check if game is over
+            // 1. check if this was player's final turn
+            // 2. if so, check if anybody else has remaining turns
+            // 3. if nobody else can play, game over (no winner)
+
+            if turn_player_guess_count + 1 >= game_logic::MAX_TURNS {
+                /*
+                * This was the final turn, and NOT the correct guess.
+                * So it's game over for this player.
+                * So check if anybody else still has a turn.
+                */
+
+                let turns_still_exist_result: Result<bool, anyhow::Error> =
+                    db::somebody_can_play(&pool, game_id).await;
+
+                if turns_still_exist_result.is_err() {
+                    return return_internal_err_json();
+                }
+                
+                let turns_still_exist: bool = turns_still_exist_result.unwrap();
+
+                if !turns_still_exist {
+                    // game is over.
+                    let _finish_game_result: Result<u8, anyhow::Error> =
+                        db::finish_game(&pool, game_id, None).await;
+                }
+            }
+        }
+    }
 
     // Get the players with their scores, but no words in the scores
     let players: Vec<db::PlayerRefreshData> =
@@ -644,11 +720,13 @@ pub async fn refresh_in_prog_players(
     };
 
     let game_over: bool = the_game.game_status != GameStatus::InProgress;
+    let turn_timeout: time::OffsetDateTime = the_game.turn_timeout;
 
     let in_prog_refresh: InProgRefresh = InProgRefresh {
         current_turn_id,
         players,
         game_over,
+        turn_timeout,
     };
 
     // only send the data if the user really belongs to this game

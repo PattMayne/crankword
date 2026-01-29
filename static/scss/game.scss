@@ -271,7 +271,6 @@ body {
 #player_turn_li {
     font-family: $text-font;
     text-transform: uppercase;
-    border-right: 2px solid $black;
     color: $player_turn_color!important;
 }
 
@@ -288,6 +287,16 @@ body {
 #scores_toggle:hover {
     background-color: $pastel-blue;
     cursor: pointer!important;
+}
+
+#timer_element {
+    border-right: 2px solid $black;
+    cursor: default;
+    color: $player_turn_color!important;
+}
+
+#timer_element:hover {
+    cursor: default;
 }
 
 /*    Opponents' scores screen.    */

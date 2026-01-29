@@ -310,7 +310,7 @@ export const check_guess_io = async (guess_word, hashed_game_id) => {
 
 
 /**
- * update the data about the pregame-status game.
+ * update the data about the in-progress game.
  * 
  * @param {int} hashed_game_id 
  * @returns obj
@@ -324,7 +324,8 @@ export const refresh_players = async hashed_game_id => {
     const response_obj = {
         players: [],
         current_turn_id: null,
-        game_over: false
+        game_over: false,
+        turn_timeout: false,
     }
 
     await utils.fetch_json_post(route, input)
@@ -341,9 +342,10 @@ export const refresh_players = async hashed_game_id => {
         }
         return response.json()
     }).then(data => {
-        if (!!data.current_turn_id && !!data.players) {
+        if (!!data.current_turn_id && !!data.players && !!data.turn_timeout) {
             response_obj.players = data.players
             response_obj.current_turn_id = data.current_turn_id
+            response_obj.turn_timeout = new Date(data.turn_timeout)
             response_obj.game_over = !!data.game_over
         } else {
             console.log("DID NOT REFRESH PLAYERS DATA")

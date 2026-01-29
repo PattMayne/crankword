@@ -5,6 +5,7 @@ use actix_web::{
     HttpResponse,
     http::StatusCode
 };
+use time::{ OffsetDateTime };
 
 use crate::{
     game_logic::{ self,GameStatus },
@@ -79,11 +80,18 @@ pub struct PreGameRefresh {
     pub players: Vec<PlayerInfo>,
 }
 
+
+/**
+ * Specifyingtime::serde::rfc3339 to make the serialized
+ * timestamp JavaScript-readable.
+ */
 #[derive(Serialize)]
 pub struct InProgRefresh {
     pub current_turn_id: i32,
     pub players: Vec<PlayerRefreshData>,
     pub game_over: bool,
+    #[serde(with = "time::serde::rfc3339")]
+    pub turn_timeout: OffsetDateTime,
 }
 
 

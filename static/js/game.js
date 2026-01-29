@@ -41,6 +41,9 @@ const headline = document.getElementById("headline")
 const message_modal = $('#message_modal') // Foundation demands jquery for this
 const message_p = document.getElementById("message_p")
 let game_over = false
+let turn_timeout = null
+let timer_element = null
+let current_turn_id = null
 
 let showing_scores = true
 let game_id_storage = null
@@ -288,7 +291,6 @@ const check_guess = async () => {
         set_tabindexes() // set NEW tabindexes
         current_tile.element.focus()
     }
-
 
     remove_tabindexes() // remove old (all) tabindexes
     refresh_players()
@@ -605,6 +607,7 @@ const settle_old_scores = async () => {
 
 const refresh_players = async () => {
     const players_obj = await io.refresh_players(hashed_game_id())
+    let current_player_name = ""
 
     if (
         !players_obj.current_turn_id ||
@@ -617,6 +620,13 @@ const refresh_players = async () => {
         end_game(false)
     }
     
+    // First check if the turn has changed, and if this player
+    // has missed a turn and needs to update their board
+    if (current_turn_id != players_obj.current_turn_id) {
+        current_turn_id = players_obj.current_turn_id
+        settle_old_scores()
+    }
+
 
     // We have the players.
     // They're already sorted, but we have to start with the current turn id.
@@ -625,7 +635,6 @@ const refresh_players = async () => {
 
     const players = []
     let current_turn_found = false
-    let current_player_name = ""
 
     // Get current turn player and following players
     players_obj.players.map(player_obj => {
@@ -669,12 +678,27 @@ const refresh_players = async () => {
     players_list_element.innerHTML = players_html
 
     show_oppo_scores(players)
+
+    // now do the timer
+
+    if (!!players_obj.turn_timeout) {
+        turn_timeout = players_obj.turn_timeout
+    }
 }
 
 const build_player_li = username => "<li " +
     "class='player_label'" +
     ">&nbsp;" + username + "</li>"
 
+
+const increment_turn_countdown = () => {
+    if (turn_timeout !=  null) {
+        const now = new Date()
+        const diff_in_ms = turn_timeout - now
+        const diff_in_seconds = Math.floor(diff_in_ms / 1000)
+        timer_element.innerHTML = diff_in_seconds
+    }
+}
 
 /**
  * TODO:
@@ -776,8 +800,8 @@ function toggle_scores() {
 function show_scores() {
     showing_scores = true
     document.getElementById("oppo_scores").style.display = ""
-    document.getElementById("scores_toggle").innerHTML = "HIDE STATS"
-    document.getElementById("scores_toggle_2").innerHTML = "HIDE STATS"
+    document.getElementById("scores_toggle").innerHTML = "HIDE PANEL"
+    document.getElementById("scores_toggle_2").innerHTML = "HIDE PANEL"
     document.getElementById("crank_cell").className = "large-7 medium-12 small-12 cell"
     document.getElementById("stats_cell").style.display = ""
 }
@@ -785,8 +809,8 @@ function show_scores() {
 function hide_scores() {
     showing_scores = false
     document.getElementById("oppo_scores").style.display = "none"
-    document.getElementById("scores_toggle").innerHTML = "SHOW STATS"
-    document.getElementById("scores_toggle_2").innerHTML = "SHOW STATS"
+    document.getElementById("scores_toggle").innerHTML = "SHOW PANEL"
+    document.getElementById("scores_toggle_2").innerHTML = "SHOW PANEL"
     document.getElementById("crank_cell").className = "large-12 cell"
     document.getElementById("stats_cell").style.display = "none"
 }
@@ -945,6 +969,7 @@ const create_keyboard_letter_div = (letter, state) => {
 
 
 document.addEventListener('DOMContentLoaded', () => {
+    timer_element = document.getElementById("timer_element")
     document.getElementById('scores_toggle').addEventListener('click', toggle_scores)
     document.getElementById('scores_toggle_2').addEventListener('click', toggle_scores)
     game_id_storage = document.getElementById("hashed_game_id").value
@@ -952,7 +977,8 @@ document.addEventListener('DOMContentLoaded', () => {
     refresh_players()
 
     // Check every 3 seconds for new users or updated game_status
-    setInterval(refresh_players, 3000)
+    setInterval(refresh_players, 1500)
+    setInterval(increment_turn_countdown, 1000)
     show_scores()
 })
 
