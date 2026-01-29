@@ -18,3 +18,4 @@ Crankword is a turn-based multiplayer word-guessing game.
 * * * will probably have to go through crankade auth app
 * Timeout miss a turn should trigger a popup
 * * This requires storing player's username somewhere at game start
+* Timeout doesn't skip turns for single-player instances.

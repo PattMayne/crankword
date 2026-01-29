@@ -40,10 +40,6 @@ const board = document.getElementById("board")
 const headline = document.getElementById("headline")
 const message_modal = $('#message_modal') // Foundation demands jquery for this
 const message_p = document.getElementById("message_p")
-let game_over = false
-let turn_timeout = null
-let timer_element = null
-let current_turn_id = null
 
 let showing_scores = true
 let game_id_storage = null
@@ -123,6 +119,13 @@ const set_sizes = () => {
  * 
  */
 
+let game_over = false
+let turn_timeout = null
+let timer_element = null
+let current_turn_id = null
+let username = null
+let user_id = null
+let number_of_players = 0
 
 // This is how we set the colors for each letter
 const guess_map = {
@@ -222,8 +225,9 @@ const check_guess = async () => {
     // Make word from chars
     const full_word = current_word.tiles.reduce((str, tile) => str + tile.letter, "")
     const letter_states_obj = await io.check_guess_io(full_word, hashed_game_id())
+    current_turn_id = letter_states_obj.next_turn_id
 
-    console.log("letter_states_obj::: " + JSON.stringify(letter_states_obj))
+    //console.log("letter_states_obj::: " + JSON.stringify(letter_states_obj))
 
     // Show Error
     if (!!letter_states_obj.error) {
@@ -619,12 +623,18 @@ const refresh_players = async () => {
     } else if (players_obj.game_over) {
         end_game(false)
     }
+
+    // we need to know if this is a single-player game
+    number_of_players = players_obj.players.length
     
-    // First check if the turn has changed, and if this player
-    // has missed a turn and needs to update their board
+    // Check if it's player's turn, and if the turn has changed through timeout
     if (current_turn_id != players_obj.current_turn_id) {
+        if (current_turn_id != null && current_turn_id == user_id){
+            new_message("MISSED YOUR TURN BY TIMEOUT!")
+            settle_old_scores()
+        }
+
         current_turn_id = players_obj.current_turn_id
-        settle_old_scores()
     }
 
 
@@ -968,17 +978,27 @@ const create_keyboard_letter_div = (letter, state) => {
 // SETUP STUFF
 
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     timer_element = document.getElementById("timer_element")
     document.getElementById('scores_toggle').addEventListener('click', toggle_scores)
     document.getElementById('scores_toggle_2').addEventListener('click', toggle_scores)
     game_id_storage = document.getElementById("hashed_game_id").value
+    username = document.getElementById("username").value
+    user_id = document.getElementById("user_id").value
     settle_old_scores()
-    refresh_players()
+    await refresh_players()
 
-    // Check every 3 seconds for new users or updated game_status
-    setInterval(refresh_players, 1500)
-    setInterval(increment_turn_countdown, 1000)
+
+    if (number_of_players > 1) {
+        // Check every 1.5 seconds for new users or updated game_status
+        setInterval(refresh_players, 1500)
+        setInterval(increment_turn_countdown, 1000)
+    } else {
+        // if single-player game, the countdown is null
+        timer_element.innerHTML = "--"
+        // Check every 5 seconds for new users or updated game_status
+        setInterval(refresh_players, 5000)
+    }
     show_scores()
 })
 

@@ -269,6 +269,7 @@ export const check_guess_io = async (guess_word, hashed_game_id) => {
         wrong_turn: false,
         game_over: false,
         is_winner: false,
+        next_turn_id: null,
         error: null
     }
 
@@ -299,6 +300,7 @@ export const check_guess_io = async (guess_word, hashed_game_id) => {
                 response_obj.game_over = true
             }
             
+            response_obj.next_turn_id = guess_result.next_turn_id
             response_obj.letter_states = guess_result.score
         }        
     }).catch(error => {

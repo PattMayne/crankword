@@ -631,9 +631,19 @@ pub async fn refresh_in_prog_players(
         Err(_) => return return_unauthorized_err_json(&user_req_data)
     };
 
+
+    // Get the players with their scores, but no words in the scores
+    let players: Vec<db::PlayerRefreshData> =
+        match db::get_players_refresh_data_by_game_id(&pool, &the_game).await {
+            Ok(p) => p,
+            Err(_) => return return_unauthorized_err_json(&user_req_data)
+        };
+    
+
     // CHECK FOR TIMEOUT AND SWITCH TURN
     // Only GAME OWNER checks and initiates switch_turn
-    if the_game.owner_id == player_id {
+    // and only for multi-player games
+    if the_game.owner_id == player_id && players.len() > 1 {
         let now: OffsetDateTime = OffsetDateTime::now_utc();
         if now >= the_game.turn_timeout && the_game.turn_user_id.is_some() {
             println!("TIMEOUT: FORCE CHANGE TURN!");
@@ -706,12 +716,6 @@ pub async fn refresh_in_prog_players(
         }
     }
 
-    // Get the players with their scores, but no words in the scores
-    let players: Vec<db::PlayerRefreshData> =
-        match db::get_players_refresh_data_by_game_id(&pool, &the_game).await {
-            Ok(p) => p,
-            Err(_) => return return_unauthorized_err_json(&user_req_data)
-        };
 
     // Client must know whose turn it is
     let current_turn_id: i32 = match the_game.turn_user_id {
@@ -1070,7 +1074,8 @@ pub async fn check_guess(
     let mut guess_result: game_logic::CheckGuessResult = 
         game_logic::CheckGuessResult::new(
             guess_result_basic,
-            false
+            false,
+            user_id
         );
 
     // Do we have a winner?
@@ -1089,7 +1094,7 @@ pub async fn check_guess(
     } else {
 
         // make it the next player's turn:
-        let _next_turn_user_id: i32 =
+        let next_turn_id: i32 =
             match db::next_turn(&pool, game_id).await {
                 Ok(new_id) => new_id,
                 Err(_) => {
@@ -1097,6 +1102,9 @@ pub async fn check_guess(
                     return return_internal_err_json();
                 }
             };
+
+        // Make sure the user knows whose turn is next.
+        guess_result.next_turn_id = next_turn_id;
 
         // check if game is over
         // 1. check if this was player's final turn

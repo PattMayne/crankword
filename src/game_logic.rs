@@ -48,6 +48,7 @@ pub struct CheckGuessResult {
     pub score: Vec<LetterScore>,
     pub is_winner: bool,
     pub game_over: bool,
+    pub next_turn_id: i32,
 }
 
 
@@ -74,11 +75,16 @@ impl GameStatus {
 
 
 impl CheckGuessResult {
-    pub fn new(basic_result: CheckGuessResultBasic, game_over: bool) -> CheckGuessResult {
+    pub fn new(
+        basic_result: CheckGuessResultBasic,
+        game_over: bool,
+        next_turn_id: i32
+    ) -> CheckGuessResult {
         CheckGuessResult {
             score: basic_result.score,
             is_winner: basic_result.is_winner,
-            game_over
+            game_over,
+            next_turn_id
         }
     }
 }

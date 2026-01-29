@@ -117,18 +117,30 @@
 
 <input type="hidden" id="hashed_game_id" value="{{ hashed_game_id }}">
 
+{% if user.username.is_some() %}
+<input type="hidden" id="username" value="{{ user.username.as_ref().unwrap() }}">
+{% endif %}
+
+{% if user.id.is_some() %}
+<input type="hidden" id="user_id" value="{{ user.id.as_ref().unwrap() }}">
+{% endif %}
+
 <!-- MESSAGE PANEL -->
 <div class="reveal" id="message_modal" data-reveal>
     <p class="lead" id="message_p">okay modal</p>
     <button class="close-button" data-close aria-label="Close modal" type="button">
         <span aria-hidden="true">&times;</span>
     </button>
+
+    <button class="button small" data-close aria-label="Close modal" type="button">
+        OK
+    </button>
 </div>
 
 <script src="../static/js/vendor/jquery.js"></script>
 <script src="../static/js/vendor/what-input.js"></script>
 <script src="../static/js/vendor/foundation.min.js"></script>
-<script type="module" src="../static/js/game.js?id=779909"></script>
-
+<script type="module" src="../static/js/game.js?id=95"></script>
+9
 </body>
 </html>
