@@ -92,6 +92,10 @@ pub struct PlayerStats {
     pub cancelled_games: u32,
 }
 
+pub struct InviteeUsername {
+    pub username: String,
+}
+
 
 
 // raw DB data for one game to populate Game
@@ -239,6 +243,36 @@ impl GameAndPlayers {
  * 
  * 
 */
+
+
+
+
+/**
+ * Get winning word from given game_id
+ */
+pub async fn get_winning_word(pool: &MySqlPool, game_id: i32) -> Result<String> {
+    let game: Game = get_game_by_id(pool, game_id).await?;
+    Ok(game.word)
+}
+
+
+/**
+ * When we need a list of invitee names for the pre-game dashboard.
+ */
+pub async fn get_invitee_usernames(pool: &MySqlPool, game_id: i32) -> Result<Vec<String>> {
+    let invitee_usernames: Vec<InviteeUsername> = sqlx::query_as!(
+        InviteeUsername,
+        "SELECT username FROM invites WHERE game_id = ?",
+        game_id
+    ).fetch_all(pool).await?;
+
+    let mut usernames: Vec<String> = Vec::new();
+    for invitee_username in invitee_usernames {
+        usernames.push(invitee_username.username.to_string())
+    }
+
+    Ok(usernames)
+}
 
 
 /**
@@ -637,16 +671,6 @@ pub async fn invite_user(
 
     Ok(result.rows_affected() > 0 )
 }
-
-
-/**
- * Get winning word from given game_id
- */
-pub async fn get_winning_word(pool: &MySqlPool, game_id: i32) -> Result<String> {
-    let game: Game = get_game_by_id(pool, game_id).await?;
-    Ok(game.word)
-}
-
 
 /* 
  * 

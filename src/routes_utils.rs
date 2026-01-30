@@ -78,6 +78,7 @@ pub struct AllPlayerScores {
 pub struct PreGameRefresh {
     pub game_status: GameStatus,
     pub players: Vec<PlayerInfo>,
+    pub invitee_usernames: Vec<String>,
 }
 
 #[derive(Serialize)]

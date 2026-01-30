@@ -157,51 +157,6 @@ export const start_game = async hashed_game_id => {
 }
 
 
-/**
- * update the data about the pregame-status game.
- * 
- * @param {int} hashed_game_id 
- * @returns obj
- */
-export const refresh_pregame = async hashed_game_id => {
-    const route = "/game_in/refresh_pregame"
-    const input = {
-        "hashed_game_id": String(hashed_game_id)
-    }
-
-    const response_obj = {
-        players: [],
-        game_status: "in_progress"
-    }
-
-    await utils.fetch_json_post(route, input)
-    .then(response => {
-        if(!response.ok) {
-            response.json().then(data => {
-                console.log("NOT OK")
-                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
-                msg += (!!data.error) ? data.error : " Error occurred"
-                response_obj.error = msg
-            })
-
-            throw new Error("Unable to refresh game, or error on server.")
-        }
-        return response.json()
-    }).then(data => {
-        if (!!data.game_status && !!data.players) {
-            response_obj.players = data.players
-            response_obj.game_status = data.game_status
-        } else {
-            console.log("DID NOT REFRESH GAME DATA")
-            response_obj.error = !!data.error ? data.error : "DID NOT REFRESH GAME DATA"
-        }        
-    }).catch(error => {
-        console.log('Error: ', error)
-    })
-
-    return response_obj
-}
-
 
 /**
  * Get all of the current player's previous guesses and their scores
@@ -380,7 +335,7 @@ export const refresh_players = async hashed_game_id => {
 
 
 /**
- * update the data about the in-progress game.
+ * When the owner invites a player during the pre-game period.
  * 
  * @param {int} hashed_game_id
  * @param {String} invited_username 
@@ -425,6 +380,58 @@ export const invite_player = async (invited_username, hashed_game_id) => {
         } else {
             console.log("DID NOT INVITE PLAYER")
             response_obj.error = !!data.error ? data.error : "DID NOT INVITE PLAYER"
+        }        
+    }).catch(error => {
+        console.log('Error: ', error)
+    })
+
+    return response_obj
+}
+
+
+
+/**
+ * update the data about the pregame-status game.
+ * 
+ * @param {int} hashed_game_id 
+ * @returns obj
+ */
+export const refresh_pregame = async hashed_game_id => {
+    const route = "/game_in/refresh_pregame"
+    const input = {
+        "hashed_game_id": String(hashed_game_id)
+    }
+
+    const response_obj = {
+        players: [],
+        game_status: "in_progress",
+        invitee_usernames: [],
+    }
+
+    await utils.fetch_json_post(route, input)
+    .then(response => {
+        if(!response.ok) {
+            response.json().then(data => {
+                console.log("NOT OK")
+                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                msg += (!!data.error) ? data.error : " Error occurred"
+                response_obj.error = msg
+            })
+
+            throw new Error("Unable to refresh game, or error on server.")
+        }
+        return response.json()
+    }).then(data => {
+        if (!!data.game_status && !!data.players) {
+            response_obj.players = data.players
+            response_obj.game_status = data.game_status
+            if (!!response_obj.invitee_usernames) {
+                response_obj.invitee_usernames = data.invitee_usernames
+            }
+
+        } else {
+            console.log("DID NOT REFRESH GAME DATA")
+            response_obj.error = !!data.error ? data.error : "DID NOT REFRESH GAME DATA"
         }        
     }).catch(error => {
         console.log('Error: ', error)

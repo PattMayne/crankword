@@ -58,7 +58,8 @@ const refresh_data = async () => {
             return
         }
         // else:
-        set_players_list(refresh_response.players)        
+        set_players_list(refresh_response.players)
+        set_pending_invites(refresh_response.invitee_usernames)   
     } else {
         console.log("errrrorrrr")
     }
@@ -78,17 +79,30 @@ const set_players_list = players_list => {
     players_ul.innerHTML = list_html
 }
 
+
+const set_pending_invites = invitee_usernames => {
+
+    const invitees_ul = document.getElementById("invitees_ul")
+    let list_html = ""
+
+    invitee_usernames.map(invitee_username =>
+        list_html += "<li>" + invitee_username + "</li>"
+    )
+    
+    invitees_ul.innerHTML = list_html
+}
+
+/**
+ * When the owner presses the button to invite another player
+ */
 const invite_player = async () => {
     console.log("gonna invite")
     const hash_game_id = document.getElementById("game_id").value
     const invited_username = document.getElementById("invite_input").value
-
     const invite_response = await io.invite_player(invited_username, hash_game_id)
-
     msgs.push(invite_response.message)
     show_msg_box()
 
-    console.log("INVITE RESPONSE: " + JSON.stringify(invite_response))
     msgs = []
 }
 

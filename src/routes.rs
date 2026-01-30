@@ -775,9 +775,16 @@ pub async fn refresh_pregame(
         Err(_e) => return return_internal_err_json()
     };
 
+    let invitee_usernames: Vec<String> =
+        match db::get_invitee_usernames(&pool, game_id).await {
+            Ok(usernames) => usernames,
+            Err(_e) => return return_internal_err_json()
+        };
+
     let refresh_data: PreGameRefresh = PreGameRefresh {
         game_status: the_game.game.game_status,
-        players: the_game.players
+        players: the_game.players,
+        invitee_usernames
     };
 
     HttpResponse::Ok().json(refresh_data)

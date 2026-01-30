@@ -16,19 +16,9 @@
     <div class="grid-container">
         <div class="grid-x grid-padding-x">
             <div class="large-6 medium-6 small-12 cell">
-                <div class="callout primary">
-                    <p>GAME HAS NOT YET STARTED</p>
-                    <p>Players registered for this game:</p>
-                    {% if game.players.len() > 0 %}
-                        <ul id="players_ul">
-                            {% for player_info in game.players %}
-                                <li>{{ player_info.username }}</li>
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="large-6 medium-6 small-12 cell">
+                <h2>PRE-GAME DASHBOARD</h2>
+                <p>Only the game owner can start this game</p>
+
                 <div class="callout primary">
                     <a id="refresh_btn" class="button small">REFRESH</a>
                     <br />
@@ -49,9 +39,30 @@
                     {% endif %}
                 </div>
             </div>
+            <div class="large-6 medium-6 small-12 cell">
+                <div class="callout primary">
+                    <h4>Players registered for this game:</h4>
+                    {% if game.players.len() > 0 %}
+                        <ul id="players_ul">
+                            {% for player_info in game.players %}
+                                <li>{{ player_info.username }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+
+                <div class="callout primary">
+                    <h4>Pending Invitations:</h4>
+                    {% if game.players.len() > 0 %}
+                        <ul id="invitees_ul">
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
 
             <div class="large-12 cell">
-                <div class="callout primary" id="msg_box">
+                <div class="callout" id="msg_box">
                 </div>
             </div>
 
@@ -64,7 +75,7 @@
         <script src="../static/js/vendor/jquery.js"></script>
         <script src="../static/js/vendor/what-input.js"></script>
         <script src="../static/js/vendor/foundation.min.js"></script>
-        <script type="module" src="../static/js/pre_game.js?id=7790090990"></script>
+        <script type="module" src="../static/js/pre_game.js?id=779009099990"></script>
     </body>
 
 </html>
