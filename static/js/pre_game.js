@@ -78,6 +78,20 @@ const set_players_list = players_list => {
     players_ul.innerHTML = list_html
 }
 
+const invite_player = async () => {
+    console.log("gonna invite")
+    const hash_game_id = document.getElementById("game_id").value
+    const invited_username = document.getElementById("invite_input").value
+
+    const invite_response = await io.invite_player(invited_username, hash_game_id)
+
+    msgs.push(invite_response.message)
+    show_msg_box()
+
+    console.log("INVITE RESPONSE: " + JSON.stringify(invite_response))
+    msgs = []
+}
+
 // SHOW/HIDE ERROR BOX
 
 const hide_msg_box = () =>
@@ -104,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const join_btn = document.getElementById('join_btn')
     const start_btn = document.getElementById('start_btn')
     const refresh_btn = document.getElementById('refresh_btn')
+    const invite_button = document.getElementById('invite_submit')
 
     if (join_btn) {
         join_btn.addEventListener('click', (e) => join_game())
@@ -117,6 +132,10 @@ document.addEventListener('DOMContentLoaded', () => {
         refresh_btn.addEventListener('click', (e) => refresh_data())
     }
 
+    if (invite_button) {
+        invite_button.addEventListener('click', (e) => invite_player())
+    }
+
     // Check every 3 seconds for new users or updated game_status
     setInterval(refresh_data, 3000);
 })
@@ -124,3 +143,4 @@ document.addEventListener('DOMContentLoaded', () => {
 window.join_game = join_game
 window.start_game = start_game
 window.refresh_data = refresh_data
+window.invite_player = invite_player

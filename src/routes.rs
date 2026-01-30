@@ -1140,8 +1140,13 @@ pub async fn check_guess(
 }
 
 
-
-#[post("/invite")]
+/**
+ * TODO:
+ * All errors should send back THE SAME OBJECT.
+ * inviet_success can be FALSE
+ * and include a MESSAGE explaining what went wrong.
+ */
+#[post("/invite_player")]
 pub async fn invite_player(
     pool: web::Data<MySqlPool>,
     hash_ids: web::Data<HashIds>,
@@ -1187,7 +1192,18 @@ pub async fn invite_player(
             Err(_e) => return redirect_to_err("404")
         };
 
-    HttpResponse::Ok().json(InviteSuccess{invite_success})
+    let message: String = if invite_success {
+        "User invited".to_string()
+    } else {
+        "User not invited".to_string()
+    };
+
+    let success_object: InviteSuccessObject = InviteSuccessObject {
+        invite_success,
+        message
+    };
+
+    HttpResponse::Ok().json(success_object)
  }
 
 

@@ -359,3 +359,76 @@ export const refresh_players = async hashed_game_id => {
 
     return response_obj
 }
+
+/* 
+ * 
+ * 
+ * 
+ * 
+ * ======================
+ * ======================
+ * =====            =====
+ * =====  PRE-GAME  =====
+ * =====            =====
+ * ======================
+ * ======================
+ * 
+ * 
+ * 
+ * 
+*/
+
+
+/**
+ * update the data about the in-progress game.
+ * 
+ * @param {int} hashed_game_id
+ * @param {String} invited_username 
+ * @returns obj
+ */
+export const invite_player = async (invited_username, hashed_game_id) => {
+    const route = "/game_in/invite_player"
+    const input = {
+        "hashed_game_id": String(hashed_game_id),
+        "invited_player_username": String(invited_username)
+    }
+
+    const response_obj = {
+        invite_success: false,
+        message: null,
+        error: null
+    }
+
+    await utils.fetch_json_post(route, input)
+    .then(response => {
+        console.log("DATA 111: " + JSON.stringify(response))
+        if(!response.ok) {
+            console.log("DATA 222: " + JSON.stringify(response))
+            response.json().then(data => {
+
+                console.log("DATA 333: " + JSON.stringify(data))
+                console.log("NOT OK")
+                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                msg += (!!data.error) ? data.error : " Error occurred"
+                response_obj.error = msg
+            })
+
+            throw new Error("Unable to invite player, or error on server.")
+        }
+        return response.json()
+    }).then(data => {
+        console.log("DATA 444: " + JSON.stringify(data))
+        if (!!data.message) {
+            response_obj.invite_success = data.invite_success
+            response_obj.message = data.message
+            console.log(response_obj.message)
+        } else {
+            console.log("DID NOT INVITE PLAYER")
+            response_obj.error = !!data.error ? data.error : "DID NOT INVITE PLAYER"
+        }        
+    }).catch(error => {
+        console.log('Error: ', error)
+    })
+
+    return response_obj
+}

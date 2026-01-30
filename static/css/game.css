@@ -457,4 +457,30 @@ body {
   border: 1px solid #111111;
 }
 
+/* 
+ * 
+ * 
+ * 
+ * 
+ * ======================
+ * ======================
+ * =====            =====
+ * =====  PRE-GAME  =====
+ * =====            =====
+ * ======================
+ * ======================
+ * 
+ * 
+ * 
+ * 
+*/
+.flex_container {
+  display: flex;
+}
+
+.flex_container div {
+  margin: 0px;
+  padding: 0px;
+}
+
 /*# sourceMappingURL=game.css.map */

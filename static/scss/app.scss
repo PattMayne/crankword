@@ -116,10 +116,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .button {
+  background-color: $black;
+  color: $white;
   border: 1px solid $black;
   border-radius: 5px;
-  background-color: $forest-green;
-  color: $white;
   font-family: $button-font, arial;
   font-weight: bold;
   text-transform: uppercase;
@@ -127,8 +127,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .button:hover, .button:focus {
-    background-color: $black;
-    color: $white;
+  background-color: $forest-green;
+  color: $white;
 }
 
 .top-bar,
@@ -214,3 +214,19 @@ h1, h2, h3, h4, h5, h6 {
   list-style-type: none;
   padding-left: 0;
 }
+
+
+
+/* 
+ * 
+ * 
+ * ======================
+ * ======================
+ * =====            =====
+ * =====  PRE-GAME  =====
+ * =====            =====
+ * ======================
+ * ======================
+ * 
+ * 
+*/

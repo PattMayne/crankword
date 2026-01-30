@@ -627,7 +627,7 @@ pub async fn invite_user(
         "INSERT INTO invites (
             game_id,
             username)
-            VALUES (?, ?, ?)")
+            VALUES (?, ?)")
         .bind(game_id)
         .bind(username)
         .execute(pool).await.map_err(|e| {

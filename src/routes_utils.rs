@@ -81,8 +81,9 @@ pub struct PreGameRefresh {
 }
 
 #[derive(Serialize)]
-pub struct InviteSuccess {
+pub struct InviteSuccessObject {
     pub invite_success: bool,
+    pub message: String,
 }
 
 

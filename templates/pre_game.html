@@ -7,7 +7,7 @@
         <title>{{ texts.title }}</title>
         <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
         <link rel="stylesheet" href="../static/css/foundation.min.css">
-        <link rel="stylesheet" href="../static/css/app.css?id=1">
+        <link rel="stylesheet" href="../static/css/app.css?id=14990">
     </head>
 
 
@@ -16,7 +16,7 @@
     <div class="grid-container">
         <div class="grid-x grid-padding-x">
             <div class="large-6 medium-6 small-12 cell">
-                <div class="callout">
+                <div class="callout primary">
                     <p>GAME HAS NOT YET STARTED</p>
                     <p>Players registered for this game:</p>
                     {% if game.players.len() > 0 %}
@@ -29,13 +29,23 @@
                 </div>
             </div>
             <div class="large-6 medium-6 small-12 cell">
-                <div class="callout">
+                <div class="callout primary">
                     <a id="refresh_btn" class="button small">REFRESH</a>
                     <br />
                     {% if user.id.is_some() && game.game.owner_id == user.id.unwrap() %}
                         <a id="start_btn" class="button small">START GAME</a>
+                        <hr />
+                        <label for="invite_input">INVITE USER
+                            <input
+                                type="text"
+                                id="invite_input"
+                                name="invite_input"
+                                placeholder="TYPE USERNAME"
+                            />
+                        </label>
+                        <a class="button small" id="invite_submit">INVITE</a>
                     {% else if user.id.is_some() && !game.user_id_is_player(user.id.unwrap()) %}
-                        <a id="join_btn" class="button small">JOIN GAME</a>
+                        <a href="#" id="join_btn" class="button small">JOIN GAME</a>
                     {% endif %}
                 </div>
             </div>
@@ -54,8 +64,7 @@
         <script src="../static/js/vendor/jquery.js"></script>
         <script src="../static/js/vendor/what-input.js"></script>
         <script src="../static/js/vendor/foundation.min.js"></script>
-        <script type="module" src="../static/js/pre_game.js?id=7"></script>
+        <script type="module" src="../static/js/pre_game.js?id=7790090990"></script>
     </body>
-
 
 </html>
