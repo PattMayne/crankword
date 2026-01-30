@@ -210,6 +210,16 @@ impl GameAndPlayers {
 
         false
     }
+
+    pub fn username_is_player(&self, username: &String) -> bool {
+        for player_info in &self.players {
+            if player_info.username == username.to_string() {
+                return true;
+            }
+        }
+
+        false
+    }
 }
 
 /* 
@@ -558,10 +568,6 @@ pub async fn new_game(
 
 /**
  * User wants to join an existing game.
- * 
- * TODO:
- *  -- check that it's pre-game
- *  -- check that user isn't already in the game
  */
 pub async fn user_join_game(
     pool: &MySqlPool,
@@ -591,6 +597,39 @@ pub async fn user_join_game(
         .bind(game_id)
         .bind(user_req_data.id.unwrap())
         .bind(user_req_data.get_username())
+        .execute(pool).await.map_err(|e| {
+            eprintln!("Failed to save game_user to database: {:?}", e);
+            anyhow!("Could not save game_user to database: {e}")
+    })?;
+
+    Ok(result.rows_affected() > 0 )
+}
+
+/**
+ * Invite user to an existing game.
+ */
+pub async fn invite_user(
+    pool: &MySqlPool,
+    username: &String,
+    game_id: i32
+) -> Result<bool> {
+    // get the game and check that it's pregame
+    // make sure the user isn't already part of the game
+
+    let game: GameAndPlayers = get_game_and_players(pool, game_id).await?;
+    if game.game.game_status != GameStatus::PreGame {
+        return Err(anyhow!("Game already started"));
+    } else if game.username_is_player(username) {
+        return Err(anyhow!("User already joined game."));
+    }
+
+    let result: sqlx::mysql::MySqlQueryResult = sqlx::query(
+        "INSERT INTO invites (
+            game_id,
+            username)
+            VALUES (?, ?, ?)")
+        .bind(game_id)
+        .bind(username)
         .execute(pool).await.map_err(|e| {
             eprintln!("Failed to save game_user to database: {:?}", e);
             anyhow!("Could not save game_user to database: {e}")

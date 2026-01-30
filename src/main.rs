@@ -83,6 +83,7 @@ async fn main() -> std::io::Result<()> {
                 .service(routes::refresh_pregame)
                 .service(routes::refresh_in_prog_players)
                 .service(routes::get_guess_scores)
+                .service(routes::invite_player)
             )
             .default_service(web::get().to(routes::not_found)) // <- catch-all
             .wrap(from_fn(middleware::jwt_cookie_middleware))

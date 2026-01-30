@@ -43,3 +43,12 @@ CREATE TABLE IF NOT EXISTS game_users (
     FOREIGN KEY (game_id) REFERENCES games(id)
     -- cannot do FOREIGN KEY on user_id b/c that's stored in auth_app DB
 );
+
+
+CREATE TABLE IF NOT EXISTS invites (
+    game_id INT NOT NULL,
+    username VARCHAR(255) NOT NULL,
+    PRIMARY KEY (game_id, username),
+    FOREIGN KEY (game_id) REFERENCES games(id)
+    -- cannot do FOREIGN KEY on user_id b/c that's stored in auth_app DB
+);

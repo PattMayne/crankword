@@ -80,6 +80,11 @@ pub struct PreGameRefresh {
     pub players: Vec<PlayerInfo>,
 }
 
+#[derive(Serialize)]
+pub struct InviteSuccess {
+    pub invite_success: bool,
+}
+
 
 /**
  * Specifyingtime::serde::rfc3339 to make the serialized
@@ -132,6 +137,14 @@ pub struct GameId {
 #[derive(Serialize, Deserialize)]
 pub struct HashedGameId {
     pub hashed_game_id: String,
+}
+
+
+
+#[derive(Serialize, Deserialize)]
+pub struct InviteData {
+    pub hashed_game_id: String,
+    pub invited_player_username: String,
 }
 
 
@@ -360,3 +373,23 @@ pub fn return_unauthorized_err_json(user_req_data: &auth::UserReqData) -> HttpRe
         code: 401
     });
 }
+
+
+
+/* 
+ * 
+ * 
+ * 
+ * 
+ * ==============================
+ * ==============================
+ * =====                    =====
+ * =====  HELPER FUNCTIONS  =====
+ * =====                    =====
+ * ==============================
+ * ==============================
+ * 
+ * 
+ * 
+ * 
+*/

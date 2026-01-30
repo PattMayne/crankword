@@ -1140,6 +1140,58 @@ pub async fn check_guess(
 }
 
 
+
+#[post("/invite")]
+pub async fn invite_player(
+    pool: web::Data<MySqlPool>,
+    hash_ids: web::Data<HashIds>,
+    req: HttpRequest,
+    invite_data: web::Json<InviteData>
+ ) -> HttpResponse {
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+    let user_id: i32 = match user_req_data.id {
+        Some(id) => id,
+        None => { return return_unauthorized_err_json(&user_req_data); }
+    };
+
+    // The game id is hashed. Decode it.
+    let game_id: i32 = match hash_ids.decode(&invite_data.hashed_game_id) {
+        Ok(hash_ids) => {
+            if hash_ids.len() > 0 {
+                hash_ids[0] as i32
+            } else {
+                return redirect_to_err("404")
+            }
+        },
+        Err(_e) => return redirect_to_err("404")
+    };
+
+    // get game and make sure user is owner
+    let the_game: db::Game = match db::get_game_by_id(&pool, game_id).await {
+        Ok(g) => g,
+        Err(_e) => return redirect_to_err("404")
+    };
+
+    if the_game.owner_id != user_id {
+        return redirect_to_err("403");
+    }
+
+    // user is owner. Make the invite
+    let invite_success: bool =
+        match db::invite_user(
+            &pool,
+            &invite_data.invited_player_username,
+            game_id
+        ).await {
+            Ok(invited) => invited,
+            Err(_e) => return redirect_to_err("404")
+        };
+
+    HttpResponse::Ok().json(InviteSuccess{invite_success})
+ }
+
+
+
 /**
  * Returns a vec of vecs of LetterScore structs.
  * This is in case we need an update after the page is loaded.
