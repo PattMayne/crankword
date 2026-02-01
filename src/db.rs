@@ -56,8 +56,8 @@ use crate::{
 */
 
 // For retrieving game_id from the game_users table
-struct GameId {
-    game_id: i64,
+pub struct GameId {
+    pub game_id: i64,
 }
 
 
@@ -272,6 +272,17 @@ pub async fn get_invitee_usernames(pool: &MySqlPool, game_id: i32) -> Result<Vec
     }
 
     Ok(usernames)
+}
+
+
+pub async fn get_invitations_by_username(pool: &MySqlPool, username: String) -> Result<Vec<GameId>> {
+    let game_ids: Vec<GameId> = sqlx::query_as!(
+        GameId,
+        "SELECT game_id FROM invites WHERE username = ?",
+        username
+    ).fetch_all(pool).await?;
+
+    Ok(game_ids)
 }
 
 

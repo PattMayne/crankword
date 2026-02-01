@@ -363,11 +363,13 @@ async fn dashboard(
 ) -> HttpResponse {
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
 
-    if user_req_data.role == "guest" || user_req_data.id.is_none() {
-        return redirect_to_login();
-    }
+    if user_req_data.role == "guest" ||
+        user_req_data.id.is_none() ||
+        user_req_data.username.is_none()
+    { return redirect_to_login() }
 
     let user_id: i32 = user_req_data.id.unwrap();
+    let username: String = user_req_data.username.to_owned().unwrap();
 
     let all_user_games: Vec<db::GameItemData> = match db::get_current_games(
         &pool, user_id).await {
@@ -407,12 +409,23 @@ async fn dashboard(
     }
 
     let stats: PlayerStats = PlayerStats { wins, past_games, cancelled_games };
+    let raw_invitations: Vec<db::GameId> = match db::get_invitations_by_username(&pool, username).await {
+        Ok(invites) => invites,
+        Err(_e) => return redirect_to_err("500")
+    };
+
+    // hash each id into a new vector
+    let invited_game_hashes: Vec<String> = raw_invitations
+        .iter()
+        .map(|raw_invite| hash_ids.encode(&[raw_invite.game_id as u64]))
+        .collect();
 
     let dash_template: DashboardTemplate = DashboardTemplate {
         texts: DashTexts::new(&user_req_data),
         user: user_req_data,
         current_games,
-        stats
+        stats,
+        invited_game_hashes
     };
 
     HttpResponse::Ok()

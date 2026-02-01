@@ -6,6 +6,10 @@ import * as globals from './globals.js'
 
 let msgs = []
 
+/**
+ * When a user (non-owner) decides to "join" this game,
+ * we call the API and get them in.
+ */
 const join_game = async () => {
     console.log("JOINING GAME")
     msgs = []
@@ -29,6 +33,10 @@ const join_game = async () => {
     window.location.reload()
 }
 
+/**
+ * When the owner presses the button to change game mode
+ * from "pre_game" to "in_progress" (this starting the game)
+ */
 const start_game = async () => {
     console.log("PRESSED 'START GAME'")
     msgs = []
@@ -45,6 +53,10 @@ const start_game = async () => {
 }
 
 
+/**
+ * Call the API to get updated information about this game,
+ * then populate the relevant fields with that info.
+ */
 const refresh_data = async () => {
     msgs = []
     msgs.push("REFRESHING GAME...")
@@ -65,6 +77,11 @@ const refresh_data = async () => {
     }
 }
 
+/**
+ * Fill the players' list element with a list of the players
+ * who have "joined" this game.
+ * @param {array} players_list 
+ */
 const set_players_list = players_list => {
 
     const players_ul = document.getElementById("players_ul")
@@ -80,8 +97,12 @@ const set_players_list = players_list => {
 }
 
 
+/**
+ * Fill the relevant element with a list of the usernames who
+ * have been invited to the game.
+ * @param {array} invitee_usernames 
+ */
 const set_pending_invites = invitee_usernames => {
-
     const invitees_ul = document.getElementById("invitees_ul")
     let list_html = ""
 
@@ -106,7 +127,7 @@ const invite_player = async () => {
     msgs = []
 }
 
-// SHOW/HIDE ERROR BOX
+// SHOW/HIDE MESSAGE BOX
 
 const hide_msg_box = () =>
     document.getElementById("msg_box").style.display = "none"

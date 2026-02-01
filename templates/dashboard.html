@@ -38,6 +38,19 @@
                 </div>
             </div>
 
+            {% if invited_game_hashes.len() > 0 %}
+            <div class="large-4 medium-6 small-12 cell">
+                <div class="callout primary">
+                    <h4>INVITATIONS:</h4>
+                    <span id="invitations">
+                        {% for hashid in invited_game_hashes %}
+                            <a class="button small" href="/game/{{ hashid }}">{{ hashid }}</a>
+                        {% endfor %}
+                    </span>
+                </div>
+            </div>
+            {% endif %}
+
             <div class="large-4 medium-6 small-12 cell">
                 <div class="callout primary">
                     <h4>{{ texts.stats }}:</h4>

@@ -280,6 +280,7 @@ pub struct DashboardTemplate {
     pub user: auth::UserReqData,
     pub current_games: Vec<db::GameLinkData>,
     pub stats: db::PlayerStats,
+    pub invited_game_hashes: Vec<String>,
 }
 
 
