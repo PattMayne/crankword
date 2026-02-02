@@ -230,3 +230,20 @@ h1, h2, h3, h4, h5, h6 {
  * 
  * 
 */
+
+
+.uninvite_button {
+  margin: 2px;
+  margin-left: 4px;
+  padding: 0px 4px 0px 4px;
+  border-radius: 10px;
+  font-size: 11px;
+  border: 1px solid $black;
+  color: $black;
+  background-color: $very-light-gray;
+}
+
+.uninvite_button:hover {
+  background-color: $losing_word;
+  color: $very-light-gray;
+}

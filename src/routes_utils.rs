@@ -62,12 +62,20 @@ pub struct AuthCodeQuery {
     pub code: String,
 }
 
+#[derive(Deserialize)]
+pub struct DeleteInviteData {
+    pub username: String,
+    pub hashed_game_id: String,
+}
+
+
 
 #[derive(Serialize)]
 pub struct ErrorResponse {
     pub error: String,
     pub code: u16,
 }
+
 
 
 #[derive(Serialize)]
@@ -88,6 +96,14 @@ pub struct InviteSuccessObject {
     pub invite_success: bool,
     pub message: String,
 }
+
+
+#[derive(Serialize)]
+pub struct UninviteSuccessObject {
+    pub success: bool,
+    pub message: String,
+}
+
 
 
 /**

@@ -356,12 +356,8 @@ export const invite_player = async (invited_username, hashed_game_id) => {
 
     await utils.fetch_json_post(route, input)
     .then(response => {
-        console.log("DATA 111: " + JSON.stringify(response))
         if(!response.ok) {
-            console.log("DATA 222: " + JSON.stringify(response))
             response.json().then(data => {
-
-                console.log("DATA 333: " + JSON.stringify(data))
                 console.log("NOT OK")
                 let msg = (!!data.code) ? (data.code.toString() + " ") : ""
                 msg += (!!data.error) ? data.error : " Error occurred"
@@ -372,7 +368,6 @@ export const invite_player = async (invited_username, hashed_game_id) => {
         }
         return response.json()
     }).then(data => {
-        console.log("DATA 444: " + JSON.stringify(data))
         if (!!data.message) {
             response_obj.invite_success = data.invite_success
             response_obj.message = data.message
@@ -436,6 +431,50 @@ export const refresh_pregame = async hashed_game_id => {
     }).catch(error => {
         console.log('Error: ', error)
     })
+
+    return response_obj
+}
+
+
+export const uninvite_player = async (hashed_game_id, username) => {
+    console.log("uninviting player")
+
+    const route = "/game_in/delete_invite"
+    const input = {
+        "hashed_game_id": String(hashed_game_id),
+        "username": String(username)
+    }
+
+    const response_obj = {
+        success: false,
+        message: null,
+    }
+
+    await utils.fetch_json_post(route, input)
+        .then(response => {
+            if(!response.ok) {
+                response.json().then(data => {
+                    console.log("NOT OK")
+                    let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                    msg += (!!data.error) ? data.error : " Error occurred"
+                    response_obj.error = msg
+                })
+
+                throw new Error("Unable to uninvite player, or error on server.")
+            }
+            return response.json()
+        }).then(data => {
+            if (!!data.message) {
+                response_obj.success = !!data.success
+                response_obj.message = data.message
+                console.log(response_obj.message)
+            } else {
+                console.log("DID NOT UNINVITE PLAYER")
+                response_obj.error = !!data.error ? data.error : "DID NOT UNINVITE PLAYER"
+            }        
+        }).catch(error => {
+            console.log('Error: ', error)
+        })
 
     return response_obj
 }

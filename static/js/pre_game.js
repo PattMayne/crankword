@@ -58,9 +58,6 @@ const start_game = async () => {
  * then populate the relevant fields with that info.
  */
 const refresh_data = async () => {
-    msgs = []
-    msgs.push("REFRESHING GAME...")
-
     const game_id = document.getElementById("game_id").value
     const refresh_response = await io.refresh_pregame(game_id)
 
@@ -71,7 +68,8 @@ const refresh_data = async () => {
         }
         // else:
         set_players_list(refresh_response.players)
-        set_pending_invites(refresh_response.invitee_usernames)   
+        await set_pending_invites(refresh_response.invitee_usernames)   
+        await set_invitee_event_listeners(game_id, refresh_response.invitee_usernames)
     } else {
         console.log("errrrorrrr")
     }
@@ -102,16 +100,45 @@ const set_players_list = players_list => {
  * have been invited to the game.
  * @param {array} invitee_usernames 
  */
-const set_pending_invites = invitee_usernames => {
+const set_pending_invites = async invitee_usernames => {
     const invitees_ul = document.getElementById("invitees_ul")
     let list_html = ""
 
     invitee_usernames.map(invitee_username =>
-        list_html += "<li>" + invitee_username + "</li>"
+        list_html += "<li>" +
+            invitee_username +
+            get_delete_invite_btn(invitee_username) +
+            "</li>"
     )
     
     invitees_ul.innerHTML = list_html
+
 }
+
+const get_delete_invite_btn = invitee_username => {
+    const uninvite_id = get_uninvite_id(invitee_username)
+    let link_html = "<a href='#' class='uninvite_button' id='" + uninvite_id + "'>"
+    link_html += "X"
+    link_html += "</a>"
+
+    return link_html
+}
+
+const set_invitee_event_listeners = async (game_id, invitee_usernames) => {
+    invitee_usernames.map(invitee_username => {
+        const uninvite_id = get_uninvite_id(invitee_username)
+        const uninvite_button = document.getElementById(uninvite_id)
+        uninvite_button.addEventListener('click', (e) => {
+            io.uninvite_player(game_id, invitee_username).then(result => {
+                msgs.push(result.message)
+                show_msg_box()
+                msgs = []
+            })
+        })
+    })
+}
+
+const get_uninvite_id = invitee_username => "uninvite_" + invitee_username
 
 /**
  * When the owner presses the button to invite another player

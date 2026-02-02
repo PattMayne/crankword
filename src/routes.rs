@@ -603,6 +603,68 @@ pub fn redirect_to_login() -> HttpResponse {
  * 
 */
 
+#[post("delete_invite")]
+pub async fn delete_invite(
+    pool: web::Data<MySqlPool>,
+    hash_ids: web::Data<HashIds>,
+    req: HttpRequest,
+    delete_invite_data: web::Json<DeleteInviteData>
+) -> HttpResponse {
+    // Make sure it's a real user
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+    let player_id: i32 = match user_req_data.id {
+        Some(id) => id,
+        None => return return_unauthorized_err_json(&user_req_data)
+    };
+
+    let game_id: i32 = match hash_ids.decode(&delete_invite_data.hashed_game_id) {
+        Ok(ids) => {
+            if ids.len() > 0 {
+                ids[0] as i32
+            } else {
+                return return_internal_err_json()
+            }
+        },
+        Err(_e) => return return_internal_err_json()
+    };
+
+    // get the game
+    let the_game: db::Game = match db::get_game_by_id(&pool, game_id).await {
+        Ok(g) => g,
+        Err(_) => return return_unauthorized_err_json(&user_req_data)
+    };
+
+    // user must be game owner
+    if the_game.owner_id != player_id {
+        return return_unauthorized_err_json(&user_req_data)
+    }
+
+    let invites_deleted_count: u8 =
+        match db::delete_invite(
+            &pool,
+            game_id,
+            &delete_invite_data.username
+        ).await {
+            Ok(count) => count,
+            Err(_e) => return return_internal_err_json()
+        };
+    
+    let success: bool = invites_deleted_count > 0;
+    let message: String = if success {
+        "Invitation removed".to_string()
+    } else {
+        "Invitation was not removed".to_string()
+    };
+
+    let uninvite_success_object: UninviteSuccessObject = UninviteSuccessObject {
+        success,
+        message
+    };
+
+    HttpResponse::Ok().json(uninvite_success_object)
+}
+
+
 
 /**
  * During an in-progress game, get a list of the current players,
