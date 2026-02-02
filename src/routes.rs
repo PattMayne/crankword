@@ -708,25 +708,24 @@ pub async fn delete_invite(
         })
     }
 
-    let invites_deleted_count: u8 =
+    let invite_deleted: bool =
         match db::delete_invite(
             &pool,
             game_id,
             &delete_invite_data.username
         ).await {
-            Ok(count) => count,
+            Ok(deleted) => deleted,
             Err(_e) => return return_internal_err_json()
         };
     
-    let success: bool = invites_deleted_count > 0;
-    let message: String = if success {
+    let message: String = if invite_deleted {
         "Invitation removed".to_string()
     } else {
         "Invitation was not removed".to_string()
     };
 
     let uninvite_success_object: UninviteSuccessObject = UninviteSuccessObject {
-        success,
+        success: invite_deleted,
         message
     };
 
@@ -998,12 +997,18 @@ pub async fn join_game(
 
     if user_joined_game {
         // delete invitation. Don't worry about the result.
-        let _delete_result: Result<u8, anyhow::Error> =
-            db::delete_invite(
+        let _invite_deleted: bool =
+            match db::delete_invite(
                 &pool,
                 game_id,
                 &user_req_data.get_username()
-            ).await;
+            ).await {
+                Ok(deleted) => deleted,
+                Err(_e) => {
+                    eprintln!("Error deleting invitation");
+                    false
+                }
+            };
     }
 
     HttpResponse::Ok().json(JoinGameSuccess { success: user_joined_game })

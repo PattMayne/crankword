@@ -5,6 +5,7 @@ import * as globals from './globals.js'
 
 
 let msgs = []
+let number_of_players = 0
 
 /**
  * When a user (non-owner) decides to "join" this game,
@@ -58,11 +59,20 @@ const refresh_data = async () => {
     const refresh_response = await io.refresh_pregame(game_id)
 
     if (!!refresh_response.game_status && !!refresh_response.players) {
+
         if (refresh_response.game_status != "pre_game") {
             window.location.reload()
             return
         }
+
         // else:
+        
+        if (refresh_response.players.length < number_of_players) {
+            msgs.push("Player was removed from game")
+            show_msg_box()
+        }
+
+        number_of_players = refresh_response.players.length
         await set_players_list(refresh_response.players)
         await set_players_event_listeners(game_id, refresh_response.players)
         await set_pending_invites(refresh_response.invitee_usernames)   

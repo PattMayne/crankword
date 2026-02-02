@@ -887,7 +887,7 @@ pub async fn delete_invite(
     pool: &MySqlPool,
     game_id: i32,
     username: &String
-) -> Result<u8> {
+) -> Result<bool> {
     let result = sqlx::query(
         "DELETE FROM invites WHERE game_id = ? AND username = ?")
         .bind(game_id)
@@ -895,7 +895,7 @@ pub async fn delete_invite(
         .execute(pool)
         .await?;
 
-        Ok(result.rows_affected() as u8)
+        Ok(result.rows_affected() > 0)
 }
 
 pub async fn delete_invites(
