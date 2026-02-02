@@ -32,14 +32,13 @@
                     <h4>{{ texts.current_games }}:</h4>
                     <span>
                         {% for game in current_games %}
-                            <a class="button small" href="/game/{{ game.hashid }}">{{ game.game_status }}: {{ game.hashid }}</a>
+                        <a class="button small" href="/game/{{ game.hashid }}">{{ game.game_status }}: {{ game.hashid }}</a>
                         {% endfor %}
                     </span>
                 </div>
-            </div>
 
-            {% if invited_game_hashes.len() > 0 %}
-            <div class="large-4 medium-6 small-12 cell">
+
+                {% if invited_game_hashes.len() > 0 %}
                 <div class="callout primary">
                     <h4>INVITATIONS:</h4>
                     <span id="invitations">
@@ -48,8 +47,9 @@
                         {% endfor %}
                     </span>
                 </div>
+                {% endif %}
+
             </div>
-            {% endif %}
 
             <div class="large-4 medium-6 small-12 cell">
                 <div class="callout primary">

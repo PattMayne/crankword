@@ -822,3 +822,51 @@ pub async fn finish_game(
         }
     }
 }
+
+
+/* 
+ * 
+ * 
+ * 
+ * 
+ * ====================
+ * ====================
+ * =====          =====
+ * =====  DELETE  =====
+ * =====          =====
+ * ====================
+ * ====================
+ * 
+ * 
+ * 
+ * 
+*/
+
+pub async fn delete_invite(
+    pool: &MySqlPool,
+    game_id: i32,
+    username: &String
+) -> Result<u8> {
+    let result = sqlx::query(
+        "DELETE FROM invites WHERE game_id = ? AND username = ?")
+        .bind(game_id)
+        .bind(username)
+        .execute(pool)
+        .await?;
+
+        Ok(result.rows_affected() as u8)
+}
+
+
+pub async fn delete_guesses(
+    pool: &MySqlPool,
+    game_id: i32
+) -> Result<u8> {
+    let result = sqlx::query(
+        "DELETE FROM guesses WHERE game_id = ?")
+        .bind(game_id)
+        .execute(pool)
+        .await?;
+
+        Ok(result.rows_affected() as u8)
+}

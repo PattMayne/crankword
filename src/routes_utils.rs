@@ -5,6 +5,8 @@ use actix_web::{
     HttpResponse,
     http::StatusCode
 };
+use anyhow::{ Result, };
+use sqlx::{ MySqlPool };
 use time::{ OffsetDateTime };
 
 use crate::{
@@ -396,3 +398,23 @@ pub fn return_unauthorized_err_json(user_req_data: &auth::UserReqData) -> HttpRe
  * 
  * 
 */
+
+/**
+ * Wrapping the DB's "finish game" function with a call to
+ * "delete guesses" so the routes module can just
+ * call this one function instead of both.
+ */
+pub async fn finish_game(
+    pool: &MySqlPool,
+    game_id: i32,
+    winner_id_option: Option<i32>
+) -> Result<u8> {
+    let finish_game_affected_rows: u8 =
+        db::finish_game(&pool, game_id, winner_id_option).await?;
+    
+    if finish_game_affected_rows > 0 {
+        let _guesses_deleted: u8 = db::delete_guesses(pool, game_id).await?;
+    }
+
+    Ok(finish_game_affected_rows)
+}

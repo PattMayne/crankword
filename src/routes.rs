@@ -723,7 +723,7 @@ pub async fn refresh_in_prog_players(
                 if !turns_still_exist {
                     // game is over.
                     let _finish_game_result: Result<u8, anyhow::Error> =
-                        db::finish_game(&pool, game_id, None).await;
+                        finish_game(&pool, game_id, None).await;
                 }
             }
         }
@@ -821,11 +821,8 @@ pub async fn join_game(
 
     let game_id: i32 = match hash_ids.decode(&game_join_hash_id.hashed_game_id) {
         Ok(ids) => {
-            if ids.len() > 0 {
-                ids[0] as i32
-            } else {
-                return return_internal_err_json()
-            }
+            if ids.len() > 0 { ids[0] as i32 }
+            else { return return_internal_err_json() }
         },
         Err(_e) => return return_internal_err_json()
     };
@@ -858,6 +855,16 @@ pub async fn join_game(
             });
         }
     };
+
+    if user_joined_game {
+        // delete invitation. Don't worry about the result.
+        let _delete_result: Result<u8, anyhow::Error> =
+            db::delete_invite(
+                &pool,
+                game_id,
+                &user_req_data.get_username()
+            ).await;
+    }
 
     HttpResponse::Ok().json(JoinGameSuccess { success: user_joined_game })
 }
@@ -1101,7 +1108,7 @@ pub async fn check_guess(
     // Do we have a winner?
     if guess_result.is_winner {
         let finish_game_result: Result<u8, anyhow::Error> =
-            db::finish_game(&pool, game_id, Some(user_id)).await;
+            finish_game(&pool, game_id, Some(user_id)).await;
         
         if finish_game_result.is_err() {
             return return_internal_err_json();
@@ -1150,7 +1157,7 @@ pub async fn check_guess(
             if !turns_still_exist {
                 // game is over.
                 let _finish_game_result: Result<u8, anyhow::Error> =
-                    db::finish_game(&pool, game_id, None).await;
+                    finish_game(&pool, game_id, None).await;
                 guess_result.game_over = true;
             }
         }
