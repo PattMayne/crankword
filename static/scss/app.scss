@@ -232,9 +232,9 @@ h1, h2, h3, h4, h5, h6 {
 */
 
 
-.uninvite_button {
+.remove_player_button {
   margin: 2px;
-  margin-left: 4px;
+  margin-left: 6px;
   padding: 0px 4px 0px 4px;
   border-radius: 10px;
   font-size: 11px;
@@ -243,7 +243,7 @@ h1, h2, h3, h4, h5, h6 {
   background-color: $very-light-gray;
 }
 
-.uninvite_button:hover {
+.remove_player_button:hover {
   background-color: $losing_word;
   color: $very-light-gray;
 }

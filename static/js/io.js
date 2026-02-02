@@ -478,3 +478,47 @@ export const uninvite_player = async (hashed_game_id, username) => {
 
     return response_obj
 }
+
+
+export const boot_player_pregame = async (hashed_game_id, username) => {
+    console.log("uninviting player")
+
+    const route = "/game_in/boot_player_pregame"
+    const input = {
+        "hashed_game_id": String(hashed_game_id),
+        "username": String(username)
+    }
+
+    const response_obj = {
+        success: false,
+        message: null,
+    }
+
+    await utils.fetch_json_post(route, input)
+        .then(response => {
+            if(!response.ok) {
+                response.json().then(data => {
+                    console.log("NOT OK")
+                    let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                    msg += (!!data.error) ? data.error : " Error occurred"
+                    response_obj.error = msg
+                })
+
+                throw new Error("Unable to boot player, or error on server.")
+            }
+            return response.json()
+        }).then(data => {
+            if (!!data.message) {
+                response_obj.success = !!data.success
+                response_obj.message = data.message
+                console.log(response_obj.message)
+            } else {
+                console.log("DID NOT BOOT PLAYER")
+                response_obj.error = !!data.error ? data.error : "DID NOT BOOT PLAYER"
+            }        
+        }).catch(error => {
+            console.log('Error: ', error)
+        })
+
+    return response_obj
+}

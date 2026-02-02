@@ -38,9 +38,7 @@ const join_game = async () => {
  * from "pre_game" to "in_progress" (this starting the game)
  */
 const start_game = async () => {
-    console.log("PRESSED 'START GAME'")
     msgs = []
-    msgs.push("STARTING GAME...")
 
     const game_id = document.getElementById("game_id").value
     const start_response = await io.start_game(game_id)
@@ -81,17 +79,12 @@ const refresh_data = async () => {
  * @param {array} players_list 
  */
 const set_players_list = players_list => {
-
-    const players_ul = document.getElementById("players_ul")
-    let list_html = ""
-
-    players_list.map(player_item => {
-        if (!!player_item.username) {
-            list_html += "<li>" + player_item.username + "</li>"
-        }
-    })
-    
-    players_ul.innerHTML = list_html
+    document.getElementById("players_ul").innerHTML =
+        players_list.reduce((html, player_item) => {
+            return !!player_item.username ? 
+                html + `<li>${player_item.username}</li>` :
+                html
+        }, "")
 }
 
 
@@ -101,27 +94,20 @@ const set_players_list = players_list => {
  * @param {array} invitee_usernames 
  */
 const set_pending_invites = async invitee_usernames => {
-    const invitees_ul = document.getElementById("invitees_ul")
-    let list_html = ""
-
-    invitee_usernames.map(invitee_username =>
-        list_html += "<li>" +
-            invitee_username +
-            get_delete_invite_btn(invitee_username) +
-            "</li>"
-    )
-    
-    invitees_ul.innerHTML = list_html
+    document.getElementById("invitees_ul").innerHTML =
+        invitee_usernames.reduce((html, invitee_username) => {
+            return html + "<li>" +
+                invitee_username +
+                get_delete_invite_btn(invitee_username) +
+                "</li>"
+        }, "")
 }
 
-const get_delete_invite_btn = invitee_username => {
-    const uninvite_id = get_uninvite_id(invitee_username)
-    let link_html = "<a href='#' class='uninvite_button' id='" + uninvite_id + "'>"
-    link_html += "X"
-    link_html += "</a>"
+const get_delete_invite_btn = invitee_username =>
+    "<a href='#' class='remove_player_button' id='" +
+    get_uninvite_id(invitee_username) +
+    "'>X</a>"
 
-    return link_html
-}
 
 const set_invitee_event_listeners = async (game_id, invitee_usernames) => {
     invitee_usernames.map(invitee_username => {
@@ -143,7 +129,6 @@ const get_uninvite_id = invitee_username => "uninvite_" + invitee_username
  * When the owner presses the button to invite another player
  */
 const invite_player = async () => {
-    console.log("gonna invite")
     const hash_game_id = document.getElementById("game_id").value
     const invited_username = document.getElementById("invite_input").value
     const invite_response = await io.invite_player(invited_username, hash_game_id)
