@@ -31,6 +31,8 @@ pub struct StringRange {
 }
 
 pub const MAX_CURRENT_GAMES: u8 = 3;
+pub const MAX_PLAYERS: u8 = 6;
+pub const MAX_INVITES: u8 = 10;
 
 fn username_length_range() -> StringRange {
     StringRange{ min: 6, max: 20 }

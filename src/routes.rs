@@ -827,7 +827,7 @@ pub async fn join_game(
         Err(_e) => return return_internal_err_json()
     };
 
-    // Make sure they're not already in a pregame or inprogress game.
+    // Make sure they're not already in too many pregame or inprogress games.
     let games_count: u8 = 
         match db::get_current_games_count(&pool, user_req_data.id.unwrap()).await {
             Ok(count) => count,
@@ -837,7 +837,20 @@ pub async fn join_game(
     if games_count >= utils::MAX_CURRENT_GAMES {
         return HttpResponse::Ok().json(JoinGameFailure {
             success: false,
-            error: "Too many current games".to_string()
+            error: "You're in too many current games".to_string()
+        });
+    }
+
+    let other_players_count: u8 =
+        match db:: get_game_players_count(&pool, game_id).await {
+            Ok(count) => count,
+            Err(_e) => return return_internal_err_json()
+        };
+
+    if other_players_count >= utils::MAX_PLAYERS {
+        return HttpResponse::Ok().json(JoinGameFailure {
+            success: false,
+            error: "Too many current players".to_string()
         });
     }
 
@@ -877,7 +890,6 @@ pub async fn start_game(
     req: HttpRequest,
     game_start_id: web::Json<HashedGameId>
 ) -> HttpResponse {
-    println!("STARTING GAME");
     // Make sure it's a real user
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
     if user_req_data.get_role() == "guest" {
@@ -914,22 +926,21 @@ pub async fn start_game(
         });
     }
 
-    // NOW call the db to change the status of the game
-
-    let game_started: bool =
+    // Call the db to change the status of the game
+    let game_started: StartGameSuccess =
         match db::start_game(&pool, the_game.id).await {
-            Ok(success) => success,
+            Ok(success) => StartGameSuccess {success},
             Err(_e) => return return_internal_err_json()
         };
 
-    if game_started {
+
+    // delete all invitations (some may be pending, so still extant)
+    if game_started.success {
         let _deleted_invite_count_result: Result<u8, anyhow::Error> =
             db::delete_invites(&pool, game_id).await;
     }
 
-    HttpResponse::Ok().json(StartGameSuccess {
-        success: game_started
-    })
+    HttpResponse::Ok().json(game_started)
 }
 
 
@@ -1209,6 +1220,22 @@ pub async fn invite_player(
 
     if the_game.owner_id != user_id {
         return redirect_to_err("403");
+    }
+
+    // make sure we don't already have too many invites
+    let invites_count: u8 =
+        match db:: get_invites_count(&pool, game_id).await {
+            Ok(count) => count,
+            Err(_e) => return return_internal_err_json()
+        };
+
+    if invites_count >= utils::MAX_INVITES {
+        let success_object: InviteSuccessObject = InviteSuccessObject {
+            invite_success: false,
+            message: "Max invites reached".to_string()
+        };
+        
+        return HttpResponse::Ok().json(success_object);
     }
 
     // user is owner. Make the invite

@@ -371,6 +371,47 @@ pub async fn get_wordless_guess_scores(
 
 
 /**
+ * Check how many invitations have been sent for this game.
+ */
+pub async fn get_invites_count(pool: &MySqlPool, game_id: i32) -> Result<u8> {
+    let count_option: Option<Count> = match sqlx::query_as!(
+        Count,
+        "SELECT COUNT(*) as count FROM invites WHERE game_id = ?",
+        game_id
+    ).fetch_optional(pool).await {
+        Ok(count) => count,
+        Err(e) => return Err(anyhow!("Could not fetch invites count: {e}"))
+    };
+
+    match count_option {
+        Some(count) => Ok(count.count as u8),
+        None => Ok(0)
+    }
+}
+
+
+/**
+ * Check how many invitations have been sent for this game.
+ */
+pub async fn get_game_players_count(pool: &MySqlPool, game_id: i32) -> Result<u8> {
+    let count_option: Option<Count> = match sqlx::query_as!(
+        Count,
+        "SELECT COUNT(*) as count FROM game_users WHERE game_id = ?",
+        game_id
+    ).fetch_optional(pool).await {
+        Ok(count) => count,
+        Err(e) => return Err(anyhow!("Could not fetch players count: {e}"))
+    };
+
+    match count_option {
+        Some(count) => Ok(count.count as u8),
+        None => Ok(0)
+    }
+}
+
+
+
+/**
  * Returns number of PreGame or InProgress games the user is registered for.
  * (We're only allowed one game at a time)
  */
