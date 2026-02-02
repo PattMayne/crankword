@@ -747,7 +747,7 @@ pub async fn next_turn(pool: &MySqlPool, game_id: i32) -> Result<i32> {
 /**
  * When transitioning a game from one stage to the next.
  */
-pub async fn start_game(pool: &MySqlPool, game_id: i32) -> Result<u8> {
+pub async fn start_game(pool: &MySqlPool, game_id: i32) -> Result<bool> {
     let mut turn_user_id: i32 = 0;
 
     // set turn orders. Get all players. Scramble their IDs. Scrambled index +1 becomes turn order.
@@ -788,7 +788,7 @@ pub async fn start_game(pool: &MySqlPool, game_id: i32) -> Result<u8> {
         .execute(pool)
         .await?;
 
-    Ok(result.rows_affected() as u8)
+    Ok(result.rows_affected() > 0)
 }
 
 
@@ -851,6 +851,19 @@ pub async fn delete_invite(
         "DELETE FROM invites WHERE game_id = ? AND username = ?")
         .bind(game_id)
         .bind(username)
+        .execute(pool)
+        .await?;
+
+        Ok(result.rows_affected() as u8)
+}
+
+pub async fn delete_invites(
+    pool: &MySqlPool,
+    game_id: i32
+) -> Result<u8> {
+    let result = sqlx::query(
+        "DELETE FROM invites WHERE game_id = ?")
+        .bind(game_id)
         .execute(pool)
         .await?;
 

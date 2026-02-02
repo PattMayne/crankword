@@ -916,17 +916,20 @@ pub async fn start_game(
 
     // NOW call the db to change the status of the game
 
-    let update_result: Result<u8, anyhow::Error> =
-        db::start_game(&pool, the_game.id).await;
+    let game_started: bool =
+        match db::start_game(&pool, the_game.id).await {
+            Ok(success) => success,
+            Err(_e) => return return_internal_err_json()
+        };
 
-    match update_result {
-        Ok(rows_affected) => {
-            HttpResponse::Ok().json(StartGameSuccess {
-                success: rows_affected > 0
-            })
-        },
-        Err(_e) => return_internal_err_json()
+    if game_started {
+        let _deleted_invite_count_result: Result<u8, anyhow::Error> =
+            db::delete_invites(&pool, game_id).await;
     }
+
+    HttpResponse::Ok().json(StartGameSuccess {
+        success: game_started
+    })
 }
 
 
