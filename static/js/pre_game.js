@@ -112,7 +112,6 @@ const set_pending_invites = async invitee_usernames => {
     )
     
     invitees_ul.innerHTML = list_html
-
 }
 
 const get_delete_invite_btn = invitee_username => {
@@ -126,15 +125,15 @@ const get_delete_invite_btn = invitee_username => {
 
 const set_invitee_event_listeners = async (game_id, invitee_usernames) => {
     invitee_usernames.map(invitee_username => {
-        const uninvite_id = get_uninvite_id(invitee_username)
-        const uninvite_button = document.getElementById(uninvite_id)
-        uninvite_button.addEventListener('click', (e) => {
-            io.uninvite_player(game_id, invitee_username).then(result => {
-                msgs.push(result.message)
-                show_msg_box()
-                msgs = []
+        document.getElementById(get_uninvite_id(invitee_username))
+            .addEventListener('click', (e) => {
+                io.uninvite_player(game_id, invitee_username).then(result => {
+                    msgs.push(result.message)
+                    show_msg_box()
+                    refresh_data()
+                    msgs = []
+                })
             })
-        })
     })
 }
 
@@ -150,6 +149,7 @@ const invite_player = async () => {
     const invite_response = await io.invite_player(invited_username, hash_game_id)
     msgs.push(invite_response.message)
     show_msg_box()
+    refresh_data()
 
     msgs = []
 }
@@ -162,12 +162,7 @@ const hide_msg_box = () =>
 const show_msg_box = () => {
     const msg_box = document.getElementById("msg_box")
     msg_box.innerHTML = "";
-
-    for (let msg of msgs) {
-        const msg_p = "<p>" + msg + "</p>"
-        msg_box.innerHTML += msg_p
-    }
-
+    msgs.map(msg => msg_box.innerHTML += "<p>" + msg + "</p>" )
     msg_box.style.display = ""
 }
 
@@ -175,28 +170,19 @@ const show_msg_box = () => {
 document.addEventListener('DOMContentLoaded', () => {
     hide_msg_box()
     
-    // Add event listeners
-
+    // get button elements so we can add event listeners
     const join_btn = document.getElementById('join_btn')
     const start_btn = document.getElementById('start_btn')
     const refresh_btn = document.getElementById('refresh_btn')
     const invite_button = document.getElementById('invite_submit')
 
-    if (join_btn) {
-        join_btn.addEventListener('click', (e) => join_game())
-    }
+    // Add event listeners
+    join_btn && join_btn.addEventListener('click', (e) => join_game())
+    start_btn && start_btn.addEventListener('click', (e) => start_game())
+    refresh_btn && refresh_btn.addEventListener('click', (e) => refresh_data())
+    invite_button && invite_button.addEventListener('click', (e) => invite_player())
 
-    if (start_btn) {
-        start_btn.addEventListener('click', (e) => start_game())
-    }
-
-    if (refresh_btn) {
-        refresh_btn.addEventListener('click', (e) => refresh_data())
-    }
-
-    if (invite_button) {
-        invite_button.addEventListener('click', (e) => invite_player())
-    }
+    refresh_data()
 
     // Check every 3 seconds for new users or updated game_status
     setInterval(refresh_data, 3000);

@@ -636,7 +636,10 @@ pub async fn delete_invite(
 
     // user must be game owner
     if the_game.owner_id != player_id {
-        return return_unauthorized_err_json(&user_req_data)
+        return HttpResponse::Ok().json(UninviteSuccessObject {
+            success: false,
+            message: "Only game owner can delete invitations".to_string()
+        })
     }
 
     let invites_deleted_count: u8 =
@@ -827,7 +830,6 @@ pub async fn refresh_pregame(
     req: HttpRequest,
     hashed_game_id: web::Json<HashedGameId>
 ) -> HttpResponse {
-    println!("REFRESHING GAME");
     // Make sure it's a real user
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
     if user_req_data.get_role() == "guest" {
@@ -836,11 +838,8 @@ pub async fn refresh_pregame(
 
     let game_id: i32 = match hash_ids.decode(&hashed_game_id.hashed_game_id) {
         Ok(ids) => {
-            if ids.len() > 0 {
-                ids[0] as i32
-            } else {
-                return return_internal_err_json()
-            }
+            if ids.len() > 0 { ids[0] as i32 }
+            else { return return_internal_err_json() }
         },
         Err(_e) => return return_internal_err_json()
     };
