@@ -603,6 +603,75 @@ pub fn redirect_to_login() -> HttpResponse {
  * 
 */
 
+#[post("boot_player_pregame")]
+pub async fn boot_player_pregame(
+    pool: web::Data<MySqlPool>,
+    hash_ids: web::Data<HashIds>,
+    req: HttpRequest,
+    boot_player_data: web::Json<BootPlayerData>
+) -> HttpResponse {
+    // Make sure it's a real user
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+    let player_id: i32 = match user_req_data.id {
+        Some(id) => id,
+        None => return return_unauthorized_err_json(&user_req_data)
+    };
+
+    let username: String = match user_req_data.to_owned().username {
+        Some(name) => name,
+        None => return return_unauthorized_err_json(&user_req_data)
+    };
+
+    let game_id: i32 = match hash_ids.decode(&boot_player_data.hashed_game_id) {
+        Ok(ids) => {
+            if ids.len() > 0 { ids[0] as i32 }
+            else { return return_internal_err_json() }
+        },
+        Err(_e) => return return_internal_err_json()
+    };
+
+    // get the game
+    let the_game: db::Game = match db::get_game_by_id(&pool, game_id).await {
+        Ok(g) => g,
+        Err(_) => return return_unauthorized_err_json(&user_req_data)
+    };
+
+    // user must be game owner
+    if the_game.owner_id != player_id {
+        return HttpResponse::Ok().json(BootPlayerSuccessObject {
+            success: false,
+            message: "Only game owner can delete invitations".to_string()
+        })
+    } else if username == boot_player_data.username {
+        return HttpResponse::Ok().json(BootPlayerSuccessObject {
+            success: false,
+            message: "Cannot boot game owner".to_string()
+        })
+    }
+
+    let player_removed: bool =
+        match db::delete_user_from_game(
+            &pool,
+            game_id,
+            &boot_player_data.username
+        ).await {
+            Ok(removed) => removed,
+            Err(_e) => return return_internal_err_json()
+        };
+
+    let message: String = if player_removed {
+        "Player was removed from game".to_string()
+    } else {
+        "Player was not removed".to_string()
+    };
+
+    HttpResponse::Ok().json(BootPlayerSuccessObject {
+        success: player_removed,
+        message
+    })
+}
+
+
 #[post("delete_invite")]
 pub async fn delete_invite(
     pool: web::Data<MySqlPool>,
@@ -619,11 +688,8 @@ pub async fn delete_invite(
 
     let game_id: i32 = match hash_ids.decode(&delete_invite_data.hashed_game_id) {
         Ok(ids) => {
-            if ids.len() > 0 {
-                ids[0] as i32
-            } else {
-                return return_internal_err_json()
-            }
+            if ids.len() > 0 { ids[0] as i32 }
+            else { return return_internal_err_json() }
         },
         Err(_e) => return return_internal_err_json()
     };

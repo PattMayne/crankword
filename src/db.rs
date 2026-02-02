@@ -924,3 +924,19 @@ pub async fn delete_guesses(
 
         Ok(result.rows_affected() as u8)
 }
+
+
+pub async fn delete_user_from_game(
+    pool: &MySqlPool,
+    game_id: i32,
+    username: &String
+) -> Result<bool> {
+    let result = sqlx::query(
+        "DELETE FROM game_users WHERE game_id = ? AND username = ?")
+        .bind(game_id)
+        .bind(username)
+        .execute(pool)
+        .await?;
+
+        Ok(result.rows_affected() > 0)
+}

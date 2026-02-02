@@ -11,9 +11,7 @@ let msgs = []
  * we call the API and get them in.
  */
 const join_game = async () => {
-    console.log("JOINING GAME")
     msgs = []
-    msgs.push("NEW GAME CREATING")
 
     let game_id = document.getElementById("game_id").value
     let join_response = await io.join_game(game_id)
@@ -65,7 +63,8 @@ const refresh_data = async () => {
             return
         }
         // else:
-        set_players_list(refresh_response.players)
+        await set_players_list(refresh_response.players)
+        await set_players_event_listeners(game_id, refresh_response.players)
         await set_pending_invites(refresh_response.invitee_usernames)   
         await set_invitee_event_listeners(game_id, refresh_response.invitee_usernames)
     } else {
@@ -78,15 +77,42 @@ const refresh_data = async () => {
  * who have "joined" this game.
  * @param {array} players_list 
  */
-const set_players_list = players_list => {
+const set_players_list = async players_list => {
     document.getElementById("players_ul").innerHTML =
-        players_list.reduce((html, player_item) => {
-            return !!player_item.username ? 
-                html + `<li>${player_item.username}</li>` :
+        players_list.reduce((html, player_item) => 
+            !!player_item.username ? 
+                html + get_player_item_li(player_item.username) :
                 html
-        }, "")
+        , "")
 }
 
+const get_player_item_li = username =>
+    "<li>" +
+    username +
+    get_boot_btn(username) +
+    "</li>"
+
+
+const get_boot_btn = invitee_username =>
+    "<a href='#' class='remove_player_button' id='" +
+    get_boot_id(invitee_username) +
+    "'>X</a>"
+
+
+
+const set_players_event_listeners = async (game_id, player_items) => {
+    player_items.map(player_item => {
+        document.getElementById(get_boot_id(player_item.username))
+            .addEventListener('click', (e) => {
+                io.boot_player_pregame(game_id, player_item.username).then(result => {
+                    msgs.push(result.message)
+                    show_msg_box()
+                    refresh_data()
+                    msgs = []
+                })
+            })
+    })
+}
 
 /**
  * Fill the relevant element with a list of the usernames who
@@ -123,7 +149,10 @@ const set_invitee_event_listeners = async (game_id, invitee_usernames) => {
     })
 }
 
-const get_uninvite_id = invitee_username => "uninvite_" + invitee_username
+
+
+const get_uninvite_id = username => "uninvite_" + username
+const get_boot_id = username => "boot_" + username
 
 /**
  * When the owner presses the button to invite another player

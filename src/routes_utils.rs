@@ -69,6 +69,12 @@ pub struct DeleteInviteData {
 }
 
 
+#[derive(Deserialize)]
+pub struct BootPlayerData {
+    pub username: String,
+    pub hashed_game_id: String,
+}
+
 
 #[derive(Serialize)]
 pub struct ErrorResponse {
@@ -94,6 +100,12 @@ pub struct PreGameRefresh {
 #[derive(Serialize)]
 pub struct InviteSuccessObject {
     pub invite_success: bool,
+    pub message: String,
+}
+
+#[derive(Serialize)]
+pub struct BootPlayerSuccessObject {
+    pub success: bool,
     pub message: String,
 }
 

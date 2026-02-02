@@ -481,7 +481,7 @@ export const uninvite_player = async (hashed_game_id, username) => {
 
 
 export const boot_player_pregame = async (hashed_game_id, username) => {
-    console.log("uninviting player")
+    console.log("booting player")
 
     const route = "/game_in/boot_player_pregame"
     const input = {
