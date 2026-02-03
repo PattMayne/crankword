@@ -1,6 +1,7 @@
 use serde::{ Deserialize, Serialize };
 use askama::Template;
 use actix_web::{
+    web,
     cookie::{ Cookie },
     HttpResponse,
     http::StatusCode
@@ -15,6 +16,7 @@ use crate::{
     auth, resource_mgr::{*},
     resources::get_translation
 };
+use hash_ids::HashIds;
 
 
 /* 
@@ -131,6 +133,10 @@ pub struct InProgRefresh {
     pub turn_timeout: OffsetDateTime,
 }
 
+#[derive(Serialize)]
+pub struct DashboardRefreshData {
+    pub invited_game_hashes: Vec<String>,
+}
 
 #[derive(Serialize)]
 pub struct JoinGameFailure {
@@ -445,4 +451,19 @@ pub async fn finish_game(
     }
 
     Ok(finish_game_affected_rows)
+}
+
+/**
+ * Take a vector of GameId objects (each of which holds an i64 game id),
+ * hash each one into a String, and return a vector of those Strings.
+ */
+pub fn get_hashes_from_game_ids(
+    hash_ids: &web::Data<HashIds>,
+    raw_ids: Vec<db::GameId>
+) -> Vec<String> {
+    raw_ids
+        .iter()
+        .map(|raw_invite|
+            hash_ids.encode(&[raw_invite.game_id as u64]))
+        .collect()
 }

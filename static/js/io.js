@@ -522,3 +522,39 @@ export const boot_player_pregame = async (hashed_game_id, username) => {
 
     return response_obj
 }
+
+/* 
+ * 
+ * =======================
+ * =======================
+ * =====             =====
+ * =====  DASHBOARD  =====
+ * =====             =====
+ * =======================
+ * =======================
+ * 
+ */
+
+export const refresh_dashboard = async () => {
+    const route = "/game_in/refresh_dashboard"
+
+    let response = await fetch(route, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' }
+    })
+
+    let data = await response.json()
+
+    let return_obj = {
+        game_ids: [],
+        error: null
+    }
+
+    if (data.invited_game_hashes !== undefined) {
+        return_obj.game_ids = data.invited_game_hashes
+    } else if (!!data.error) {
+        return_obj.error = data.error
+    }
+
+    return return_obj
+}

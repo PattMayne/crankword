@@ -408,24 +408,17 @@ async fn dashboard(
         }
     }
 
-    let stats: PlayerStats = PlayerStats { wins, past_games, cancelled_games };
     let raw_invitations: Vec<db::GameId> = match db::get_invitations_by_username(&pool, username).await {
         Ok(invites) => invites,
         Err(_e) => return redirect_to_err("500")
     };
 
-    // hash each id into a new vector
-    let invited_game_hashes: Vec<String> = raw_invitations
-        .iter()
-        .map(|raw_invite| hash_ids.encode(&[raw_invite.game_id as u64]))
-        .collect();
-
     let dash_template: DashboardTemplate = DashboardTemplate {
         texts: DashTexts::new(&user_req_data),
         user: user_req_data,
         current_games,
-        stats,
-        invited_game_hashes
+        stats: PlayerStats { wins, past_games, cancelled_games },
+        invited_game_hashes: get_hashes_from_game_ids(&hash_ids, raw_invitations)
     };
 
     HttpResponse::Ok()
@@ -603,7 +596,7 @@ pub fn redirect_to_login() -> HttpResponse {
  * 
 */
 
-#[post("boot_player_pregame")]
+#[post("/boot_player_pregame")]
 pub async fn boot_player_pregame(
     pool: web::Data<MySqlPool>,
     hash_ids: web::Data<HashIds>,
@@ -672,7 +665,7 @@ pub async fn boot_player_pregame(
 }
 
 
-#[post("delete_invite")]
+#[post("/delete_invite")]
 pub async fn delete_invite(
     pool: web::Data<MySqlPool>,
     hash_ids: web::Data<HashIds>,
@@ -732,6 +725,37 @@ pub async fn delete_invite(
     HttpResponse::Ok().json(uninvite_success_object)
 }
 
+
+
+#[post("/refresh_dashboard")]
+pub async fn refresh_dashboard(
+    pool: web::Data<MySqlPool>,
+    hash_ids: web::Data<HashIds>,
+    req: HttpRequest
+) -> HttpResponse {
+        // Make sure it's a real user
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+    let username: String = match user_req_data.username {
+        Some(name) => name,
+        None => return return_unauthorized_err_json(&user_req_data)
+    };
+
+    println!("refreshing DASHBOARD");
+
+    // get a list of invitations
+    let raw_invitations: Vec<db::GameId> =
+        match db::get_invitations_by_username(&pool, username).await {
+            Ok(invites) => invites,
+            Err(_e) => return redirect_to_err("500")
+        };
+
+    // hash each id into a new vector
+    let dashboard_refresh_data: DashboardRefreshData = DashboardRefreshData {
+        invited_game_hashes: get_hashes_from_game_ids(&hash_ids, raw_invitations)
+    };
+
+    HttpResponse::Ok().json(dashboard_refresh_data)
+}
 
 
 /**
