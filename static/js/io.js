@@ -523,6 +523,55 @@ export const boot_player_pregame = async (hashed_game_id, username) => {
     return response_obj
 }
 
+// cancel game
+
+
+/**
+ * When the owner of the game wants to transition from pre-game to in-progress.
+ * 
+ * @param {int} hashed_game_id 
+ * @returns json object
+ */
+export const cancel_game = async hashed_game_id => {
+    console.log("cancelling 222")
+    const route = "/game_in/cancel_game"
+    const input = {
+        "hashed_game_id": String(hashed_game_id)
+    }
+
+    const response_obj = {
+        success: false,
+        error: null
+    }
+
+    await utils.fetch_json_post(route, input)
+    .then(response => {
+        if(!response.ok) {
+            response.json().then(data => {
+                console.log("NOT OK")
+                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                msg += (!!data.error) ? data.error : " Error occurred"
+                response_obj.error = msg
+            })
+
+            throw new Error("Unable to start game, or error on server.")
+        }
+        return response.json()
+    }).then(data => {
+        if (data.success) {
+            response_obj.success = data.success
+        } else {
+            console.log("DID NOT CANCEL GAME")
+            response_obj.error = !!data.error ? data.error : "DID NOT CANCEL GAME"
+        }        
+    }).catch(error => {
+        console.log('Error: ', error)
+    })
+
+    return response_obj
+}
+
+
 /* 
  * 
  * =======================

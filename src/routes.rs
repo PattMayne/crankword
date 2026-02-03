@@ -385,7 +385,7 @@ async fn dashboard(
 
     for user_game in all_user_games {
 
-        // rule out current games (in progress and pre-game)
+        // get current games (in progress and pre-game)
         if user_game.game_status == game_logic::GameStatus::InProgress.to_string() ||
             user_game.game_status == game_logic::GameStatus::PreGame.to_string()
         {
@@ -726,7 +726,9 @@ pub async fn delete_invite(
 }
 
 
-
+/**
+ * Get the data to update items in the dashboard.
+ */
 #[post("/refresh_dashboard")]
 pub async fn refresh_dashboard(
     pool: web::Data<MySqlPool>,
@@ -739,8 +741,6 @@ pub async fn refresh_dashboard(
         Some(name) => name,
         None => return return_unauthorized_err_json(&user_req_data)
     };
-
-    println!("refreshing DASHBOARD");
 
     // get a list of invitations
     let raw_invitations: Vec<db::GameId> =
@@ -755,6 +755,65 @@ pub async fn refresh_dashboard(
     };
 
     HttpResponse::Ok().json(dashboard_refresh_data)
+}
+
+
+/**
+ * Get the data to update items in the dashboard.
+ */
+#[post("/cancel_game")]
+pub async fn cancel_game(
+    pool: web::Data<MySqlPool>,
+    hash_ids: web::Data<HashIds>,
+    req: HttpRequest,
+    hashed_game_id: web::Json<HashedGameId>
+) -> HttpResponse {
+    // Make sure it's a real user
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+    if user_req_data.id.is_none() {
+        return return_unauthorized_err_json(&user_req_data)
+    }
+    let user_id: i32 = user_req_data.to_owned().id.unwrap();
+
+    // get the game to cancel
+    let game_id: i32 = match hash_ids.decode(&hashed_game_id.hashed_game_id) {
+        Ok(ids) => {
+            if ids.len() > 0 { ids[0] as i32 }
+            else { return return_internal_err_json() }
+        },
+        Err(_e) => return return_internal_err_json()
+    };
+
+    let the_game: db::Game = match db::get_game_by_id(&pool, game_id).await {
+        Ok(g) => g,
+        Err(_) => return return_unauthorized_err_json(&user_req_data)
+    };
+
+    // make sure user is owner
+    if the_game.owner_id != user_id {
+        return HttpResponse::Ok().json(GameCancelled {
+            success: false,
+            message: "Only game owner can cancel a game".to_string()
+        })
+    }
+
+    // cancel the actual game
+    let success: bool = match db::cancel_game(&pool, game_id).await {
+        Ok(success) => success,
+        Err(_e) => return return_internal_err_json()
+    };
+
+    let message = if success {
+        "Game cancelled".to_string()
+    } else {
+        "Game was not cancelled".to_string()
+    };
+
+    let game_cancelled: GameCancelled = GameCancelled {
+        success, message
+    };
+
+    HttpResponse::Ok().json(game_cancelled)
 }
 
 
@@ -783,11 +842,8 @@ pub async fn refresh_in_prog_players(
 
     let game_id: i32 = match hash_ids.decode(&hashed_game_id.hashed_game_id) {
         Ok(ids) => {
-            if ids.len() > 0 {
-                ids[0] as i32
-            } else {
-                return return_internal_err_json()
-            }
+            if ids.len() > 0 { ids[0] as i32 }
+            else { return return_internal_err_json() }
         },
         Err(_e) => return return_internal_err_json()
     };
@@ -797,7 +853,6 @@ pub async fn refresh_in_prog_players(
         Ok(g) => g,
         Err(_) => return return_unauthorized_err_json(&user_req_data)
     };
-
 
     // Get the players with their scores, but no words in the scores
     let players: Vec<db::PlayerRefreshData> =

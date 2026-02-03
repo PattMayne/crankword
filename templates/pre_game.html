@@ -24,6 +24,7 @@
                     <br />
                     {% if user.id.is_some() && game.game.owner_id == user.id.unwrap() %}
                         <a id="start_btn" class="button small">START GAME</a>
+                        <a id="cancel_btn" class="button small">CANCEL GAME</a>
                         <hr />
                         <label for="invite_input">INVITE USER
                             <input

@@ -84,6 +84,12 @@ pub struct ErrorResponse {
     pub code: u16,
 }
 
+#[derive(Serialize)]
+pub struct GameCancelled {
+    pub success: bool,
+    pub message: String,
+}
+
 
 
 #[derive(Serialize)]

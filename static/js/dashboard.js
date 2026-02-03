@@ -54,7 +54,7 @@ const refresh_data = async () => {
 
     // from io get list of game ids
     const game_ids_obj = await io.refresh_dashboard()
-
+    
     if (!game_ids_obj.game_ids || game_ids_obj.game_ids.length < 1) {
         return
     }
@@ -68,7 +68,6 @@ const refresh_data = async () => {
 }
 
 // Add event listeners
-
 document.addEventListener('DOMContentLoaded', () => {
     hide_msg_box()
     invites_list = document.getElementById("invitations")
@@ -80,6 +79,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.getElementById('new_game_button').addEventListener(
     'click', (e) => create_new_game())
-
 
 window.create_new_game = create_new_game

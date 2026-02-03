@@ -49,6 +49,20 @@ const start_game = async () => {
     }
 }
 
+const cancel_game = async () => {
+    console.log("cancelling 111")
+    msgs = []
+
+    const game_id = document.getElementById("game_id").value
+    const cancel_response = await io.cancel_game(game_id)
+
+    if (cancel_response.success) {
+        window.location.reload()
+    } else {
+        console.log("errrrorrrr")
+    }
+}
+
 
 /**
  * Call the API to get updated information about this game,
@@ -197,6 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // get button elements so we can add event listeners
     const join_btn = document.getElementById('join_btn')
     const start_btn = document.getElementById('start_btn')
+    const cancel_button = document.getElementById('cancel_btn')
     const refresh_btn = document.getElementById('refresh_btn')
     const invite_button = document.getElementById('invite_submit')
 
@@ -204,6 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
     join_btn && join_btn.addEventListener('click', (e) => join_game())
     start_btn && start_btn.addEventListener('click', (e) => start_game())
     refresh_btn && refresh_btn.addEventListener('click', (e) => refresh_data())
+    cancel_button && cancel_button.addEventListener('click', (e) => cancel_game())
     invite_button && invite_button.addEventListener('click', (e) => invite_player())
 
     refresh_data()
@@ -214,5 +230,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.join_game = join_game
 window.start_game = start_game
+window.cancel_game = cancel_game
 window.refresh_data = refresh_data
 window.invite_player = invite_player

@@ -864,6 +864,23 @@ pub async fn finish_game(
     }
 }
 
+/**
+ * If we have a winner, send in Some(winner_id).
+ * Else, everybody has lost.
+ */
+pub async fn cancel_game(
+    pool: &MySqlPool,
+    game_id: i32
+) -> Result<bool> {
+    let result: sqlx::mysql::MySqlQueryResult = sqlx::query(
+    "UPDATE games SET game_status = ? WHERE id = ?")
+        .bind(GameStatus::Cancelled.to_string())
+        .bind(game_id)
+        .execute(pool)
+        .await?;
+    Ok(result.rows_affected() > 0)
+}
+
 
 /* 
  * 
