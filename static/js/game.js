@@ -35,7 +35,7 @@ import { LetterState, Tile } from './utils.js'
 */
 
 
-const board_panel = document.getElementById("board-panel")
+const board_panel = document.getElementById("board_panel")
 const board = document.getElementById("board")
 const headline = document.getElementById("headline")
 const message_modal = $('#message_modal') // Foundation demands jquery for this
@@ -70,8 +70,9 @@ window.addEventListener("resize", () => {
 // Match font sizes (for tiles and headline) fit their containers.
 const set_sizes = () => {
     // using body width because widnow width acts weird in dev/inspect mode
-    const panel_width = document.getElementById("board-panel").offsetWidth
+    const panel_width = document.getElementById("board_panel").offsetWidth
     document.getElementById("game_menu_container").style.width = "" + panel_width + "px"
+    document.getElementById("cancel_button_container").style.width = "" + panel_width + "px"
 
     if (panel_width < 500) {
 

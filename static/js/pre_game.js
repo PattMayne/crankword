@@ -50,7 +50,6 @@ const start_game = async () => {
 }
 
 const cancel_game = async () => {
-    console.log("cancelling 111")
     msgs = []
 
     const game_id = document.getElementById("game_id").value

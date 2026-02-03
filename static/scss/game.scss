@@ -121,7 +121,7 @@ body {
 /* The container for the actual board-grid
  * (encompasses headline (title) and board (grid)).
  */
-#board-panel {
+#board_panel {
     background-color: $pastel-blue;
     color:#000000;
     border: none;
@@ -250,6 +250,26 @@ body {
     margin: auto;
     text-align: left;
     border-bottom: 1px solid $black;
+}
+
+#cancel_button_container {
+    margin: auto;
+    width: 500px;
+    max-width: 100%;
+    text-align: left;
+    padding: 0px;
+}
+
+#cancel_button {
+    margin: 5px 0px 5px 0px;
+    background-color: $gray;
+    color: $very-light-gray;
+    border-radius: 0;
+}
+
+#cancel_button:hover {
+    background-color: red;
+    color: $black;
 }
 
 #game_menu {

@@ -533,7 +533,6 @@ export const boot_player_pregame = async (hashed_game_id, username) => {
  * @returns json object
  */
 export const cancel_game = async hashed_game_id => {
-    console.log("cancelling 222")
     const route = "/game_in/cancel_game"
     const input = {
         "hashed_game_id": String(hashed_game_id)

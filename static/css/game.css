@@ -74,7 +74,7 @@ body {
 /* The container for the actual board-grid
  * (encompasses headline (title) and board (grid)).
  */
-#board-panel {
+#board_panel {
   background-color: #5a639e;
   color: #000000;
   border: none;
@@ -196,6 +196,26 @@ body {
   margin: auto;
   text-align: left;
   border-bottom: 1px solid #111111;
+}
+
+#cancel_button_container {
+  margin: auto;
+  width: 500px;
+  max-width: 100%;
+  text-align: left;
+  padding: 0px;
+}
+
+#cancel_button {
+  margin: 5px 0px 5px 0px;
+  background-color: #6b6b6b;
+  color: #f0f0f0;
+  border-radius: 0;
+}
+
+#cancel_button:hover {
+  background-color: red;
+  color: #111111;
 }
 
 #game_menu {
@@ -455,32 +475,6 @@ body {
   background-color: #f0f0f0;
   color: #111111;
   border: 1px solid #111111;
-}
-
-/* 
- * 
- * 
- * 
- * 
- * ======================
- * ======================
- * =====            =====
- * =====  PRE-GAME  =====
- * =====            =====
- * ======================
- * ======================
- * 
- * 
- * 
- * 
-*/
-.flex_container {
-  display: flex;
-}
-
-.flex_container div {
-  margin: 0px;
-  padding: 0px;
 }
 
 /*# sourceMappingURL=game.css.map */
