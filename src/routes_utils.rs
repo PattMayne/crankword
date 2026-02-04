@@ -134,7 +134,7 @@ pub struct UninviteSuccessObject {
 pub struct InProgRefresh {
     pub current_turn_id: i32,
     pub players: Vec<PlayerRefreshData>,
-    pub game_over: bool,
+    pub game_status: GameStatus,
     #[serde(with = "time::serde::rfc3339")]
     pub turn_timeout: OffsetDateTime,
 }

@@ -947,17 +947,17 @@ pub async fn refresh_in_prog_players(
         None => return return_unauthorized_err_json(&user_req_data)
     };
 
-    let game_over: bool = the_game.game_status != GameStatus::InProgress;
     let turn_timeout: time::OffsetDateTime = the_game.turn_timeout;
 
     let in_prog_refresh: InProgRefresh = InProgRefresh {
         current_turn_id,
         players,
-        game_over,
+        game_status: the_game.game_status,
         turn_timeout,
     };
 
     // only send the data if the user really belongs to this game
+    // TO DO: move this check WAY higher obviously
     match in_prog_refresh.user_id_is_player(player_id) {
         true => HttpResponse::Ok().json(in_prog_refresh),
         false => return_unauthorized_err_json(&user_req_data)

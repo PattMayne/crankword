@@ -271,7 +271,7 @@ const check_guess = async () => {
     create_keyboard_element()
 
     if (letter_states_obj.game_over) {
-        end_game(letter_states_obj.is_winner)
+        end_game(letter_states_obj.is_winner, "in_progress")
         return
     }
 
@@ -292,14 +292,16 @@ const check_guess = async () => {
 }
 
 
-const end_game = (victory) => {
+const end_game = (victory, game_status) => {
     if (game_over) {
         return
     }
 
     game_over = true
-    const endgame_msg = "You " + 
-        (victory ? "Win!" : "Lose!")
+    const endgame_msg = 
+        victory ? "You Win!" :
+        game_status == "cancelled" ? "Game was cancelled!" :
+        "You Lose!"
     current_word = null
     set_current_tile(null)
     unset_current_tile_classes()
@@ -619,8 +621,9 @@ const refresh_players = async () => {
     ) {
         console.log("MISSING PLAYERS DATA")
         return
-    } else if (players_obj.game_over) {
-        end_game(false)
+    } else if (players_obj.game_status != "in_progress") {
+        console.log("players_obj 222: " + JSON.stringify(players_obj))
+        end_game(false, players_obj.game_status)
     }
 
     // we need to know if this is a single-player game

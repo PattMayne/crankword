@@ -281,7 +281,7 @@ export const refresh_players = async hashed_game_id => {
     const response_obj = {
         players: [],
         current_turn_id: null,
-        game_over: false,
+        game_status: null,
         turn_timeout: false,
     }
 
@@ -299,11 +299,12 @@ export const refresh_players = async hashed_game_id => {
         }
         return response.json()
     }).then(data => {
+        //console.log("data: " + JSON.stringify(data))
         if (!!data.current_turn_id && !!data.players && !!data.turn_timeout) {
             response_obj.players = data.players
             response_obj.current_turn_id = data.current_turn_id
             response_obj.turn_timeout = new Date(data.turn_timeout)
-            response_obj.game_over = !!data.game_over
+            response_obj.game_status = data.game_status
         } else {
             console.log("DID NOT REFRESH PLAYERS DATA")
             response_obj.error = !!data.error ? data.error : "DID NOT REFRESH PLAYERS DATA"
