@@ -202,22 +202,26 @@ body {
   border-bottom: 1px solid #111111;
 }
 
-#cancel_or_quit_button_container {
+#cancel_button_container {
   margin: auto;
   width: 100%;
   text-align: left;
   padding: 0px;
 }
 
-#cancel_or_quit_button {
+#cancel_button {
   margin: 5px;
   background-color: #6b6b6b;
   color: #f0f0f0;
   border-radius: 0;
 }
 
-#cancel_or_quit_button:hover {
+#cancel_button:hover {
   background-color: red;
+  color: #111111;
+}
+
+#cancel_p {
   color: #111111;
 }
 

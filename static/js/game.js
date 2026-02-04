@@ -39,6 +39,7 @@ const board_panel = document.getElementById("board_panel")
 const board = document.getElementById("board")
 const headline = document.getElementById("headline")
 const message_modal = $('#message_modal') // Foundation demands jquery for this
+const cancel_modal = $('#cancel_modal')
 const message_p = document.getElementById("message_p")
 
 let showing_scores = true
@@ -454,6 +455,14 @@ const new_message = text => {
  * REMOVE FOCUS FROM MODAL ON MODAL-CLOSE
  */
 $('#message_modal').on('closed.zf.reveal', () => {
+    setTimeout(() => {
+        if (current_tile.element) {
+            current_tile.element.focus()
+        }
+    }, 1)
+})
+
+$('#cancel_modal').on('closed.zf.reveal', () => {
     setTimeout(() => {
         if (current_tile.element) {
             current_tile.element.focus()
@@ -969,10 +978,14 @@ const create_keyboard_letter_div = (letter, state) => {
 
 document.addEventListener('DOMContentLoaded', async () => {
     timer_element = document.getElementById("timer_element")
+    const cancel_button = document.getElementById("cancel_button")
+    const confirm_cancel_button = document.getElementById("confirm_cancel_button")
     document.getElementById('scores_toggle').addEventListener('click', toggle_scores)
     document.getElementById('scores_toggle_2').addEventListener('click', toggle_scores)
-    document.getElementById('cancel_or_quit_button_container').addEventListener(
-        'click', cancel_or_quit_game)
+    !!cancel_button && cancel_button.addEventListener('click', () => {
+        cancel_modal.foundation('open')
+    })
+    !!confirm_cancel_button && confirm_cancel_button.addEventListener('click', cancel_game)
     username = document.getElementById("username").value
     user_id = document.getElementById("user_id").value
     settle_old_scores()
@@ -992,7 +1005,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     show_scores()
 })
 
-const cancel_or_quit_game = async () => {
+const cancel_game = async () => {
     const cancel_response = await io.cancel_game(hashed_game_id())
 
     if (cancel_response.success) {
@@ -1001,6 +1014,5 @@ const cancel_or_quit_game = async () => {
         console.log("errrrorrrr")
     }
 }
-
 
 window.check_guess = check_guess

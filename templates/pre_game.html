@@ -37,6 +37,8 @@
                         <a class="button small" id="invite_submit">INVITE</a>
                     {% else if user.id.is_some() && !game.user_id_is_player(user.id.unwrap()) %}
                         <a href="#" id="join_btn" class="button small">JOIN GAME</a>
+                    {% else if user.id.is_some() && game.user_id_is_player(user.id.unwrap()) %}
+                        <a href="#" id="leave_btn" class="button small">LEAVE GAME</a>
                     {% endif %}
                 </div>
             </div>

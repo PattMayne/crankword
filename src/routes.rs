@@ -237,7 +237,6 @@ async fn go_to_pregame(
     user_req_data: auth::UserReqData
 ) -> HttpResponse {
 
-    println!("{}", the_game.game.game_status.to_string());
     let pre_game_template: PreGameTemplate = PreGameTemplate {
         texts: resource_mgr::PreGameTexts::new(&user_req_data),
         game: the_game,
@@ -256,7 +255,11 @@ async fn go_to_inprogress_game(
     the_game: db::GameAndPlayers,
     user_req_data: auth::UserReqData
 ) -> HttpResponse {
-    println!("{}", the_game.game.game_status.to_string());
+    // Only let players in
+    if !the_game.user_id_is_player(user_req_data.to_owned().id.unwrap()) {
+        return redirect_to_err("403")
+    }
+
     let texts: GameTexts = GameTexts::new(&user_req_data);
     let game_template: GameTemplate = GameTemplate {
         title: "CRANKWORD".to_string(),
@@ -282,7 +285,6 @@ async fn go_to_finished_game(
     the_game: db::GameAndPlayers,
     user_req_data: auth::UserReqData
 ) -> HttpResponse {
-    println!("GAME STATUS: {}", the_game.game.game_status.to_string());
     let post_game_texts: PostGameTexts = resource_mgr::PostGameTexts::new(
         &user_req_data,
         None,
