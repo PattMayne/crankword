@@ -255,21 +255,21 @@ body {
     border-bottom: 1px solid $black;
 }
 
-#cancel_button_container {
+#cancel_or_quit_button_container {
     margin: auto;
     width: 100%;
     text-align: left;
     padding: 0px;
 }
 
-#cancel_button {
+#cancel_or_quit_button {
     margin: 5px;
     background-color: $gray;
     color: $very-light-gray;
     border-radius: 0;
 }
 
-#cancel_button:hover {
+#cancel_or_quit_button:hover {
     background-color: red;
     color: $black;
 }

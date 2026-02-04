@@ -42,19 +42,9 @@ const message_modal = $('#message_modal') // Foundation demands jquery for this
 const message_p = document.getElementById("message_p")
 
 let showing_scores = true
-let game_id_storage = null
 
 // Game id is in the path (game/id)
-const hashed_game_id = () => {
-    if (!!game_id_storage) {
-        return game_id_storage
-    }
-
-    const path = window.location.pathname
-    const parts = path.split('/')
-    return parts.length > 0 ? parts[parts.length - 1] : null
-}
-
+const hashed_game_id = () => document.getElementById("hashed_game_id").value
 
 window.addEventListener("load", () => start_game())
 window.addEventListener("keydown", (event) => key_pressed(event));
@@ -977,12 +967,12 @@ const create_keyboard_letter_div = (letter, state) => {
 
 // SETUP STUFF
 
-
 document.addEventListener('DOMContentLoaded', async () => {
     timer_element = document.getElementById("timer_element")
     document.getElementById('scores_toggle').addEventListener('click', toggle_scores)
     document.getElementById('scores_toggle_2').addEventListener('click', toggle_scores)
-    game_id_storage = document.getElementById("hashed_game_id").value
+    document.getElementById('cancel_or_quit_button_container').addEventListener(
+        'click', cancel_or_quit_game)
     username = document.getElementById("username").value
     user_id = document.getElementById("user_id").value
     settle_old_scores()
@@ -1001,6 +991,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     show_scores()
 })
+
+const cancel_or_quit_game = async () => {
+    const cancel_response = await io.cancel_game(hashed_game_id())
+
+    if (cancel_response.success) {
+        window.location.reload()
+    } else {
+        console.log("errrrorrrr")
+    }
+}
 
 
 window.check_guess = check_guess
