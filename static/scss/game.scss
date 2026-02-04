@@ -174,6 +174,9 @@ body {
     background-color: #000;
 }
 
+#game_wrapper {
+    min-height: 100vh;
+}
 
 #cranktable {
     width: 100%;
@@ -254,14 +257,13 @@ body {
 
 #cancel_button_container {
     margin: auto;
-    width: 500px;
-    max-width: 100%;
+    width: 100%;
     text-align: left;
     padding: 0px;
 }
 
 #cancel_button {
-    margin: 5px 0px 5px 0px;
+    margin: 5px;
     background-color: $gray;
     color: $very-light-gray;
     border-radius: 0;

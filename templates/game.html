@@ -7,7 +7,7 @@
     <title>{{ title }}</title>
     <link rel="stylesheet" href="../static/css/foundation.min.css">
     <link rel="stylesheet" href="/static/css/app.css?id=axl7vf7">
-    <link rel="stylesheet" href="../static/css/game.css?id=47099050972">
+    <link rel="stylesheet" href="../static/css/game.css?id=25907">
     <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
   </head>
 
@@ -15,7 +15,7 @@
 
 {% include "header.html" %}
 
-<div class="grid-x grid-padding-x">
+<div class="grid-x grid-padding-x" id="game_wrapper">
     <div class="large-7 medium-12 small-12 cell" id="crank_cell">
         <div id="cranktable">
 
@@ -80,9 +80,6 @@
 
                 </div>
             </div>
-            <div id="cancel_button_container">
-                <a class="button small" id="cancel_button">CANCEL GAME</a>
-            </div>
         </div> <!-- end of id: cranktable -->
     </div>
 
@@ -118,6 +115,10 @@
     </div>
 </div>
 
+<div id="cancel_button_container">
+    <a class="button small" id="cancel_button">CANCEL GAME</a>
+</div>
+
 <input type="hidden" id="hashed_game_id" value="{{ hashed_game_id }}">
 
 {% if user.username.is_some() %}
@@ -143,7 +144,7 @@
 <script src="../static/js/vendor/jquery.js"></script>
 <script src="../static/js/vendor/what-input.js"></script>
 <script src="../static/js/vendor/foundation.min.js"></script>
-<script type="module" src="../static/js/game.js?id=955"></script>
+<script type="module" src="../static/js/game.js?id=9556"></script>
 
 </body>
 </html>

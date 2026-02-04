@@ -72,7 +72,6 @@ const set_sizes = () => {
     // using body width because widnow width acts weird in dev/inspect mode
     const panel_width = document.getElementById("board_panel").offsetWidth
     document.getElementById("game_menu_container").style.width = "" + panel_width + "px"
-    document.getElementById("cancel_button_container").style.width = "" + panel_width + "px"
 
     if (panel_width < 500) {
 
