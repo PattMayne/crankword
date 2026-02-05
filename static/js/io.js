@@ -69,50 +69,6 @@ export const new_game = async () => {
 
 
 /**
- * When the user wants to join the game.
- * 
- * @param {int} hashed_game_id 
- * @returns obj
- */
-export const join_game = async (hashed_game_id) => {
-    const route = "/game_in/join_game"
-    const input = {
-        "hashed_game_id": String(hashed_game_id)
-    }
-
-    const response_obj = {
-        success: false,
-        error: null
-    }
-
-    await utils.fetch_json_post(route, input)
-    .then(response => {
-        if(!response.ok) {
-            response.json().then(data => {
-                console.log("NOT OK")
-                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
-                msg += (!!data.error) ? data.error : " Error occurred"
-                response_obj.error = msg
-            })
-
-            throw new Error("Unable to join game, or error on server.")
-        }
-        return response.json()
-    }).then(data => {
-        if (data.success) {
-            response_obj.success = true
-        } else {
-            console.log("DID NOT JOIN GAME")
-            response_obj.error = !!data.error ? data.error : "DID NOT JOIN GAME"
-        }        
-    }).catch(error => {
-        console.log('Error: ', error)
-    })
-
-    return response_obj
-}
-
-/**
  * When the owner of the game wants to transition from pre-game to in-progress.
  * 
  * @param {int} hashed_game_id 
@@ -333,6 +289,96 @@ export const refresh_players = async hashed_game_id => {
  * 
  * 
 */
+
+
+/**
+ * When the user wants to join the game.
+ * 
+ * @param {int} hashed_game_id 
+ * @returns obj
+ */
+export const join_game = async (hashed_game_id) => {
+    const route = "/game_in/join_game"
+    const input = {
+        "hashed_game_id": String(hashed_game_id)
+    }
+
+    const response_obj = {
+        success: false,
+        error: null
+    }
+
+    await utils.fetch_json_post(route, input)
+    .then(response => {
+        if(!response.ok) {
+            response.json().then(data => {
+                console.log("NOT OK")
+                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                msg += (!!data.error) ? data.error : " Error occurred"
+                response_obj.error = msg
+            })
+
+            throw new Error("Unable to join game, or error on server.")
+        }
+        return response.json()
+    }).then(data => {
+        if (data.success) {
+            response_obj.success = true
+        } else {
+            console.log("DID NOT JOIN GAME")
+            response_obj.error = !!data.error ? data.error : "DID NOT JOIN GAME"
+        }        
+    }).catch(error => {
+        console.log('Error: ', error)
+    })
+
+    return response_obj
+}
+
+
+/**
+ * When the user wants to leave the game.
+ * 
+ * @param {int} hashed_game_id 
+ * @returns obj
+ */
+export const leave_game = async (hashed_game_id) => {
+    const route = "/game_in/leave_game"
+    const input = {
+        "hashed_game_id": String(hashed_game_id)
+    }
+
+    const response_obj = {
+        success: false,
+        error: null
+    }
+
+    await utils.fetch_json_post(route, input)
+    .then(response => {
+        if(!response.ok) {
+            response.json().then(data => {
+                console.log("NOT OK")
+                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                msg += (!!data.error) ? data.error : " Error occurred"
+                response_obj.error = msg
+            })
+
+            throw new Error("Unable to leave game, or error on server.")
+        }
+        return response.json()
+    }).then(data => {
+        if (data.success) {
+            response_obj.success = true
+        } else {
+            console.log("DID NOT LEAVE GAME")
+            response_obj.error = !!data.error ? data.error : "DID NOT LEAVE GAME"
+        }        
+    }).catch(error => {
+        console.log('Error: ', error)
+    })
+
+    return response_obj
+}
 
 
 /**

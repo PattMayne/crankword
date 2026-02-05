@@ -151,6 +151,21 @@ pub struct JoinGameFailure {
 }
 
 
+impl JoinGameFailure {
+    pub fn new(message: String) -> JoinGameFailure {
+        JoinGameFailure {
+            success: false,
+            error: message
+        }
+    }
+}
+
+#[derive(Serialize)]
+pub struct LeaveGameFailure {
+    pub error: String,
+    pub success: bool,
+}
+
 
 #[derive(Serialize)]
 pub struct StartGameFailure {
@@ -163,6 +178,13 @@ pub struct StartGameFailure {
 pub struct JoinGameSuccess {
     pub success: bool,
 }
+
+
+#[derive(Serialize)]
+pub struct LeaveGameSuccess {
+    pub success: bool,
+}
+
 
 
 #[derive(Serialize)]

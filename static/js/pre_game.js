@@ -26,8 +26,6 @@ const join_game = async () => {
         return
     }
 
-    console.log("no error?")
-
     // reload
     window.location.reload()
 }
@@ -203,6 +201,26 @@ const show_msg_box = () => {
     msg_box.style.display = ""
 }
 
+const leave_game = async () => {
+    console.log("Leaving game")
+
+    msgs = []
+
+    let game_id = document.getElementById("game_id").value
+    let leave_resp = await io.leave_game(game_id)
+
+    if (!leave_resp.success || !!leave_resp.error) {
+        console.log(JSON.stringify(leave_resp))
+        console.log("error")
+        msgs = []
+        msgs.push(leave_resp.error)
+        show_msg_box()
+        return
+    }
+
+    // reload
+    window.location.reload()
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     hide_msg_box()
@@ -213,6 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancel_button = document.getElementById('cancel_btn')
     const refresh_btn = document.getElementById('refresh_btn')
     const invite_button = document.getElementById('invite_submit')
+    const leave_btn = document.getElementById('leave_btn')
 
     // Add event listeners
     join_btn && join_btn.addEventListener('click', (e) => join_game())
@@ -220,6 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
     refresh_btn && refresh_btn.addEventListener('click', (e) => refresh_data())
     cancel_button && cancel_button.addEventListener('click', (e) => cancel_game())
     invite_button && invite_button.addEventListener('click', (e) => invite_player())
+    leave_btn && leave_btn.addEventListener('click', (e) => leave_game())
 
     refresh_data()
 

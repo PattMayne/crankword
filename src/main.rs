@@ -88,6 +88,7 @@ async fn main() -> std::io::Result<()> {
                 .service(routes::boot_player_pregame)
                 .service(routes::refresh_dashboard)
                 .service(routes::cancel_game)
+                .service(routes::leave_game)
             )
             .default_service(web::get().to(routes::not_found)) // <- catch-all
             .wrap(from_fn(middleware::jwt_cookie_middleware))

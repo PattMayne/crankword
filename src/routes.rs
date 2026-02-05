@@ -1019,7 +1019,6 @@ pub async fn join_game(
     req: HttpRequest,
     game_join_hash_id: web::Json<HashedGameId>
 ) -> HttpResponse {
-    println!("JOINING GAME");
     // Make sure it's a real user
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
     if user_req_data.get_role() == "guest" {
@@ -1068,12 +1067,7 @@ pub async fn join_game(
         game_id
     ).await {
         Ok(joined) => joined,
-        Err(e) => {
-            return HttpResponse::Ok().json(JoinGameFailure {
-                error: e.to_string(),
-                success: false
-            });
-        }
+        Err(e) => return HttpResponse::Ok().json(JoinGameFailure::new(e.to_string()))
     };
 
     if user_joined_game {
@@ -1093,6 +1087,59 @@ pub async fn join_game(
     }
 
     HttpResponse::Ok().json(JoinGameSuccess { success: user_joined_game })
+}
+
+
+
+#[post("/leave_game")]
+pub async fn leave_game(
+    pool: web::Data<MySqlPool>,
+    hash_ids: web::Data<HashIds>,
+    req: HttpRequest,
+    game_join_hash_id: web::Json<HashedGameId>
+) -> HttpResponse {
+    println!("LEAVING GAME");
+    // Make sure it's a real user
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+    if user_req_data.get_role() == "guest" {
+        return return_unauthorized_err_json(&user_req_data);
+    }
+
+    let game_id: i32 = match hash_ids.decode(&game_join_hash_id.hashed_game_id) {
+        Ok(ids) => {
+            if ids.len() > 0 { ids[0] as i32 }
+            else { return return_internal_err_json() }
+        },
+        Err(_e) => return return_internal_err_json()
+    };
+
+    let leave_game_failure_resp: HttpResponse =
+        HttpResponse::Ok().json(LeaveGameFailure {
+            error: "Failed to leave game".to_string(),
+            success: false
+        });
+
+    // get game to make sure it's pre_game
+    let the_game: db::Game = match db::get_game_by_id(&pool, game_id).await {
+        Ok(g) => g,
+        Err(_e) => return return_internal_err_json()
+    };
+
+    if the_game.game_status != GameStatus::PreGame {
+        return leave_game_failure_resp
+    }
+
+    // Use may leave
+    let user_left_game: bool = match db::delete_user_from_game(
+        &pool,
+        game_id,
+        &user_req_data.get_username()
+    ).await {
+        Ok(quit) => quit,
+        Err(_e) => return leave_game_failure_resp
+    };
+
+    HttpResponse::Ok().json(LeaveGameSuccess { success: user_left_game })
 }
 
 
