@@ -232,6 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const refresh_btn = document.getElementById('refresh_btn')
     const invite_button = document.getElementById('invite_submit')
     const leave_btn = document.getElementById('leave_btn')
+    const invite_input = document.getElementById('invite_input')
 
     // Add event listeners
     join_btn && join_btn.addEventListener('click', (e) => join_game())
@@ -240,6 +241,13 @@ document.addEventListener('DOMContentLoaded', () => {
     cancel_button && cancel_button.addEventListener('click', (e) => cancel_game())
     invite_button && invite_button.addEventListener('click', (e) => invite_player())
     leave_btn && leave_btn.addEventListener('click', (e) => leave_game())
+    invite_input && invite_input.addEventListener("keydown", (event) => {
+        const key = event.key.toString().toUpperCase()
+        if (key == "ENTER") {
+            event.preventDefault()
+            invite_player()
+        }
+    });
 
     refresh_data()
 
