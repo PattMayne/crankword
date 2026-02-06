@@ -7,7 +7,7 @@
         <title>{{ texts.title }}</title>
         <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
         <link rel="stylesheet" href="static/css/foundation.min.css">
-        <link rel="stylesheet" href="static/css/app.css?id=1409955779072">
+        <link rel="stylesheet" href="static/css/app.css?id=14099557797072">
     </head>
 
     <body>
@@ -23,11 +23,18 @@
                     <h4>{{ texts.current_games }}:</h4>
                     <span>
                         {% if current_games.len() > 0 %}
-                        {% for game in current_games %}
-                        <a class="button small" href="/game/{{ game.hashid }}">{{ game.game_status }}: {{ game.hashid }}</a>
-                        {% endfor %}
-                        {% else %}
-                            [NONE]
+                            {% for game in current_games %}
+                            <div class="callout current_game_callout">
+                                <a class="button small" href="/game/{{ game.hashid }}">
+                                    {{ game.game_status }}: {{ game.hashid }}
+                                </a>
+                                <br/>
+                                {{ game.age_string }}
+                            </div>
+
+                            {% endfor %}
+                            {% else %}
+                                [NONE]
                         {% endif %}
                     </span>
                 </div>

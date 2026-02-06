@@ -238,6 +238,7 @@ async fn go_to_pregame(
 ) -> HttpResponse {
 
     let pre_game_template: PreGameTemplate = PreGameTemplate {
+        age_string: create_age_string(&the_game.game.created_timestamp),
         texts: resource_mgr::PreGameTexts::new(&user_req_data),
         game: the_game,
         user: user_req_data,
@@ -393,7 +394,8 @@ async fn dashboard(
         {
             current_games.push(db::GameLinkData {
                 hashid: hash_ids.encode(&[user_game.id as u64]),
-                game_status: user_game.game_status
+                game_status: user_game.game_status,
+                age_string: create_age_string(&user_game.created_timestamp)
             });
 
             continue;
@@ -454,15 +456,13 @@ async fn open_games(
         .iter()
         .map(|raw_game: &db::RawOpenGame| {
             let hashed_id: String = hash_ids.encode(&[raw_game.id as u64]);
-            let age_string: String = create_age_string(raw_game.created_timestamp);
+            let age_string: String = create_age_string(&raw_game.created_timestamp);
             return OpenGame { hashed_id, age_string }
         })
         .collect();
 
-    let texts: OpenGameTexts = OpenGameTexts::new(&user_req_data);
-
     let template: OpenGamesTemplate = OpenGamesTemplate {
-        texts,
+        texts: OpenGameTexts::new(&user_req_data),
         user: user_req_data,
         games: open_games
     };

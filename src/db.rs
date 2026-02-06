@@ -70,11 +70,13 @@ pub struct GameItemData {
     pub id: i32,
     pub game_status: String,
     pub winner_id: Option<i32>,
+    pub created_timestamp: OffsetDateTime,
 }
 
 pub struct GameLinkData {
     pub hashid: String,
     pub game_status: String,
+    pub age_string: String,
 }
 
 
@@ -115,6 +117,7 @@ pub struct RawGame {
     pub turn_user_id: Option<i32>,
     pub created_timestamp: OffsetDateTime,
     pub turn_timeout: OffsetDateTime,
+    pub open_game: i8,
 }
 
 // Full data for one game
@@ -127,6 +130,7 @@ pub struct Game {
     pub turn_user_id: Option<i32>,
     pub created_timestamp: OffsetDateTime,
     pub turn_timeout: OffsetDateTime,
+    pub open_game: bool,
 }
 
 pub struct Guess {
@@ -160,6 +164,20 @@ pub struct GameAndPlayers {
 }
 
 
+impl GameAndPlayers {
+
+    pub fn owner_name(&self) -> Option<&String> {
+        for player in &self.players {
+            if self.game.owner_id == player.user_id {
+                return Some(&player.username)
+            }
+        }
+
+        None
+    }
+}
+
+
 impl Game {
     pub fn new(raw_game: &RawGame) -> Self {
         Game {
@@ -171,6 +189,7 @@ impl Game {
             turn_user_id: raw_game.turn_user_id,
             created_timestamp: raw_game.created_timestamp,
             turn_timeout: raw_game.turn_timeout,
+            open_game: raw_game.open_game == 1
         }
     }
 }
@@ -181,7 +200,8 @@ impl GameItemData {
         GameItemData {
             id: item.id,
             game_status: item.game_status.to_owned(),
-            winner_id: item.winner_id
+            winner_id: item.winner_id,
+            created_timestamp: item.created_timestamp
         }
     }
 }
@@ -489,7 +509,7 @@ pub async fn get_game_by_id(pool: &MySqlPool, game_id: i32) -> Result<Game> {
     // RawGame gets the string from game_status, all to populate Game which takes an enum.
     let raw_game: RawGame = sqlx::query_as!(
         RawGame,
-        "SELECT id, word, game_status, owner_id, winner_id,
+        "SELECT id, word, game_status, owner_id, winner_id, open_game,
             turn_user_id, turn_timeout, created_timestamp FROM games
             WHERE id = ?",
         game_id
@@ -562,7 +582,7 @@ pub async fn get_current_games(
     let games: Vec<GameItemData> = sqlx::query_as!(
         GameItemData,
         r#"
-            SELECT g.id, g.game_status, g.winner_id
+            SELECT g.id, g.game_status, g.winner_id, g.created_timestamp
             FROM games g
             JOIN game_users gu ON g.id = gu.game_id
             WHERE gu.user_id = ?

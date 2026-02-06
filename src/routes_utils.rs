@@ -334,6 +334,7 @@ pub struct PreGameTemplate {
     pub user: auth::UserReqData,
     pub game: db::GameAndPlayers,
     pub hashed_game_id: String,
+    pub age_string: String,
 }
 
 #[derive(Template)]
@@ -519,9 +520,9 @@ pub fn get_hashes_from_game_ids(
 /**
  * Get a string explaining how old a date is.
  */
-pub fn create_age_string(aged_date: OffsetDateTime) -> String {
+pub fn create_age_string(aged_date: &OffsetDateTime) -> String {
     let now: OffsetDateTime = OffsetDateTime::now_utc();
-    let age: time::Duration = now - aged_date;
+    let age: time::Duration = now - *aged_date;
 
     let weeks_old: i64 = age.whole_weeks();
     if weeks_old > 0 {

@@ -16,8 +16,27 @@
     <div class="grid-container">
         <div class="grid-x grid-padding-x">
             <div class="large-6 medium-6 small-12 cell">
-                <h2>PRE-GAME DASHBOARD</h2>
-                <p>Only the game owner can start this game</p>
+                <div class="callout">
+                    <h2>PRE-GAME DASHBOARD</h2>
+                    <p>Only game owner may start game</p>
+                </div>
+
+                <div class="callout primary">
+                    <h5>OWNER:
+                        {% if game.owner_name().is_some() %}
+                            {{ game.owner_name().unwrap() }}
+                        {% else %}
+                            NO OWNER?
+                        {% endif %}
+                    </h5>
+
+                    <h5>
+                        {% if game.game.open_game %} OPEN GAME {% else %} INVITE-ONLY GAME {% endif %}
+                        --
+                        {{ age_string }}
+                    </h5>
+
+                </div>
 
                 <div class="callout primary">
                     <a id="refresh_btn" class="button small">REFRESH</a>
