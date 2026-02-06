@@ -514,3 +514,29 @@ pub fn get_hashes_from_game_ids(
             hash_ids.encode(&[raw_invite.game_id as u64]))
         .collect()
 }
+
+
+/**
+ * Get a string explaining how old a date is.
+ */
+pub fn create_age_string(aged_date: OffsetDateTime) -> String {
+    let now: OffsetDateTime = OffsetDateTime::now_utc();
+    let age: time::Duration = now - aged_date;
+
+    let weeks_old: i64 = age.whole_weeks();
+    if weeks_old > 0 {
+        return format!("{} weeks old", weeks_old)
+    };
+
+    let days_old: i64 = age.whole_days();
+    if days_old > 0 {
+        return format!("{} days old", days_old)
+    };
+
+    let hours_old: i64 = age.whole_hours();
+    if hours_old > 0 {
+        return format!("{} hours old", hours_old)
+    };
+
+    format!("{} minutes old", age.whole_minutes())
+}

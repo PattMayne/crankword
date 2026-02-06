@@ -454,11 +454,8 @@ async fn open_games(
         .iter()
         .map(|raw_game: &db::RawOpenGame| {
             let hashed_id: String = hash_ids.encode(&[raw_game.id as u64]);
-            // TO DO: make a string saying how old it is
-            let age_string: String = raw_game.created_timestamp.to_string();
-            return OpenGame {
-                hashed_id, age_string
-            }
+            let age_string: String = create_age_string(raw_game.created_timestamp);
+            return OpenGame { hashed_id, age_string }
         })
         .collect();
 
@@ -1258,11 +1255,6 @@ pub async fn new_game(
     req: HttpRequest,
     invite_only_data: web::Json<InviteOnlyData>
 ) -> HttpResponse {
-    // make sure it's a real user
-    // make the game and get the id
-    // redirect user to game page
-    // on game page show word (FOR NOW.... obviously later we will NOT show that)
-
     // Make sure it's a real user
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
     if user_req_data.get_role() == "guest" {
