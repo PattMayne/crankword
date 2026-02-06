@@ -12,7 +12,9 @@ const create_new_game = async () => {
     msgs = []
     msgs.push("NEW GAME CREATING")
 
-    const game_data = await io.new_game()
+    const invite_only = document.getElementById("invite_only_check").checked
+
+    const game_data = await io.new_game(invite_only)
     const hashed_game_id = game_data.hashed_game_id
 
     if (!hashed_game_id || hashed_game_id < 1) {

@@ -78,6 +78,13 @@ pub struct GameLinkData {
 }
 
 
+#[derive(Serialize)]
+pub struct RawOpenGame {
+    pub id: i32,
+    pub created_timestamp: OffsetDateTime,
+}
+
+
 #[derive(Debug)]
 struct Count {
     count: i64,
@@ -300,6 +307,23 @@ pub async fn get_guesses(pool: &MySqlPool, game_id: i32, user_id: i32) -> Result
 
     Ok(guesses)
 }
+
+
+/**
+ * Get all games which are marked "open".
+ */
+pub async fn get_open_games(pool: &MySqlPool) -> Result<Vec<RawOpenGame>> {
+    let games: Vec<RawOpenGame> = sqlx::query_as!(
+        RawOpenGame,
+        "SELECT id, created_timestamp FROM games
+            WHERE open_game = ? AND game_status = ?
+            ORDER BY created_timestamp ASC",
+            1, GameStatus::PreGame.to_string()
+    ).fetch_all(pool).await?;
+
+    Ok(games)
+}
+
 
 /**
  * We're not directly calling the DB here.
@@ -610,18 +634,20 @@ pub async fn new_guess(
 
 pub async fn new_game(
     pool: &MySqlPool,
-    user_req_data: &auth::UserReqData
+    user_req_data: &auth::UserReqData,
+    open_game_bool: bool
 ) -> Result<i32, anyhow::Error> {
     // get word
     let word: String = words_solutions::get_random_word();
+    let open_game_int: i32 = if open_game_bool { 1 } else { 0 };
 
     let result: sqlx::mysql::MySqlQueryResult = sqlx::query(
         "INSERT INTO games (
-            word,
-            owner_id)
-            VALUES (?, ?)")
+            word, owner_id, open_game)
+            VALUES (?, ?, ?)")
         .bind(word)
         .bind(user_req_data.id)
+        .bind(open_game_int)
         .execute(pool).await.map_err(|e| {
             eprintln!("Failed to save game to database: {:?}", e);
             anyhow!("Could not save game to database: {e}")

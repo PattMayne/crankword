@@ -267,3 +267,28 @@ h1, h2, h3, h4, h5, h6 {
   margin-right:2px;
   margin-bottom: 2px;
 }
+
+#invite_only_label {
+  color: $black;
+  width: auto;
+}
+
+
+/* 
+ * 
+ * 
+ * ========================
+ * ========================
+ * =====              =====
+ * =====  OPEN GAMES  =====
+ * =====              =====
+ * ========================
+ * ========================
+ * 
+ * 
+*/
+
+.open_game_callout {
+  display: inline-block;
+  width: auto;
+}

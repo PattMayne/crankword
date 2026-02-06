@@ -52,6 +52,11 @@ use hash_ids::HashIds;
  * 
 */
 
+#[derive(Serialize)]
+pub struct OpenGame {
+    pub hashed_id: String,
+    pub age_string: String,
+}
 
 #[derive(Deserialize)]
 pub struct WordToCheck {
@@ -104,6 +109,13 @@ pub struct PreGameRefresh {
     pub players: Vec<PlayerInfo>,
     pub invitee_usernames: Vec<String>,
 }
+
+
+#[derive(Deserialize)]
+pub struct InviteOnlyData {
+    pub invite_only: bool,
+}
+
 
 #[derive(Serialize)]
 pub struct InviteSuccessObject {
@@ -261,7 +273,6 @@ impl InProgRefresh {
                 return true;
             }
         }
-
         false
     }
 }
@@ -294,6 +305,14 @@ pub struct HomeTemplate {
     pub message: String,
     pub user: auth::UserReqData,
     pub texts: HomeTexts
+}
+
+#[derive(Template)]
+#[template(path ="open_games.html")]
+pub struct OpenGamesTemplate {
+    pub user: auth::UserReqData,
+    pub games: Vec<OpenGame>,
+    pub texts: OpenGameTexts,
 }
 
 

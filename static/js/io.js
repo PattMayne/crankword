@@ -40,29 +40,42 @@ import * as utils from './utils.js'
  * Backend creates an empty new game and returns id.
  * @returns 
  */
-export const new_game = async () => {
+export const new_game = async (invite_only) => {
     const route = "/new_game"
+    const input = {
+        "invite_only": invite_only
+    }
 
-    let response = await fetch(route, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json; charset=utf-8' }
-    })
-
-    let data = await response.json()
-
-    let return_obj = {
+    const return_obj = {
         hashed_game_id: 0,
         error: null
     }
 
-    if (data.hashed_game_id !== undefined) {
-        return_obj.hashed_game_id = data.hashed_game_id
-    } else if (!!data.error) {
-        return_obj.error = data.error
-    } else {
-        console.log("no game id")
-        return_obj.error = "NO GAME ID"
-    }
+    await utils.fetch_json_post(route, input)
+    .then(response => {
+        if(!response.ok) {
+            response.json().then(data => {
+                console.log("NOT OK")
+                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                msg += (!!data.error) ? data.error : " Error occurred"
+                response_obj.error = msg
+            })
+
+            throw new Error("Unable to create new game, or error on server.")
+        }
+        return response.json()
+    }).then(data => {
+        if (data.hashed_game_id !== undefined && !!data.hashed_game_id) {
+            return_obj.hashed_game_id = data.hashed_game_id
+        } else if (!!data.error) {
+            return_obj.error = data.error
+        } else {
+            console.log("no game id")
+            return_obj.error = "NO GAME ID"
+        }     
+    }).catch(error =>
+        console.log('Error: ', error)
+    )
 
     return return_obj
 }

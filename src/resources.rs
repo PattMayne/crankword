@@ -42,7 +42,7 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "home.greeting.fr" => "Bonjour, {0}!",
 
     // DASH TEXTS
-    "dash.new_game.en" => "NEW GAME",
+    "dash.new_game.en" => "CREATE NEW GAME",
     "dash.new_game.fr" => "NOUVEAU JEU",
     "dash.current_games.en" => "CURRENT GAMES",
     "dash.current_games.fr" => "JEUX ACTUELS",

@@ -426,8 +426,55 @@ async fn dashboard(
     HttpResponse::Ok()
         .content_type("text/html")
         .body(dash_template.render().unwrap())
- }
- 
+}
+
+
+
+/* OPEN GAMES ROUTE */
+#[get("/open_games")]
+async fn open_games(
+    pool: web::Data<MySqlPool>,
+    hash_ids: web::Data<HashIds>,
+    req: HttpRequest
+) -> HttpResponse {
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+
+    if user_req_data.role == "guest" ||
+        user_req_data.id.is_none() ||
+        user_req_data.username.is_none()
+    { return redirect_to_login() }
+
+    // get the raw data from the database
+    let raw_open_games: Vec<db::RawOpenGame> = match db::get_open_games(&pool).await {
+        Ok(games) => games,
+        Err(_e) => return redirect_to_err("500")
+    };
+
+    let open_games: Vec<OpenGame> = raw_open_games
+        .iter()
+        .map(|raw_game: &db::RawOpenGame| {
+            let hashed_id: String = hash_ids.encode(&[raw_game.id as u64]);
+            // TO DO: make a string saying how old it is
+            let age_string: String = raw_game.created_timestamp.to_string();
+            return OpenGame {
+                hashed_id, age_string
+            }
+        })
+        .collect();
+
+    let texts: OpenGameTexts = OpenGameTexts::new(&user_req_data);
+
+    let template: OpenGamesTemplate = OpenGamesTemplate {
+        texts,
+        user: user_req_data,
+        games: open_games
+    };
+
+    HttpResponse::Ok()
+        .content_type("text/html")
+        .body(template.render().unwrap())
+}
+
 
 fn redirect_to_game() -> HttpResponse {
     HttpResponse::Found() // 302 redirect
@@ -1208,7 +1255,8 @@ pub async fn start_game(
 pub async fn new_game(
     pool: web::Data<MySqlPool>,
     hash_ids: web::Data<HashIds>,
-    req: HttpRequest
+    req: HttpRequest,
+    invite_only_data: web::Json<InviteOnlyData>
 ) -> HttpResponse {
     // make sure it's a real user
     // make the game and get the id
@@ -1238,7 +1286,11 @@ pub async fn new_game(
         });
     }
 
-    let game_id: i32 = match db::new_game(&pool, &user_req_data).await {
+    let game_id: i32 = match db::new_game(
+        &pool,
+        &user_req_data,
+        !invite_only_data.invite_only
+    ).await {
         Ok(id) => id,
         Err(e) => {
             return HttpResponse::Unauthorized().json(

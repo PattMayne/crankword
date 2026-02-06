@@ -78,6 +78,23 @@ impl DashTexts {
 }
 
 
+pub struct OpenGameTexts {
+    pub title: String,
+    pub nav: NavTexts
+}
+
+impl OpenGameTexts {
+    pub fn new(user_req_data: &UserReqData) -> OpenGameTexts {
+        let lang: &SupportedLangs = &user_req_data.lang;
+        let title: String = get_translation("home.title", lang, None);
+        let nav: NavTexts = NavTexts::new(lang);
+
+        OpenGameTexts { title, nav }
+    }
+}
+
+
+
 pub struct PreGameTexts {
     pub title: String,
     pub players_label: String,

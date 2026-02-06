@@ -205,4 +205,27 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 2px;
 }
 
+#invite_only_label {
+  color: #111111;
+  width: auto;
+}
+
+/* 
+ * 
+ * 
+ * ========================
+ * ========================
+ * =====              =====
+ * =====  OPEN GAMES  =====
+ * =====              =====
+ * ========================
+ * ========================
+ * 
+ * 
+*/
+.open_game_callout {
+  display: inline-block;
+  width: auto;
+}
+
 /*# sourceMappingURL=app.css.map */
