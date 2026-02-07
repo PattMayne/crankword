@@ -201,11 +201,8 @@ async fn game_root(req: HttpRequest) -> HttpResponse {
     // The URL is hashed. Decode it.
     let game_id: i32 = match hash_ids.decode(&hashed_game_id) {
         Ok(hash_ids) => {
-            if hash_ids.len() > 0 {
-                hash_ids[0] as i32
-            } else {
-                return redirect_to_err("404")
-            }
+            if !hash_ids.is_empty() { hash_ids[0] as i32 }
+            else { return redirect_to_err("404") }
         },
         Err(_e) => return redirect_to_err("404")
     };
@@ -219,7 +216,7 @@ async fn game_root(req: HttpRequest) -> HttpResponse {
     // Each option is in a function
     match game.game.game_status {
         game_logic::GameStatus::PreGame =>
-            go_to_pregame(&hashed_game_id, game, user_req_data).await,
+            go_to_pregame(&hashed_game_id, game, user_req_data, &pool).await,
         game_logic::GameStatus::InProgress =>
             go_to_inprogress_game(&hashed_game_id, game, user_req_data).await,
         game_logic::GameStatus::Finished =>
@@ -234,8 +231,32 @@ async fn game_root(req: HttpRequest) -> HttpResponse {
 async fn go_to_pregame(
     hashed_game_id: &String,
     the_game: db::GameAndPlayers,
-    user_req_data: auth::UserReqData
+    user_req_data: auth::UserReqData,
+    pool: &web::Data<MySqlPool>,
 ) -> HttpResponse {
+
+    // make sure it's an open game OR the user has an invite OR user is player
+    // (user is player will select for owner as well, and primarily)
+    let user_invitations = 
+        match db::get_invitations_by_username(pool, user_req_data.get_username()).await {
+            Ok(invitations) => invitations,
+            Err(_) => return redirect_to_err("500")
+        };
+
+    let mut user_is_invited: bool = false;
+    for invite in user_invitations {
+        if invite.game_id == the_game.game.id as i64 {
+            user_is_invited = true;
+        }
+    }
+
+    let player_is_allowed = the_game.game.open_game ||
+        the_game.user_id_is_player(user_req_data.id.unwrap()) ||
+        user_is_invited;
+
+    if !player_is_allowed {
+            return redirect_to_err("403")
+    }
 
     let pre_game_template: PreGameTemplate = PreGameTemplate {
         age_string: create_age_string(&the_game.game.created_timestamp),
@@ -245,9 +266,9 @@ async fn go_to_pregame(
         hashed_game_id: hashed_game_id.to_owned()
     };
 
-    return HttpResponse::Ok()
+    HttpResponse::Ok()
         .content_type("text/html")
-        .body(pre_game_template.render().unwrap());
+        .body(pre_game_template.render().unwrap())
 }
 
 
@@ -270,9 +291,9 @@ async fn go_to_inprogress_game(
         hashed_game_id: hashed_game_id.to_owned()
     };
 
-    return HttpResponse::Ok()
+    HttpResponse::Ok()
         .content_type("text/html")
-        .body(game_template.render().unwrap());
+        .body(game_template.render().unwrap())
 }
 
 
@@ -679,7 +700,7 @@ pub async fn boot_player_pregame(
     if the_game.owner_id != player_id {
         return HttpResponse::Ok().json(BootPlayerSuccessObject {
             success: false,
-            message: "Only game owner can delete invitations".to_string()
+            message: "Only game owner can boot players".to_string()
         })
     } else if username == boot_player_data.username {
         return HttpResponse::Ok().json(BootPlayerSuccessObject {
