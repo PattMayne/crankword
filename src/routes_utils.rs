@@ -541,3 +541,20 @@ pub fn create_age_string(aged_date: &OffsetDateTime) -> String {
 
     format!("{} minutes old", age.whole_minutes())
 }
+
+/**
+ * Make sure whoever is asking for refresh data for a game
+ * is actually in the players list.
+ */
+pub fn player_id_is_in_players_refresh_data(
+    player_id: i32,
+    players: &Vec<PlayerRefreshData>
+) -> bool {
+    for player in players {
+        if player.user_id == player_id {
+            return true
+        }
+    }
+
+    false
+}

@@ -112,6 +112,7 @@ async fn get_user_req_data_from_opt(
         auth::JwtVerification::Expired(claims) => claims
     };
 
+    // todo: delete this printline on PROG
     println!("JWT expired. will check refresh token and generate new JWT");
     // JWT is expired but otherwise valid.
     // check refresh_token in auth_app before generating a new one
@@ -132,13 +133,10 @@ async fn get_user_req_data_from_opt(
     let client_data_result: Result<auth::ClientData, std::env::VarError> =
         auth::get_client_data();
 
-
-    if client_data_result.is_err() {
-        // TO DO: send to ERROR PAGE
-        return Ok(guest_data);
-    }
-
-    let client_data: auth::ClientData = client_data_result.unwrap();
+    let client_data: auth::ClientData = match client_data_result {
+        Ok(data) => data,
+        Err(e) => return Err(error::ErrorInternalServerError(e.to_string()))
+    };
 
     let refresh_check_data: RefreshCheckRequest = RefreshCheckRequest {
         token: refresh_token.to_string(),
@@ -150,13 +148,12 @@ async fn get_user_req_data_from_opt(
     let refresh_check_result: Result<RefreshCheckSuccess, anyhow::Error> =
         crankword_io::check_refresh_code(&refresh_check_data).await;
 
-    if refresh_check_result.is_err() {
-        // TO DO: send to ERROR PAGE
-        return Ok(guest_data);
-    }
-
     // Get the OK from auth_app
-    let r_tkn_valid: bool = refresh_check_result.unwrap().is_valid();
+    let r_tkn_valid: bool = match refresh_check_result {
+        Ok(result) => result.is_valid(),
+        Err(e) => return Err(error::ErrorInternalServerError(e.to_string()))
+    };
+    
 
     if r_tkn_valid {
         println!("REFRESH TOKEN VALID!");

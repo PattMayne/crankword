@@ -188,7 +188,6 @@ let current_tile = current_word.tiles[letter_index]
 
 /*
  * Make sure current word is really full. No empty spaces.
- * TO DO: check it against list of actual words (much later)
  */
 const current_guess_is_ready = () => {
     let is_ready = true
@@ -711,17 +710,6 @@ const increment_turn_countdown = () => {
         timer_element.innerHTML = diff_in_seconds
     }
 }
-
-/**
- * TODO:
- * 
- * SHOW OPPONENT SCORES
- * END GAME UPON CORRECT ANSWER OR ALL PLAYERS FAIL
- * TIMER
- * 
- * 
- * 
- */
 
 
 /**

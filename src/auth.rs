@@ -56,8 +56,6 @@ use crate::utils::{self, SupportedLangs};
  * -- when expired, user has to log in
  * -- logging in and registering generate refresh token
  *
- *
- * TO DO:
  */
 
 

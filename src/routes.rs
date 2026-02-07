@@ -135,7 +135,7 @@ pub async fn logout() -> HttpResponse {
         .http_only(true)
         .finish();
 
-    // TO DO: call auth_app to delete refresh_token from DB
+    // TODO: call auth_app to delete refresh_token from DB
     
     HttpResponse::Found() // 302 redirect
         .cookie(jwt_cookie)
@@ -925,7 +925,11 @@ pub async fn refresh_in_prog_players(
             Ok(p) => p,
             Err(_) => return return_unauthorized_err_json(&user_req_data)
         };
-    
+
+    // make sure player is actually in the game
+    if !player_id_is_in_players_refresh_data(player_id, &players) {
+        return return_unauthorized_err_json(&user_req_data)
+    }
 
     // CHECK FOR TIMEOUT AND SWITCH TURN
     // Only GAME OWNER checks and initiates switch_turn
@@ -933,7 +937,6 @@ pub async fn refresh_in_prog_players(
     if the_game.owner_id == player_id && players.len() > 1 {
         let now: OffsetDateTime = OffsetDateTime::now_utc();
         if now >= the_game.turn_timeout && the_game.turn_user_id.is_some() {
-            println!("TIMEOUT: FORCE CHANGE TURN!");
             let current_turn_user_id: i32 = the_game.turn_user_id.unwrap();
 
             // PUT DUDS into player who missed a turn
@@ -1019,12 +1022,7 @@ pub async fn refresh_in_prog_players(
         turn_timeout,
     };
 
-    // only send the data if the user really belongs to this game
-    // TO DO: move this check WAY higher obviously
-    match in_prog_refresh.user_id_is_player(player_id) {
-        true => HttpResponse::Ok().json(in_prog_refresh),
-        false => return_unauthorized_err_json(&user_req_data)
-    }    
+    HttpResponse::Ok().json(in_prog_refresh)  
 }
 
 
