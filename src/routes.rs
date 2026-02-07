@@ -77,8 +77,7 @@ use crate::{
         },
         Err(e) => {
             eprintln!("ERROR: {}", e);
-            // TODO: return a response here. Don't just put an err msg in the querystring.
-            "ERROR RETRIEVING CLIENT ID".to_string()
+            return redirect_to_err("500")
         }
     };
 
@@ -108,8 +107,7 @@ use crate::{
         },
         Err(e) => {
             eprintln!("ERROR: {}", e);
-            // TODO: return a response here. Don't just put an err msg in the querystring.
-            "ERROR RETRIEVING CLIENT ID".to_string()
+            return redirect_to_err("500")
         }
     };
 
@@ -1422,7 +1420,6 @@ pub async fn check_guess(
         return return_internal_err_json();
     }
     
-    // TODO: ADD AUTH CHECKS (user belongs to game, it is user's turn).
     // If it's not the user's turn, return a json object which indicates that.
     let winning_word: String = match db::get_winning_word(&pool, game_id).await {
         Ok(word) => word,
