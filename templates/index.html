@@ -4,29 +4,31 @@
         <meta charset="utf-8">
         <meta http-equiv="x-ua-compatible" content="ie=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{{ title }}</title>
+        <title>{{ texts.title }}</title>
         <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
         <link rel="stylesheet" href="static/css/foundation.min.css">
-        <link rel="stylesheet" href="static/css/app.css?id=1">
+        <link rel="stylesheet" href="static/css/app.css?id=1400090009">
     </head>
 
 
-    <body>
+    <body id="index_body">
     {% include "header.html" %}
     <div class="grid-container">
         <div class="grid-x grid-padding-x">
-            <div class="large-12 cell">
-                <h1>{{ title }}</h1>
-            </div>
 
-            <div class="large-12 cell">
-                <div class="callout">
-                    <p>
-                        {{ message }}
-                    </p>
+            <div class="large-6 medium-6 small-12 cell">
+
+                    <h3>{{ texts.message_1 }}</h3>
+                <div class="callout primary">
+                    <p id="big_message">{{ texts.message_2 }}</p>
                 </div>
-
             </div>
+
+            <div class="large-6 medium-6 small-12 cell">
+                <img src="/static/img/welcome.png" id="welcome_img"/>
+            </div>
+
+
         </div> <!-- end of grid-x -->
 
     </div><!-- end of grid-container -->

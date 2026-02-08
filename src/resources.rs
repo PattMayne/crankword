@@ -40,6 +40,13 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "home.title.en" => "Crankword",
     "home.greeting.en" => "Hello, {0}!",
     "home.greeting.fr" => "Bonjour, {0}!",
+    "home.message.1.en" => "Welcome to CRANKWORD!",
+    "home.message.1.fr" => "Bienvenue chez CRANKWORD !",
+    "home.message.2.en" => "Crankword is a multi-player, turn-based, word-guessing game.
+        Start a new game and invite your friends, join an open game, or practice against yourself!",
+    "home.message.2.fr" => "Crankword est un jeu multijoueur où l'on devine des mots.
+        Commencez une nouvelle partie et invitez vos amis, ou rejoignez une partie ouverte.
+        Ou joue contre toi-même !",
 
     // DASH TEXTS
     "dash.new_game.en" => "CREATE NEW GAME",

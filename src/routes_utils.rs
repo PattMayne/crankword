@@ -555,6 +555,5 @@ pub fn player_id_is_in_players_refresh_data(
             return true
         }
     }
-
     false
 }

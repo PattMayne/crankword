@@ -296,3 +296,27 @@ h1, h2, h3, h4, h5, h6 {
   display: inline-block;
   width: auto;
 }
+
+// front page
+
+
+#index_body {
+  background-color: $black;
+}
+
+#welcome_img {
+  width: 100%;
+}
+
+#big_message {
+  font-size: 25px;
+  font-weight: bold;
+}
+
+
+@media screen and (max-width: 540px) {
+    /* extra small screen styles here */
+  #big_message {
+    font-size: 18px;
+  }
+}

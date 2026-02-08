@@ -159,7 +159,9 @@ stats
  */
 pub struct HomeTexts {
     pub title: String,
-    pub message: String,
+    pub message_1: String,
+    pub message_2: String,
+    pub message_3: String,
     pub nav: NavTexts
 }
 
@@ -167,15 +169,28 @@ impl HomeTexts {
     pub fn new(user_req_data: &UserReqData) -> HomeTexts {
         let lang: &SupportedLangs = &user_req_data.lang;
         let title: String = get_translation("home.title", lang, None);
-        let message: String = get_translation(
-            "home.greeting",
+        let message_1: String = get_translation(
+            "home.message.1",
             lang,
             Some(&[&user_req_data.get_role()]));
+        
+        let message_2: String = get_translation(
+            "home.message.2",
+            lang,
+            Some(&[&user_req_data.get_role()]));
+
+        let message_3: String = get_translation(
+            "home.message.3",
+            lang,
+            Some(&[&user_req_data.get_role()]));
+
         let nav: NavTexts = NavTexts::new(lang);
 
         HomeTexts {
             title,
-            message,
+            message_1,
+            message_2,
+            message_3,
             nav
         }
     }

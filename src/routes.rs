@@ -1584,7 +1584,6 @@ pub async fn invite_player(
  }
 
 
-
 /**
  * Returns a vec of vecs of LetterScore structs.
  * This is in case we need an update after the page is loaded.
@@ -1619,8 +1618,6 @@ pub async fn get_guess_scores(
             Err(_e) => return return_unauthorized_err_json(&user_req_data)
         };
     
-    println!("GUESSES: {}", all_scores.len());
-
     // now I have all the scores. I need to serialize them and deliver them.
     let scores_obj: AllPlayerScores = AllPlayerScores {
         scores: all_scores
