@@ -219,15 +219,27 @@ impl ErrorTexts {
  * For in-progress games
  */
 pub struct GameTexts {
-    pub nav: NavTexts
+    pub nav: NavTexts,
+    pub cancel_btn_text: String,
+    pub cancel_confirm_text: String,
 }
 
 impl GameTexts {
-    pub fn new(user_req_data: &UserReqData) -> GameTexts {
+    pub fn new(user_req_data: &UserReqData, is_owner: bool) -> GameTexts {
         let nav: NavTexts = NavTexts::new(&user_req_data.lang);
+        let (btn_str, confirm_str) =
+            if is_owner {
+                ("ingame.cancel.btn.cancel", "ingame.cancel.confirm.cancel")
+            } else {
+                ("ingame.cancel.btn.quit", "ingame.cancel.confirm.quit")
+            };
 
+        let cancel_btn_text: String = get_translation(btn_str, &user_req_data.lang, None);
+        let cancel_confirm_text: String = get_translation(confirm_str, &user_req_data.lang, None);
         GameTexts {
-            nav
+            nav,
+            cancel_btn_text,
+            cancel_confirm_text
         }
     }
 }
@@ -235,6 +247,7 @@ impl GameTexts {
 
 /* 
  * 
+    "ingame.cancel.btn.cancel.en" => "CANCEL GAME",
  * 
  * 
  * 

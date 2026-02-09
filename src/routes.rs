@@ -280,7 +280,9 @@ async fn go_to_inprogress_game(
         return redirect_to_err("403")
     }
 
-    let texts: GameTexts = GameTexts::new(&user_req_data);
+    let is_owner: bool = the_game.game.owner_id == user_req_data.to_owned().id.unwrap();
+    let texts: GameTexts = GameTexts::new(&user_req_data, is_owner);
+
     let game_template: GameTemplate = GameTemplate {
         title: "CRANKWORD".to_string(),
         user: user_req_data,
@@ -856,6 +858,9 @@ pub async fn cancel_game(
 
     // make sure user is owner
     if the_game.owner_id != user_id {
+
+        // QUIT game instead.
+
         return HttpResponse::Ok().json(GameCancelled {
             success: false,
             message: "Only game owner can cancel a game".to_string()
@@ -880,6 +885,72 @@ pub async fn cancel_game(
 
     HttpResponse::Ok().json(game_cancelled)
 }
+
+
+/**
+ * Get the data to update items in the dashboard.
+ */
+pub async fn quit_game(
+    pool: web::Data<MySqlPool>,
+    user_req_data: auth::UserReqData,
+    the_game: db::Game
+) -> HttpResponse {
+    // 1. get game's turns
+    // 2. get the latest turn
+    // 3. see if it has timed out
+    // 4. if it has NOT timed out, send back rejection
+    // 5. if it HAS timed out, remove game_users entry AND their turn
+    // 6. send a notification so user reloads
+    // 7. others must also notice and reload
+    let user_id = user_req_data.id.unwrap();
+    let game_id = the_game.id;    
+    let guesses: Vec<db::Guess> = match db::get_guesses(&pool, game_id, user_id).await {
+        Ok(g) => g,
+        Err(_e) => return return_internal_err_json()
+    };
+
+    let max_wait: time::Duration = time::Duration::minutes(5);
+    let mut game_is_fresh: bool = false;
+
+    for guess in guesses {
+        let guess_time: OffsetDateTime = guess.created_timestamp;
+        let now: OffsetDateTime = OffsetDateTime::now_utc();
+        let wait: time::Duration = now - guess_time;
+
+        if wait >= max_wait {
+            game_is_fresh = true;
+            break;
+        }
+    }
+
+    if game_is_fresh {
+        return HttpResponse::Ok().json(QuitGameSuccess {
+            success: false,
+            message: "Game must be five minutes old".to_string()
+        })
+    }
+
+    // Game is old. Can delete
+    let deleted: bool = match db::remove_player_from_game(&pool, game_id, user_id).await {
+        Ok(deleted) => deleted,
+        Err(_e) => return return_internal_err_json()
+    };
+
+    let message: String = if deleted {
+        "You have quit the game".to_string()
+    } else {
+        "Something went wrong and you did not quit the game".to_string()
+    };
+
+    let quit_game_success: QuitGameSuccess = QuitGameSuccess {
+        success: deleted,
+        message
+    };
+
+
+    HttpResponse::Ok().json(quit_game_success)
+}
+
 
 
 /**

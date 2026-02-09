@@ -28,7 +28,8 @@ CREATE TABLE IF NOT EXISTS guesses (
     game_id INT NOT NULL,
     word VARCHAR(10) NOT NULL,
     guess_number TINYINT NOT NULL,
-    user_id INT NOT NULL
+    user_id INT NOT NULL,
+    created_timestamp TIMESTAMP NOT NULL DEFAULT UTC_TIMESTAMP
 );
 
 CREATE INDEX idx_game_id ON guesses(game_id);

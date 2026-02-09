@@ -2,7 +2,7 @@ extern crate rand;
 // import commonly used items from the prelude:
 use anyhow::{ Result, anyhow };
 use serde::Serialize;
-use sqlx::{ MySqlPool };
+use sqlx::{ MySqlPool, MySql, Transaction, Row };
 use rand::Rng;
 use time::{ OffsetDateTime };
 
@@ -139,6 +139,7 @@ pub struct Guess {
     pub game_id: i32,
     pub user_id: i32,
     pub guess_number: i8,
+    pub created_timestamp: OffsetDateTime,
 }
 
 
@@ -319,7 +320,7 @@ pub async fn get_invitations_by_username(pool: &MySqlPool, username: String) -> 
 pub async fn get_guesses(pool: &MySqlPool, game_id: i32, user_id: i32) -> Result<Vec<Guess>> {
     let guesses: Vec<Guess> = sqlx::query_as!(
         Guess,
-        "SELECT id, game_id, word, guess_number, user_id FROM guesses
+        "SELECT id, game_id, word, guess_number, user_id, created_timestamp FROM guesses
             WHERE user_id = ? AND game_id = ?
             ORDER BY guess_number ASC",
         user_id, game_id
@@ -925,6 +926,39 @@ pub async fn cancel_game(
         .execute(pool)
         .await?;
     Ok(result.rows_affected() > 0)
+}
+
+/**
+ * A user wants to quit, presumably because the game is dead and they need
+ * to free up the space. So we will delete one game_users.
+ * */
+pub async fn remove_player_from_game(
+    pool: &MySqlPool,
+    game_id: i32,
+    user_id: i32
+) -> Result<bool> {
+
+    let mut tx: Transaction<MySql> = pool.begin().await?;
+
+    // Delete guesses for the player in the game
+    sqlx::query("DELETE FROM guesses WHERE game_id = ? AND user_id = ?")
+        .bind(game_id)
+        .bind(user_id)
+        .execute(&mut *tx)
+        .await?;
+
+    // Delete the user from the game_users table
+    let result = sqlx::query("DELETE FROM game_users WHERE game_id = ? AND user_id = ?")
+        .bind(game_id)
+        .bind(user_id)
+        .execute(&mut *tx)
+        .await?
+        .rows_affected();
+
+    // Commit the transaction
+    tx.commit().await?;
+
+    Ok(result > 0)
 }
 
 

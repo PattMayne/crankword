@@ -114,11 +114,9 @@
         </div>
     </div>
 </div>
-{% if user.id.as_ref().unwrap().to_owned() == game.game.owner_id %}
 <div id="cancel_button_container">
-    <a class="button small" id="cancel_button">CANCEL GAME</a>
+    <a class="button small" id="cancel_button">{{ texts.cancel_btn_text }}</a>
 </div>
-{% endif %}
 
 <input type="hidden" id="hashed_game_id" value="{{ hashed_game_id }}">
 
@@ -144,7 +142,7 @@
 
 <!-- CANCEL GAME PANEL -->
 <div class="reveal" id="cancel_modal" data-reveal>
-    <p class="lead" id="cancel_p">Are you sure you want to cancel?</p>
+    <p class="lead" id="cancel_p">{{ texts.cancel_confirm_text }}</p>
     <button class="close-button" data-close aria-label="Close modal" type="button">
         <span aria-hidden="true">&times;</span>
     </button>

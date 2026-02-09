@@ -74,6 +74,18 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "pregame.players.label.en" => "PLAYERS",
     "pregame.players.label.fr" => "JOUEURS",
 
+    // IN-GAME PAGE TEXTS
+    "ingame.cancel.btn.cancel.en" => "CANCEL GAME",
+    "ingame.cancel.btn.cancel.fr" => "CANCEL GAME",
+    "ingame.cancel.btn.quit.en" => "QUIT GAME",
+    "ingame.cancel.btn.quit.fr" => "QUIT GAME",
+
+
+    "ingame.cancel.confirm.cancel.en" => "Are you sure you want to cancel?",
+    "ingame.cancel.confirm.cancel.fr" => "Are you sure you want to cancel?",
+    "ingame.cancel.confirm.quit.en" => "Are you sure you want to quit?",
+    "ingame.cancel.confirm.quit.fr" => "Are you sure you want to quit?",
+
     // POST-GAME PAGE TEXTS
     "postgame.winner.message.en" => "Game over! {0} is the winner!",
     "postgame.winner.message.fr" => "Fin du jeu !{0} est le gagnant !",
