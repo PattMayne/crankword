@@ -897,8 +897,8 @@ pub async fn quit_game(
     // 5. if it HAS timed out, remove game_users entry AND their turn
     // 6. send a notification so user reloads
     // 7. others must also notice and reload
-    let user_id = user_req_data.id.unwrap();
-    let game_id = the_game.id;    
+    let user_id: i32 = user_req_data.id.unwrap();
+    let game_id: i32 = the_game.id;    
     let guesses: Vec<db::Guess> = match db::get_guesses(&pool, game_id, user_id).await {
         Ok(g) => g,
         Err(_e) => return return_internal_err_json()
@@ -923,6 +923,15 @@ pub async fn quit_game(
             success: false,
             message: "Game must be five minutes old".to_string()
         })
+    }
+
+    // Make sure the game doesn't get stuck on somebody else's turn
+    if the_game.turn_user_id.is_some() && the_game.turn_user_id.unwrap() == user_id {
+        // Actually switch the turn
+        let _next_turn_result: i32 = match db::next_turn(&pool, game_id).await {
+            Ok(new_user_turn_id) => new_user_turn_id,
+            Err(_) => return return_internal_err_json()
+        };
     }
 
     // Game is old. Can delete
