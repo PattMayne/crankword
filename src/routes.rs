@@ -858,13 +858,8 @@ pub async fn cancel_game(
 
     // make sure user is owner
     if the_game.owner_id != user_id {
-
         // QUIT game instead.
-
-        return HttpResponse::Ok().json(GameCancelled {
-            success: false,
-            message: "Only game owner can cancel a game".to_string()
-        })
+        return quit_game(pool, user_req_data, the_game).await;
     }
 
     // cancel the actual game
@@ -909,7 +904,7 @@ pub async fn quit_game(
         Err(_e) => return return_internal_err_json()
     };
 
-    let max_wait: time::Duration = time::Duration::minutes(5);
+    let max_wait: time::Duration = time::Duration::seconds(5);
     let mut game_is_fresh: bool = false;
 
     for guess in guesses {
@@ -917,7 +912,7 @@ pub async fn quit_game(
         let now: OffsetDateTime = OffsetDateTime::now_utc();
         let wait: time::Duration = now - guess_time;
 
-        if wait >= max_wait {
+        if wait < max_wait {
             game_is_fresh = true;
             break;
         }
@@ -946,7 +941,6 @@ pub async fn quit_game(
         success: deleted,
         message
     };
-
 
     HttpResponse::Ok().json(quit_game_success)
 }

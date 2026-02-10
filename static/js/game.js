@@ -448,7 +448,7 @@ const start_game = () => {
 // Open the modal with incoming message
 const new_message = text => {
     message_p.innerHTML = text
-    message_modal.foundation('open');
+    message_modal.foundation('open')
 }
 
 
@@ -1003,6 +1003,9 @@ const cancel_game = async () => {
         window.location.reload()
     } else {
         console.log("errrrorrrr")
+        cancel_modal.foundation('close')
+        message_p.innerHTML = "Cannot quit active game"
+        message_modal.foundation('open')
     }
 }
 
