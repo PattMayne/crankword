@@ -3,8 +3,6 @@
 Crankword is a turn-based multiplayer word-guessing game.
 
 ## TODO:
-* Invalid Refresh Token should send user to login page.
-* * Right now it just sends to error page.
-* * We need a redirect flow which goes from needs-login to login back to current_game
-* * Deal with refresh_token timing out DURING gameplay
-* Decline invitation (within the pre_game board)
+* Explainer / rules
+* better readme
+* Add logo

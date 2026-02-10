@@ -46,6 +46,24 @@ const show_msg_box = () => {
     msg_box.style.display = ""
 }
 
+
+const show_element = element => element.style.display = ""
+const hide_element = element => element.style.display = "none"
+
+const toggle_rules = () => {
+    const rules_box = document.getElementById("rules_div")
+    const rules_btn = document.getElementById("toggle_rules")
+    if (rules_box.style.display != "none") {
+        hide_element(rules_box)
+        rules_btn.innerHTML = "[+]"
+    } else {
+        show_element(rules_box)
+        rules_btn.innerHTML = "[-]"
+        rules_box.scrollIntoView({ behavior: 'smooth' })
+    }
+}
+
+
 /**
  * Check for new invitations somebody might have sent.
  */
@@ -71,6 +89,7 @@ const refresh_data = async () => {
 
 // Add event listeners
 document.addEventListener('DOMContentLoaded', () => {
+    hide_element(document.getElementById("rules_div"))
     hide_msg_box()
     invites_list = document.getElementById("invitations")
     refresh_data()
@@ -81,5 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.getElementById('new_game_button').addEventListener(
     'click', (e) => create_new_game())
+
+document.getElementById('toggle_rules').addEventListener(
+    'click', (e) => toggle_rules())
 
 window.create_new_game = create_new_game

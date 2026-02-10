@@ -32,6 +32,10 @@ use crate::utils::SupportedLangs;
  * Placeholders must be NUMBERED starting with ZERO:
  * ie:  Hello, {0}! I hope you're having a good {1}!
  * --> where {0} and {1} can later be replaced with username and Morning/Afternoon
+ * 
+ * If using HTML tags, must add "safe" in askama template: * 
+ *                  {{ text | safe }}
+ * 
  */
 pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
 
@@ -151,7 +155,8 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "err.503.title.en" => "Service Unavailable",
     "err.503.title.fr" => "Service indisponible",
     "err.503.body.en" => "Server is not ready to handle the request. Please check back later.",
-    "err.503.body.fr" => "Le serveur n'est pas prêt à gérer la demande. Veuillez revenir plus tard.",
+    "err.503.body.fr" => "Le serveur n'est pas prêt à gérer la demande. 
+        Veuillez revenir plus tard.",
 
     "err.504.title.en" => "Gateway Timeout",
     "err.504.title.fr" => "Délai d'attente de la passerelle",
@@ -171,6 +176,64 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "links.login.fr" => "http://auth.localhost.test:3000/auth/login",
     "links.register.en" => "http://auth.localhost.test:3000/auth/register",
     "links.register.fr" => "http://auth.localhost.test:3000/auth/register",
+
+    // EXPLAINER / RULES
+    "rules.title.en" => "HOW IT WORKS",
+    "rules.title.fr" => "COMMENT ÇA FONCTIONNE",
+
+
+    "rules.body.en" => "<h3>CREATING A GAME</h3>
+        <p>You can start a game in the DASHBOARD. 
+        When you start a game you are the OWNER of the game. 
+        The OWNER can invite other players, kick players out who joined, cancel a game, 
+        and start a game. The game can be INVITE-ONLY, or OPEN. If it's INVITE-ONLY, the owner 
+        must invite people by entering their usernames in the field on the PRE-GAME dashboard. 
+        If it's an OPEN game, it will appear on the OPEN GAMES page, and anybody can join.</p>
+        <p>A game has three phases: PRE-GAME, IN-PROGRESS, and COMPLETED. 
+        During the PRE-GAME phase people can join the game and wait for the OWNER to start the game.</p>
+        <h3>JOINING A GAME</h3>
+        <p>You can join a game by either accepting an invitation which appears on your 
+        dashboard, or you can go to OPEN GAMES in the top nav and joining a game there.</p>
+        <p>The OPEN GAMES are sorted by age. If you join a game but the OWNER takes too long 
+        to start the game, you can leave the game from the IN-PROGRESS page. If you have too many 
+        invitations, you can decline an invitation in the IN-PROGRESS page by pressing the (x) 
+        next to your username in the PENDING INVITATIONS list.</p>
+        <h3>PLAYING THE GAME</h3>
+        <p>For each game there is a secret five-letter word. Each player will try to guess 
+        that word. It's turn-based, so you have to wait until everybody else guesses before 
+        you can guess again. Everybody gets five guesses.</p>
+        <p>There is a timer so nobody takes too long. If the timer runs out, the game skips 
+        that turn and it goes to the next player. However, this only works if the game's OWNER 
+        is online. If you find that people are taking too long, and the OWNER is absent, you 
+        can QUIT a game where nobody has made a guess in five minutes. But if the game is active 
+        then you cannot QUIT an IN-PROGRESS game.</p>",
+
+    "rules.body.fr" => "<h2>INSTRUCTIONS FRANÇAISES EN COURS DE CONSTRUCTION !</h2>
+        <h3>CREATING A GAME</h3>
+        <p>You can start a game in the DASHBOARD. 
+        When you start a game you are the OWNER of the game. 
+        The OWNER can invite other players, kick players out who joined, cancel a game, 
+        and start a game. The game can be INVITE-ONLY, or OPEN. If it's INVITE-ONLY, the owner 
+        must invite people by entering their usernames in the field on the PRE-GAME dashboard. 
+        If it's an OPEN game, it will appear on the OPEN GAMES page, and anybody can join.</p>
+        <p>A game has three phases: PRE-GAME, IN-PROGRESS, and COMPLETED. 
+        During the PRE-GAME phase people can join the game and wait for the OWNER to start the game.</p>
+        <h3>JOINING A GAME</h3>
+        <p>You can join a game by either accepting an invitation which appears on your 
+        dashboard, or you can go to OPEN GAMES in the top nav and joining a game there.</p>
+        <p>The OPEN GAMES are sorted by age. If you join a game but the OWNER takes too long 
+        to start the game, you can leave the game from the IN-PROGRESS page. If you have too many 
+        invitations, you can decline an invitation in the IN-PROGRESS page by pressing the (x) 
+        next to your username in the PENDING INVITATIONS list.</p>
+        <h3>PLAYING THE GAME</h3>
+        <p>For each game there is a secret five-letter word. Each player will try to guess 
+        that word. It's turn-based, so you have to wait until everybody else guesses before 
+        you can guess again. Everybody gets five guesses.</p>
+        <p>There is a timer so nobody takes too long. If the timer runs out, the game skips 
+        that turn and it goes to the next player. However, this only works if the game's OWNER 
+        is online. If you find that people are taking too long, and the OWNER is absent, you 
+        can QUIT a game where nobody has made a guess in five minutes. But if the game is active 
+        then you cannot QUIT an IN-PROGRESS game.</p>",
 };
 
 

@@ -15,7 +15,7 @@
     <div class="grid-container">
         <div class="grid-x grid-padding-x">
             <div class="large-12 cell">
-                <h1>{{ texts.title }}</h1>
+                <h1 id="dash_title">{{ texts.title }}</h1>
             </div>
 
             <div class="large-4 medium-6 small-12 cell">
@@ -82,6 +82,14 @@
                 <div class="callout primary" id="msg_box">
                 </div>
             </div>
+
+            <div class="large-8 medium-12 small-12 cell">
+                <h2>{{ texts.rules_title }}&nbsp;&nbsp;<a href="#rules_box" id="toggle_rules">[+]</a></h2>
+                <div class="callout primary" id="rules_div">
+                    {{ texts.rules_body | safe }}
+                </div>
+
+            </div>
         </div> <!-- end of grid-x -->
 
     </div><!-- end of grid-container -->
@@ -89,7 +97,7 @@
         <script src="static/js/vendor/jquery.js"></script>
         <script src="static/js/vendor/what-input.js"></script>
         <script src="static/js/vendor/foundation.min.js"></script>
-        <script type="module" src="static/js/dashboard.js?id=1479972"></script>
+        <script type="module" src="static/js/dashboard.js?id=590"></script>
     </body>
 
 </html>

@@ -57,7 +57,9 @@ pub struct DashTexts {
     pub new_game: String,
     pub current_games: String,
     pub stats: String,
-    pub nav: NavTexts
+    pub rules_title: String,
+    pub rules_body: String,
+    pub nav: NavTexts,
 }
 
 impl DashTexts {
@@ -66,6 +68,8 @@ impl DashTexts {
         let title: String = get_translation("dash.title", lang, None);
         let stats: String = get_translation("dash.stats", lang, None);
         let new_game: String = get_translation("dash.new_game", lang, None);
+        let rules_title: String = get_translation("rules.title", lang, None);
+        let rules_body: String = get_translation("rules.body", lang, None);
         let current_games: String = get_translation(
             "dash.current_games",
             lang,
@@ -73,7 +77,7 @@ impl DashTexts {
         );
         let nav: NavTexts = NavTexts::new(lang);
 
-        DashTexts { title, new_game, stats, current_games, nav }
+        DashTexts { title, new_game, stats, current_games, nav, rules_title, rules_body }
     }
 }
 
