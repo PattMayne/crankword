@@ -63,7 +63,7 @@ pub struct DashTexts {
 impl DashTexts {
     pub fn new(user_req_data: &UserReqData) -> DashTexts {
         let lang: &SupportedLangs = &user_req_data.lang;
-        let title: String = get_translation("home.title", lang, None);
+        let title: String = get_translation("dash.title", lang, None);
         let stats: String = get_translation("dash.stats", lang, None);
         let new_game: String = get_translation("dash.new_game", lang, None);
         let current_games: String = get_translation(

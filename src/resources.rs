@@ -49,6 +49,8 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
         Ou joue contre toi-même !",
 
     // DASH TEXTS
+    "dash.title.en" => "DASHBOARD",
+    "dash.title.fr" => "TABLEAU DE BORD",
     "dash.new_game.en" => "CREATE NEW GAME",
     "dash.new_game.fr" => "NOUVEAU JEU",
     "dash.current_games.en" => "CURRENT GAMES",

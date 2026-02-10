@@ -746,6 +746,8 @@ pub async fn delete_invite(
         None => return return_unauthorized_err_json(&user_req_data)
     };
 
+    let username: String = user_req_data.get_username();
+
     let game_id: i32 = match hash_ids.decode(&delete_invite_data.hashed_game_id) {
         Ok(ids) => {
             if ids.len() > 0 { ids[0] as i32 }
@@ -760,11 +762,14 @@ pub async fn delete_invite(
         Err(_) => return return_unauthorized_err_json(&user_req_data)
     };
 
-    // user must be game owner
-    if the_game.owner_id != player_id {
+    let player_can_delete: bool = the_game.owner_id == player_id ||
+        username == delete_invite_data.username;
+
+    // user must be game owner OR invitee
+    if !player_can_delete {
         return HttpResponse::Ok().json(UninviteSuccessObject {
             success: false,
-            message: "Only game owner can delete invitations".to_string()
+            message: "Only game owner OR invited player can delete invitations".to_string()
         })
     }
 
