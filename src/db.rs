@@ -2,7 +2,7 @@ extern crate rand;
 // import commonly used items from the prelude:
 use anyhow::{ Result, anyhow };
 use serde::Serialize;
-use sqlx::{ MySqlPool, MySql, Transaction, Row };
+use sqlx::{ MySqlPool, MySql, Transaction };
 use rand::Rng;
 use time::{ OffsetDateTime };
 

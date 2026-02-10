@@ -904,7 +904,7 @@ pub async fn quit_game(
         Err(_e) => return return_internal_err_json()
     };
 
-    let max_wait: time::Duration = time::Duration::seconds(5);
+    let max_wait: time::Duration = time::Duration::minutes(5);
     let mut game_is_fresh: bool = false;
 
     for guess in guesses {

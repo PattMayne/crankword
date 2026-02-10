@@ -114,8 +114,8 @@ let game_over = false
 let turn_timeout = null
 let timer_element = null
 let current_turn_id = null
-let username = null
 let user_id = null
+let username = null
 let number_of_players = 0
 
 // This is how we set the colors for each letter
@@ -611,6 +611,15 @@ const settle_old_scores = async () => {
 
 const refresh_players = async () => {
     const players_obj = await io.refresh_players(hashed_game_id())
+
+    // find out if somebody quit
+    if (players_obj.players.length < number_of_players) {
+        new_message("A PLAYER HAS LEFT THE GAME")
+        setTimeout(() => window.location.reload(), 1100)        
+    }
+
+    // we need to know if this is a single-player game
+    number_of_players = players_obj.players.length
     let current_player_name = ""
 
     if (
@@ -625,9 +634,6 @@ const refresh_players = async () => {
         end_game(false, players_obj.game_status)
     }
 
-    // we need to know if this is a single-player game
-    number_of_players = players_obj.players.length
-    
     // Check if it's player's turn, and if the turn has changed through timeout
     if (current_turn_id != players_obj.current_turn_id) {
         if (current_turn_id != null && current_turn_id == user_id){
