@@ -36,10 +36,10 @@ const hide_element = element => element.style.display = "none"
 document.addEventListener('DOMContentLoaded', () => {
     hide_element(document.getElementById("msg_box"))
 
-})
+    const block_button = document.getElementById('block_user_btn')
+    !!block_button && block_button.addEventListener('click', (e) => block_user())
 
-document.getElementById('block_user_btn').addEventListener(
-    'click', (e) => block_user())
+})
 
 
 window.block_user = block_user

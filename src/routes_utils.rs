@@ -387,6 +387,7 @@ pub struct ViewUserTemplate {
     pub user: auth::UserReqData,
     pub stats: db::PlayerStats,
     pub username: String,
+    pub has_stats: bool,
 }
 
 

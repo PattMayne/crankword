@@ -19,6 +19,9 @@
             </div>
 
             <div class="large-4 medium-6 small-12 cell">
+
+                {% if has_stats %}
+
                 <div class="callout primary">
                     <h4>{{ texts.stats }}:</h4>
                     <h6>PAST GAMES: {{ stats.past_games }}</h6>
@@ -32,6 +35,15 @@
                         and prevents them from joining games you own. You can still view 
                         each other's profile, and may join games owned by other players.</p>
                 </div>
+
+                {% else %}
+
+
+                <div class="callout">
+                    <h4>NO STATS</h4>
+                </div>
+
+                {% endif %}
             </div>
 
             <div class="large-12 cell">
@@ -46,7 +58,7 @@
         <script src="../static/js/vendor/jquery.js"></script>
         <script src="../static/js/vendor/what-input.js"></script>
         <script src="../static/js/vendor/foundation.min.js"></script>
-        <script type="module" src="../static/js/view_user.js?id=0"></script>
+        <script type="module" src="../static/js/view_user.js?id=50"></script>
     </body>
 
 </html>

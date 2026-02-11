@@ -382,7 +382,6 @@ async fn go_to_cancelled_game(
 #[get("/user/{username_to_view}")]
 async fn view_user(
     pool: web::Data<MySqlPool>,
-    hash_ids: web::Data<HashIds>,
     req: HttpRequest,
     path: web::Path<String>
 ) -> HttpResponse {
@@ -407,26 +406,18 @@ async fn view_user(
         Err(_e) => return redirect_to_err("500")
     };
 
+    let has_stats: bool = all_user_games.len() > 0;
+
     // Create stats object
     let mut wins: u32 = 0;
     let mut past_games: u32 = 0;
     let mut cancelled_games: u32 = 0;
-    let mut games: Vec<db::GameLinkData> = Vec::new();
-
     for user_game in all_user_games {
 
         // get current games (in progress and pre-game)
         if user_game.game_status == game_logic::GameStatus::InProgress.to_string() ||
             user_game.game_status == game_logic::GameStatus::PreGame.to_string()
-        {
-            games.push(db::GameLinkData {
-                hashid: hash_ids.encode(&[user_game.id as u64]),
-                game_status: user_game.game_status,
-                age_string: create_age_string(&user_game.created_timestamp)
-            });
-
-            continue;
-        }
+        { continue; }
 
         past_games += 1;
         
@@ -443,7 +434,8 @@ async fn view_user(
         texts: ViewUserTexts::new(&user_req_data),
         user: user_req_data,
         stats: PlayerStats { wins, past_games, cancelled_games },
-        username: username_to_view.to_owned()
+        username: username_to_view.to_owned(),
+        has_stats
     };
 
     HttpResponse::Ok()
