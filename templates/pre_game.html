@@ -24,7 +24,7 @@
                 <div class="callout primary">
                     <h5>OWNER:
                         {% if game.owner_name().is_some() %}
-                            {{ game.owner_name().unwrap() }}
+                            <a href="/user/{{ game.owner_name().unwrap() }}">{{ game.owner_name().unwrap() }}</a>
                         {% else %}
                             NO OWNER?
                         {% endif %}
@@ -67,7 +67,11 @@
                     {% if game.players.len() > 0 %}
                         <ul id="players_ul">
                             {% for player_info in game.players %}
-                                <li>{{ player_info.username }}</li>
+                                <li>
+                                    <a href="/user/{{ player_info.username }}">
+                                        {{ player_info.username }}
+                                    </a>
+                                </li>
                             {% endfor %}
                         </ul>
                     {% endif %}
@@ -95,7 +99,7 @@
         <script src="../static/js/vendor/jquery.js"></script>
         <script src="../static/js/vendor/what-input.js"></script>
         <script src="../static/js/vendor/foundation.min.js"></script>
-        <script type="module" src="../static/js/pre_game.js?id=47997205"></script>
+        <script type="module" src="../static/js/pre_game.js?id=479972905"></script>
     </body>
 
 </html>

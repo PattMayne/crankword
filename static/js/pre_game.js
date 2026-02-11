@@ -108,8 +108,8 @@ const set_players_list = async players_list => {
 }
 
 const get_player_item_li = username =>
-    "<li>" +
-    username +
+    "<li><a href='/user/" + username + "'>" +
+    username + "</a>" +
     get_boot_btn(username) +
     "</li>"
 
