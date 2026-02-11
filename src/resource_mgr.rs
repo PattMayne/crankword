@@ -81,6 +81,23 @@ impl DashTexts {
     }
 }
 
+pub struct ViewUserTexts {
+    pub block: String,
+    pub stats: String,
+    pub nav: NavTexts,
+}
+
+impl ViewUserTexts {
+    pub fn new(user_req_data: &UserReqData) -> ViewUserTexts {
+        let lang: &SupportedLangs = &user_req_data.lang;
+        let block: String = get_translation("view.user.block", lang, None);
+        let stats: String = get_translation("view.user.stats", lang, None);
+        let nav: NavTexts = NavTexts::new(lang);
+
+        ViewUserTexts {stats, block, nav }
+    }
+}
+
 
 pub struct OpenGameTexts {
     pub title: String,

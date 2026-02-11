@@ -1,0 +1,52 @@
+<!doctype html>
+<html class="no-js" lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{ username }}</title>
+        <link rel="icon" type="image/x-icon" href="../static/img/favicon.ico">
+        <link rel="stylesheet" href="../static/css/foundation.min.css">
+        <link rel="stylesheet" href="../static/css/app.css?id=14099557797072">
+    </head>
+
+    <body>
+    {% include "header.html" %}
+    <div class="grid-container">
+        <div class="grid-x grid-padding-x">
+            <div class="large-12 cell">
+                <h1 id="dash_title">{{ username }}</h1>
+            </div>
+
+            <div class="large-4 medium-6 small-12 cell">
+                <div class="callout primary">
+                    <h4>{{ texts.stats }}:</h4>
+                    <h6>PAST GAMES: {{ stats.past_games }}</h6>
+                    <h6>WINS: {{ stats.wins }}</h6>
+                    <h6>CANCELLED GAMES: {{ stats.cancelled_games }}</h6>
+                </div>
+
+                <div class="callout">
+                    <a class="button small" id="block_user_btn">{{ texts.block }}</a>
+                    <p>Blocking a user prevents them from inviting you to their games, 
+                        and prevents them from joining games you own. You can still view 
+                        each other's profile, and may join games owned by other players.</p>
+                </div>
+            </div>
+
+            <div class="large-12 cell">
+                <div class="callout primary" id="msg_box">
+                </div>
+            </div>
+
+        </div> <!-- end of grid-x -->
+
+    </div><!-- end of grid-container -->
+
+        <script src="../static/js/vendor/jquery.js"></script>
+        <script src="../static/js/vendor/what-input.js"></script>
+        <script src="../static/js/vendor/foundation.min.js"></script>
+        <script type="module" src="../static/js/view_user.js?id=0"></script>
+    </body>
+
+</html>

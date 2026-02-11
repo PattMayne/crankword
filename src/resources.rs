@@ -62,6 +62,12 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "dash.stats.en" => "STATS",
     "dash.stats.fr" => "STATISTIQUES",
 
+    // View User Profile Texts
+    "view.user.block.en" => "BLOCK USER",
+    "view.user.block.fr" => "BLOQUER L'UTILISATEUR",
+    "view.user.stats.en" => "STATS",
+    "view.user.stats.fr" => "STATISTIQUES",
+
     // NAV BUTTONS
     "nav.home.en" => "HOME",
     "nav.home.fr" => "ACCUEIL",

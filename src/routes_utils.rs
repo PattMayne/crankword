@@ -70,6 +70,11 @@ pub struct AuthCodeQuery {
 }
 
 #[derive(Deserialize)]
+pub struct UsernameToView {
+    pub username: String,
+}
+
+#[derive(Deserialize)]
 pub struct DeleteInviteData {
     pub username: String,
     pub hashed_game_id: String,
@@ -372,6 +377,16 @@ pub struct DashboardTemplate {
     pub current_games: Vec<db::GameLinkData>,
     pub stats: db::PlayerStats,
     pub invited_game_hashes: Vec<String>,
+}
+
+
+#[derive(Template)]
+#[template(path="view_user.html")]
+pub struct ViewUserTemplate {
+    pub texts: ViewUserTexts,
+    pub user: auth::UserReqData,
+    pub stats: db::PlayerStats,
+    pub username: String,
 }
 
 

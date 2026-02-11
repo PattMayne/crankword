@@ -574,9 +574,9 @@ pub async fn get_game_and_players(pool: &MySqlPool, game_id: i32) -> Result<Game
 }
 
 /**
- * Get basic data for all of user's current games.
+ * Get basic data for all of user's games.
  */
-pub async fn get_current_games(
+pub async fn get_games_byid(
     pool: &MySqlPool,
     user_id: i32
 ) -> Result<Vec<GameItemData>> {
@@ -595,6 +595,30 @@ pub async fn get_current_games(
 
     Ok(games)
 }
+
+/**
+ * Get basic data for all of user's current games.
+ */
+pub async fn get_games_by_username(
+    pool: &MySqlPool,
+    username: &String
+) -> Result<Vec<GameItemData>> {
+    let games: Vec<GameItemData> = sqlx::query_as!(
+        GameItemData,
+        r#"
+            SELECT g.id, g.game_status, g.winner_id, g.created_timestamp
+            FROM games g
+            JOIN game_users gu ON g.id = gu.game_id
+            WHERE gu.username = ?
+        "#,
+        username
+    )
+    .fetch_all(pool)
+    .await?;
+
+    Ok(games)
+}
+
 
 
 /**

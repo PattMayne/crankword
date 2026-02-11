@@ -379,6 +379,81 @@ async fn go_to_cancelled_game(
 
 
 /* PLAYER DASHBOARD ROUTE */
+#[get("/user/{username_to_view}")]
+async fn view_user(
+    pool: web::Data<MySqlPool>,
+    hash_ids: web::Data<HashIds>,
+    req: HttpRequest,
+    path: web::Path<String>
+) -> HttpResponse {
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+
+    // Only logged in users can view profiles
+    if user_req_data.role == "guest" ||
+        user_req_data.id.is_none() ||
+        user_req_data.username.is_none()
+    { return redirect_to_login() }
+
+    let user_id: i32 = user_req_data.id.unwrap();
+    let username_to_view: String = match path.into_inner().parse::<String>() {
+        Ok(username_to_view) => username_to_view,
+        Err(_) => "400".to_string()
+    };
+
+    // Get user's games... but BY USERNAME
+    let all_user_games: Vec<db::GameItemData> = match db::get_games_by_username(
+        &pool, &username_to_view).await {
+        Ok(games) => games,
+        Err(_e) => return redirect_to_err("500")
+    };
+
+    // Create stats object
+    let mut wins: u32 = 0;
+    let mut past_games: u32 = 0;
+    let mut cancelled_games: u32 = 0;
+    let mut games: Vec<db::GameLinkData> = Vec::new();
+
+    for user_game in all_user_games {
+
+        // get current games (in progress and pre-game)
+        if user_game.game_status == game_logic::GameStatus::InProgress.to_string() ||
+            user_game.game_status == game_logic::GameStatus::PreGame.to_string()
+        {
+            games.push(db::GameLinkData {
+                hashid: hash_ids.encode(&[user_game.id as u64]),
+                game_status: user_game.game_status,
+                age_string: create_age_string(&user_game.created_timestamp)
+            });
+
+            continue;
+        }
+
+        past_games += 1;
+        
+        if user_game.game_status == game_logic::GameStatus::Cancelled.to_string() {
+            cancelled_games += 1;
+        } else if user_game.winner_id.is_some() {
+            if user_game.winner_id.unwrap() == user_id {
+                wins += 1;
+            }
+        }
+    }
+
+    let view_user_template: ViewUserTemplate = ViewUserTemplate {
+        texts: ViewUserTexts::new(&user_req_data),
+        user: user_req_data,
+        stats: PlayerStats { wins, past_games, cancelled_games },
+        username: username_to_view.to_owned()
+    };
+
+    HttpResponse::Ok()
+        .content_type("text/html")
+        .body(view_user_template.render().unwrap())
+}
+
+
+
+/* PLAYER DASHBOARD ROUTE */
 #[get("/dashboard")]
 async fn dashboard(
     pool: web::Data<MySqlPool>,
@@ -395,7 +470,7 @@ async fn dashboard(
     let user_id: i32 = user_req_data.id.unwrap();
     let username: String = user_req_data.username.to_owned().unwrap();
 
-    let all_user_games: Vec<db::GameItemData> = match db::get_current_games(
+    let all_user_games: Vec<db::GameItemData> = match db::get_games_byid(
         &pool, user_id).await {
         Ok(games) => games,
         Err(_e) => return redirect_to_err("500")
