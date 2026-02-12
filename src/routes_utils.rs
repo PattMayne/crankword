@@ -58,6 +58,14 @@ pub struct OpenGame {
     pub age_string: String,
 }
 
+
+#[derive(Serialize)]
+pub struct InviteInfo {
+    pub hashid: String,
+    pub owner_name: String,
+}
+
+
 #[derive(Deserialize)]
 pub struct WordToCheck {
     pub guess_word: String,
@@ -165,7 +173,7 @@ pub struct InProgRefresh {
 
 #[derive(Serialize)]
 pub struct DashboardRefreshData {
-    pub invited_game_hashes: Vec<String>,
+    pub invited_games: Vec<InviteInfo>,
 }
 
 #[derive(Serialize)]
@@ -376,7 +384,7 @@ pub struct DashboardTemplate {
     pub user: auth::UserReqData,
     pub current_games: Vec<db::GameLinkData>,
     pub stats: db::PlayerStats,
-    pub invited_game_hashes: Vec<String>,
+    pub invited_games: Vec<InviteInfo>,
 }
 
 
@@ -530,12 +538,16 @@ pub async fn finish_game(
  */
 pub fn get_hashes_from_game_ids(
     hash_ids: &web::Data<HashIds>,
-    raw_ids: Vec<db::GameId>
-) -> Vec<String> {
+    raw_ids: Vec<db::GameIdAndOwnerName>
+) -> Vec<InviteInfo> {
     raw_ids
         .iter()
         .map(|raw_invite|
-            hash_ids.encode(&[raw_invite.game_id as u64]))
+            InviteInfo {
+                hashid: hash_ids.encode(&[raw_invite.game_id as u64]),
+                owner_name: raw_invite.owner_name.to_owned()
+            })
+            
         .collect()
 }
 

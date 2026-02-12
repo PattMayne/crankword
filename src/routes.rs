@@ -462,11 +462,11 @@ async fn dashboard(
     let user_id: i32 = user_req_data.id.unwrap();
     let username: String = user_req_data.username.to_owned().unwrap();
 
-    let all_user_games: Vec<db::GameItemData> = match db::get_games_byid(
-        &pool, user_id).await {
-        Ok(games) => games,
-        Err(_e) => return redirect_to_err("500")
-    };
+    let all_user_games: Vec<db::GameItemData> =
+        match db::get_games_byid(&pool, user_id).await {
+            Ok(games) => games,
+            Err(_e) => return redirect_to_err("500")
+        };
 
     // Create stats object
     let mut wins: u32 = 0;
@@ -500,17 +500,18 @@ async fn dashboard(
         }
     }
 
-    let raw_invitations: Vec<db::GameId> = match db::get_invitations_by_username(&pool, username).await {
-        Ok(invites) => invites,
-        Err(_e) => return redirect_to_err("500")
-    };
+    let raw_invitations: Vec<db::GameIdAndOwnerName> =
+        match db::get_invitations_by_username(&pool, username).await {
+            Ok(invites) => invites,
+            Err(_e) => return redirect_to_err("500")
+        };
 
     let dash_template: DashboardTemplate = DashboardTemplate {
         texts: DashTexts::new(&user_req_data),
         user: user_req_data,
         current_games,
         stats: PlayerStats { wins, past_games, cancelled_games },
-        invited_game_hashes: get_hashes_from_game_ids(&hash_ids, raw_invitations)
+        invited_games: get_hashes_from_game_ids(&hash_ids, raw_invitations)
     };
 
     HttpResponse::Ok()
@@ -882,7 +883,7 @@ pub async fn refresh_dashboard(
     };
 
     // get a list of invitations
-    let raw_invitations: Vec<db::GameId> =
+    let raw_invitations: Vec<db::GameIdAndOwnerName> =
         match db::get_invitations_by_username(&pool, username).await {
             Ok(invites) => invites,
             Err(_e) => return redirect_to_err("500")
@@ -890,7 +891,7 @@ pub async fn refresh_dashboard(
 
     // hash each id into a new vector
     let dashboard_refresh_data: DashboardRefreshData = DashboardRefreshData {
-        invited_game_hashes: get_hashes_from_game_ids(&hash_ids, raw_invitations)
+        invited_games: get_hashes_from_game_ids(&hash_ids, raw_invitations)
     };
 
     HttpResponse::Ok().json(dashboard_refresh_data)
@@ -1709,6 +1710,7 @@ pub async fn invite_player(
         match db::invite_user(
             &pool,
             &invite_data.invited_player_username,
+            &user_req_data.get_username(),
             game_id
         ).await {
             Ok(invited) => invited,

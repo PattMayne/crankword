@@ -7,7 +7,7 @@
         <title>{{ texts.title }}</title>
         <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
         <link rel="stylesheet" href="static/css/foundation.min.css">
-        <link rel="stylesheet" href="static/css/app.css?id=14099557797072">
+        <link rel="stylesheet" href="static/css/app.css?id=77777977">
     </head>
 
     <body>
@@ -42,9 +42,14 @@
                 <div class="callout primary">
                     <h4>INVITATIONS:</h4>
                     <span id="invitations">
-                        {% if invited_game_hashes.len() > 0 %}
-                            {% for hashid in invited_game_hashes %}
-                            <a class="button small invite_btn" href="/game/{{ hashid }}">{{ hashid }}</a>
+                        {% if invited_games.len() > 0 %}
+                            {% for game in invited_games %}
+                            <div class="callout invite_callout">
+                                <a class="button small invite_btn" href="/game/{{ game.hashid }}">
+                                    {{ game.hashid }}
+                                </a>
+                                <h6><a href="/user/{{ game.owner_name }}">{{ game.owner_name }}</a></h6>
+                            </div>
                             {% endfor %}
                         {% else %}
                             [NONE]
@@ -97,7 +102,7 @@
         <script src="static/js/vendor/jquery.js"></script>
         <script src="static/js/vendor/what-input.js"></script>
         <script src="static/js/vendor/foundation.min.js"></script>
-        <script type="module" src="static/js/dashboard.js?id=590"></script>
+        <script type="module" src="static/js/dashboard.js?id=59009270"></script>
     </body>
 
 </html>

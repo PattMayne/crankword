@@ -27,10 +27,11 @@ $yellow: #bdf000;
 $very-light-gray: #f0f0f0;
 $light-gray: #9a9a9a;
 $gray: #6b6b6b;
+$pure-blue: #0008dd;
+
 
 $letter_right_spot: #60f000;
-//$letter_wrong_spot: #0008dd;
-$letter_wrong_spot: #0008dd;
+$letter_wrong_spot: $pure-blue;
 $letter_dud: #111111;
 $letter_current_guess: #ffffff;
 

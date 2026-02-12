@@ -654,12 +654,12 @@ export const refresh_dashboard = async () => {
     let data = await response.json()
 
     let return_obj = {
-        game_ids: [],
+        invited_games: [],
         error: null
     }
 
-    if (data.invited_game_hashes !== undefined) {
-        return_obj.game_ids = data.invited_game_hashes
+    if (data.invited_games !== undefined) {
+        return_obj.invited_games = data.invited_games
     } else if (!!data.error) {
         return_obj.error = data.error
     }

@@ -60,6 +60,11 @@ pub struct GameId {
     pub game_id: i64,
 }
 
+pub struct GameIdAndOwnerName {
+    pub game_id: i64,
+    pub owner_name: String,
+}
+
 
 struct UserId {
     user_id: i64,
@@ -303,10 +308,13 @@ pub async fn get_invitee_usernames(pool: &MySqlPool, game_id: i32) -> Result<Vec
 }
 
 
-pub async fn get_invitations_by_username(pool: &MySqlPool, username: String) -> Result<Vec<GameId>> {
-    let game_ids: Vec<GameId> = sqlx::query_as!(
-        GameId,
-        "SELECT game_id FROM invites WHERE username = ?",
+pub async fn get_invitations_by_username(
+    pool: &MySqlPool,
+    username: String
+) -> Result<Vec<GameIdAndOwnerName>> {
+    let game_ids: Vec<GameIdAndOwnerName> = sqlx::query_as!(
+        GameIdAndOwnerName,
+        "SELECT game_id, owner_name FROM invites WHERE username = ?",
         username
     ).fetch_all(pool).await?;
 
@@ -768,6 +776,7 @@ pub async fn user_join_game(
 pub async fn invite_user(
     pool: &MySqlPool,
     username: &String,
+    owner_name: &String,
     game_id: i32
 ) -> Result<bool> {
     // get the game and check that it's pregame
@@ -783,10 +792,12 @@ pub async fn invite_user(
     let result: sqlx::mysql::MySqlQueryResult = sqlx::query(
         "INSERT INTO invites (
             game_id,
-            username)
-            VALUES (?, ?)")
+            username,
+            owner_name)
+            VALUES (?, ?, ?)")
         .bind(game_id)
         .bind(username)
+        .bind(owner_name)
         .execute(pool).await.map_err(|e| {
             eprintln!("Failed to save game_user to database: {:?}", e);
             anyhow!("Could not save game_user to database: {e}")

@@ -9,7 +9,7 @@ $dartmouth-green: #1A6025; /* darker green */
 $bronze: #c97c18ff;
 $yellow: #bdf000;
 $pastel-blue: #5a639e;
-
+$pure-blue: #0008dd;
 $very-light-gray: #f0f0f0;
 
 $winning_word: #60f000;
@@ -92,10 +92,43 @@ h1, h2, h3, h4, h5, h6 {
   text-transform: uppercase;
 }
 
+a {
+  color: $yellow;
+}
+
+a:hover {
+  color: $black;
+}
+
+li a {
+  text-decoration: none!important;
+}
 
 
 
 /* FOUNDATION OVERRIDES */
+
+.callout.primary a {
+  color: $black;
+  text-decoration: underline;
+}
+
+.callout.primary a:hover {
+  color: $dartmouth-green;
+}
+
+
+.callout a,
+.callout.primary .callout a {
+  color: $yellow;
+  text-decoration: none;
+}
+
+.callout a:hover,
+.callout.primary .callout a:hover {
+  color: $black;
+}
+
 
 .callout {
     background-color: $pastel-blue;
@@ -117,13 +150,14 @@ h1, h2, h3, h4, h5, h6 {
 
 .button {
   background-color: $black;
-  color: $white;
+  color: $white!important;
   border: 1px solid $black;
   border-radius: 5px;
   font-family: $button-font, arial;
   font-weight: bold;
   text-transform: uppercase;
   transition: background-color 0.55s;
+  text-decoration: none!important;
 }
 
 .button:hover, .button:focus {
@@ -264,8 +298,7 @@ h1, h2, h3, h4, h5, h6 {
 
 
 .invite_btn {
-  margin-right:2px;
-  margin-bottom: 2px;
+  margin: 0px 0px 7px 0px;
 }
 
 #invite_only_label {
@@ -276,6 +309,12 @@ h1, h2, h3, h4, h5, h6 {
 .current_game_callout {
   display: inline-block;
   width: auto;
+}
+
+.invite_callout {
+  display: inline-block;
+  width: auto;
+  margin-right: 5px;
 }
 
 /* 

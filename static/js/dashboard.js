@@ -73,15 +73,20 @@ const refresh_data = async () => {
     }
 
     // from io get list of game ids
-    const game_ids_obj = await io.refresh_dashboard()
+    const invited_games_obj = await io.refresh_dashboard()
     
-    if (!game_ids_obj.game_ids || game_ids_obj.game_ids.length < 1) {
+    if (!invited_games_obj.invited_games || invited_games_obj.invited_games.length < 1) {
         return
     }
 
-    const game_ids_html = game_ids_obj.game_ids.reduce((html, id) => {
-        return html + "<a class='button small invite_btn' href='/game/" +
-        id + "'>" + id + "</a>"
+    const invited_games = invited_games_obj.invited_games
+
+    const game_ids_html = invited_games.reduce((html, game) => {
+        return html + "<div class='callout invite_callout'>" +
+            "<a class='button small invite_btn' href='/game/" +
+            game.hashid + "'>" + game.hashid + "</a>" +
+            "<h6><a href='/user/" + game.owner_name +"'>" + game.owner_name + "</a></h6>" +
+            "</div>"
     }, "")
 
     invites_list.innerHTML = game_ids_html
