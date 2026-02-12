@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
     refresh_data()
 
     // Check every 4 seconds for new users or updated game_status
-    setInterval(refresh_data, 4001);
+    setInterval(refresh_data, 4001)
 })
 
 document.getElementById('new_game_button').addEventListener(

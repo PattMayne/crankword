@@ -83,6 +83,7 @@ impl DashTexts {
 
 pub struct ViewUserTexts {
     pub block: String,
+    pub unblock: String,
     pub stats: String,
     pub nav: NavTexts,
 }
@@ -91,10 +92,11 @@ impl ViewUserTexts {
     pub fn new(user_req_data: &UserReqData) -> ViewUserTexts {
         let lang: &SupportedLangs = &user_req_data.lang;
         let block: String = get_translation("view.user.block", lang, None);
+        let unblock: String = get_translation("view.user.unblock", lang, None);
         let stats: String = get_translation("view.user.stats", lang, None);
         let nav: NavTexts = NavTexts::new(lang);
 
-        ViewUserTexts {stats, block, nav }
+        ViewUserTexts {stats, block, unblock, nav }
     }
 }
 

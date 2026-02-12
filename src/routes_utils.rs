@@ -72,6 +72,21 @@ pub struct WordToCheck {
     pub hashed_game_id: String,
 }
 
+
+#[derive(Deserialize)]
+pub struct UsernameToBlock {
+    pub username: String,
+}
+
+
+#[derive(Serialize)]
+pub struct BlockSuccessful {
+    pub success: bool,
+    pub message: String,
+}
+
+
+
 #[derive(Deserialize)]
 pub struct AuthCodeQuery {
     pub code: String,
@@ -396,6 +411,7 @@ pub struct ViewUserTemplate {
     pub stats: db::PlayerStats,
     pub username: String,
     pub has_stats: bool,
+    pub is_blocked: bool,
 }
 
 

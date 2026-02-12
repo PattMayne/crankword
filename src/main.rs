@@ -77,6 +77,8 @@ async fn main() -> std::io::Result<()> {
             .service(routes::dashboard)
             .service(routes::open_games)
             .service(routes::view_user)
+            .service(routes::block_user)
+            .service(routes::unblock_user)
             .service(
                 web::scope("/game_in")
                 .service(routes::check_guess)

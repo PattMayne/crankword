@@ -65,6 +65,8 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     // View User Profile Texts
     "view.user.block.en" => "BLOCK USER",
     "view.user.block.fr" => "BLOQUER L'UTILISATEUR",
+    "view.user.unblock.en" => "UNBLOCK",
+    "view.user.unblock.fr" => "DÉBLOQUER",
     "view.user.stats.en" => "STATS",
     "view.user.stats.fr" => "STATISTIQUES",
 

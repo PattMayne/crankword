@@ -111,7 +111,6 @@ pub struct InviteeUsername {
 }
 
 
-
 // raw DB data for one game to populate Game
 pub struct RawGame {
     pub id: i32,
@@ -277,6 +276,27 @@ impl GameAndPlayers {
  * 
 */
 
+
+pub async fn is_blocked(
+    pool: &MySqlPool,
+    blocker_username: &String,
+    blocked_username: &String
+) -> Result<bool> {
+    let count_option: Option<Count> = match sqlx::query_as!(
+        Count,
+        "SELECT COUNT(*) as count FROM blocks WHERE blocker_username = ? AND blocked_username = ?",
+        blocker_username,
+        blocked_username
+    ).fetch_optional(pool).await {
+        Ok(count) => count,
+        Err(e) => return Err(anyhow!("Could not fetch invites count: {e}"))
+    };
+
+    match count_option {
+        Some(count) => Ok(count.count > 0),
+        None => Err(anyhow!("Could not fetch invites count"))
+    }
+}
 
 
 
@@ -806,6 +826,27 @@ pub async fn invite_user(
     Ok(result.rows_affected() > 0 )
 }
 
+
+pub async fn block_user(
+    pool: &MySqlPool,
+    blocker_username: &String,
+    blocked_username: &String
+) -> Result<bool, anyhow::Error> {
+    let result: sqlx::mysql::MySqlQueryResult = sqlx::query(
+        "INSERT INTO blocks (
+            blocker_username, blocked_username)
+            VALUES (?, ?)")
+        .bind(blocker_username)
+        .bind(blocked_username)
+        .execute(pool).await.map_err(|e| {
+            eprintln!("Failed to save GUESS to database: {:?}", e);
+            anyhow!("Could not save GUESS to database: {e}")
+    })?;
+
+    Ok(result.rows_affected() > 0)
+}
+
+
 /* 
  * 
  * 
@@ -1067,6 +1108,22 @@ pub async fn delete_user_from_game(
         "DELETE FROM game_users WHERE game_id = ? AND username = ?")
         .bind(game_id)
         .bind(username)
+        .execute(pool)
+        .await?;
+
+        Ok(result.rows_affected() > 0)
+}
+
+
+pub async fn delete_block(
+    pool: &MySqlPool,
+    blocker_username: &String,
+    blocked_username: &String
+) -> Result<bool> {
+    let result = sqlx::query(
+        "DELETE FROM blocks WHERE blocker_username = ? AND blocked_username = ?")
+        .bind(blocker_username)
+        .bind(blocked_username)
         .execute(pool)
         .await?;
 

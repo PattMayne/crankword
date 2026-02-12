@@ -430,12 +430,22 @@ async fn view_user(
         }
     }
 
+    let is_blocked: bool = match db::is_blocked(
+        &pool,
+        &user_req_data.get_username(),
+        &username_to_view
+    ).await {
+        Ok(blocked) => blocked,
+        Err(_e) => return redirect_to_err("500")
+    };
+
     let view_user_template: ViewUserTemplate = ViewUserTemplate {
         texts: ViewUserTexts::new(&user_req_data),
         user: user_req_data,
         stats: PlayerStats { wins, past_games, cancelled_games },
         username: username_to_view.to_owned(),
-        has_stats
+        has_stats,
+        is_blocked
     };
 
     HttpResponse::Ok()
@@ -897,6 +907,98 @@ pub async fn refresh_dashboard(
     HttpResponse::Ok().json(dashboard_refresh_data)
 }
 
+/**
+ * User blocks another user.
+ */
+#[post("/block_user")]
+pub async fn block_user(
+    pool: web::Data<MySqlPool>,
+    block_this_obj: web::Json<UsernameToBlock>,
+    req: HttpRequest
+) -> HttpResponse {
+    // Make sure it's a real user
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+    if user_req_data.id.is_none() {
+        return return_unauthorized_err_json(&user_req_data)
+    }
+
+    let username: String = user_req_data.get_username();
+    let username_to_block: String = block_this_obj.username.to_owned();
+
+    let block_successful: bool =
+        match db::block_user(&pool, &username, &username_to_block).await {
+            Ok(success) => success,
+            Err(e) => {
+
+                let error_string: String = e.to_string();
+                let message: String = if error_string.contains("1062") {
+                    "User is already blocked".to_string()
+                } else {
+                    "Error blocking user".to_string()
+                };
+
+                let block_success_obj: BlockSuccessful = BlockSuccessful {
+                    success: false,
+                    message
+                };
+
+                return HttpResponse::Ok().json(block_success_obj)
+            }
+        };
+
+    let message: String = if block_successful { "User has been blocked".to_string() }
+        else { "Something went wrong. Could not block user.".to_string() };
+
+        let block_success_obj: BlockSuccessful = BlockSuccessful {
+            success: block_successful,
+            message
+        };
+
+    HttpResponse::Ok().json(block_success_obj)
+}
+
+
+/**
+ * User blocks another user.
+ */
+#[post("/unblock_user")]
+pub async fn unblock_user(
+    pool: web::Data<MySqlPool>,
+    unblock_this_obj: web::Json<UsernameToBlock>,
+    req: HttpRequest
+) -> HttpResponse {
+    // Make sure it's a real user
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+    if user_req_data.id.is_none() {
+        return return_unauthorized_err_json(&user_req_data)
+    }
+
+    let username: String = user_req_data.get_username();
+    let username_to_unblock: String = unblock_this_obj.username.to_owned();
+
+    let unblock_successful: bool =
+        match db::delete_block(&pool, &username, &username_to_unblock).await {
+            Ok(success) => success,
+            Err(_e) => {
+                let block_success_obj: BlockSuccessful = BlockSuccessful {
+                    success: false,
+                    message: "Error unblocking user".to_string()
+                };
+
+                return HttpResponse::Ok().json(block_success_obj)
+            }
+        };
+
+    let message: String = if unblock_successful { "User has been unblocked".to_string() }
+        else { "Something went wrong. Could not unblock user.".to_string() };
+
+        let block_success_obj: BlockSuccessful = BlockSuccessful {
+            success: unblock_successful,
+            message
+        };
+
+    HttpResponse::Ok().json(block_success_obj)
+}
 
 /**
  * Get the data to update items in the dashboard.

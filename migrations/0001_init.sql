@@ -46,6 +46,14 @@ CREATE TABLE IF NOT EXISTS game_users (
 );
 
 
+-- when a user blocks another user
+CREATE TABLE IF NOT EXISTS blocks (
+    blocker_username VARCHAR(255) NOT NULL,
+    blocked_username VARCHAR(255) NOT NULL,
+    PRIMARY KEY (blocked_username, blocker_username)
+);
+
+
 CREATE TABLE IF NOT EXISTS invites (
     game_id INT NOT NULL,
     username VARCHAR(255) NOT NULL,

@@ -30,10 +30,19 @@
                 </div>
 
                 <div class="callout">
+                    {% if is_blocked %}
+
+                    <a class="button small" id="unblock_user_btn">{{ texts.unblock }}</a>
+
+                    {% else %}
+
                     <a class="button small" id="block_user_btn">{{ texts.block }}</a>
                     <p>Blocking a user prevents them from inviting you to their games, 
                         and prevents them from joining games you own. You can still view 
                         each other's profile, and may join games owned by other players.</p>
+
+                    {% endif %}
+
                 </div>
 
                 {% else %}
@@ -55,10 +64,12 @@
 
     </div><!-- end of grid-container -->
 
+    <input type="hidden" id="username" value="{{ username }}" />
+
         <script src="../static/js/vendor/jquery.js"></script>
         <script src="../static/js/vendor/what-input.js"></script>
         <script src="../static/js/vendor/foundation.min.js"></script>
-        <script type="module" src="../static/js/view_user.js?id=50"></script>
+        <script type="module" src="../static/js/view_user.js?id=50209709"></script>
     </body>
 
 </html>
