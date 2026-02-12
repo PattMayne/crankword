@@ -232,7 +232,11 @@ li a {
  * =======================
  * =======================
  * 
- */
+*/
+.decline_invite {
+  margin-top: 5px;
+}
+
 .invite_btn {
   margin: 0px 0px 7px 0px;
 }
@@ -245,12 +249,14 @@ li a {
 .current_game_callout {
   display: inline-block;
   width: auto;
+  text-align: center;
 }
 
 .invite_callout {
   display: inline-block;
   width: auto;
   margin-right: 5px;
+  text-align: center;
 }
 
 /* 

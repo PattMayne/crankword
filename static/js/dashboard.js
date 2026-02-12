@@ -74,23 +74,41 @@ const refresh_data = async () => {
 
     // from io get list of game ids
     const invited_games_obj = await io.refresh_dashboard()
+    const username = document.getElementById("username").value
     
     if (!invited_games_obj.invited_games || invited_games_obj.invited_games.length < 1) {
+        invites_list.innerHTML = "[NONE]"
         return
     }
 
     const invited_games = invited_games_obj.invited_games
-
     const game_ids_html = invited_games.reduce((html, game) => {
         return html + "<div class='callout invite_callout'>" +
             "<a class='button small invite_btn' href='/game/" +
             game.hashid + "'>" + game.hashid + "</a>" +
             "<h6><a href='/user/" + game.owner_name +"'>" + game.owner_name + "</a></h6>" +
-            "</div>"
+            "<a class='decline_invite' id='" + get_decline_id(game.hashid) +
+            "'>[decline]</a>" + "</div>"
     }, "")
-
     invites_list.innerHTML = game_ids_html
+    set_decline_event_listeners(invited_games, username)
 }
+
+const set_decline_event_listeners = async (invited_games, username) => {
+    invited_games.map(game => {
+        document.getElementById(get_decline_id(game.hashid))
+            .addEventListener('click', (e) => {
+                io.uninvite_player(game.hashid, username).then(result => {
+                    msgs.push(result.message)
+                    show_msg_box()
+                    msgs = []
+                    refresh_data()
+                })
+            })
+        })
+}
+
+const get_decline_id = hashid => "decline_" + hashid
 
 // Add event listeners
 document.addEventListener('DOMContentLoaded', () => {

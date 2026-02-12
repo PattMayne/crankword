@@ -26,8 +26,9 @@
                 {% match winner_name %}
                 {% when Some with (name) %}
                     <h5>WINNER:</h5>
-                    <h4 class="winner_name">{{ name }}</h4>
-
+                    <a href="/user/{{ name }}">
+                        <h4 class="winner_name">{{ name }}</h4>
+                    </a>
                 {% when None %}
                     <h5>NO WINNER.</h5>
                     

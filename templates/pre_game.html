@@ -67,11 +67,11 @@
                     {% if game.players.len() > 0 %}
                         <ul id="players_ul">
                             {% for player_info in game.players %}
-                                <li>
-                                    <a href="/user/{{ player_info.username }}">
-                                        {{ player_info.username }}
-                                    </a>
-                                </li>
+                            <li>
+                                <a href="/user/{{ player_info.username }}">
+                                    {{ player_info.username }}
+                                </a>
+                            </li>
                             {% endfor %}
                         </ul>
                     {% endif %}
