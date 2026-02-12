@@ -1593,7 +1593,6 @@ pub async fn new_game(
     })}};
 
     // send back the game_id so the front-end can redirect.
-    println!("created game object: {}", game_id);
     HttpResponse::Ok().json(HashedGameId { 
         hashed_game_id: hash_ids.encode(&[game_id as u64])
      })
