@@ -1698,9 +1698,6 @@ pub async fn check_guess(
         }
 
         guess_result.game_over = true;
-
-        println!("GAME OVER WINNER");
-
     } else {
 
         // make it the next player's turn:
@@ -1769,16 +1766,31 @@ pub async fn invite_player(
         None => { return return_unauthorized_err_json(&user_req_data); }
     };
 
+    // find out if user is blocked by invitee
+    let is_blocked: bool =
+        match db::is_blocked(
+            &pool,
+            &invite_data.invited_player_username,
+            &user_req_data.get_username()
+        ).await {
+            Ok(blocked) => blocked,
+            Err(_e) => return return_internal_err_json()
+        };
+
+    if is_blocked {
+        return HttpResponse::Ok().json(InviteSuccessObject {
+            invite_success: false,
+            message: "User has blocked you".to_string()
+        })
+    }
+
     // The game id is hashed. Decode it.
     let game_id: i32 = match hash_ids.decode(&invite_data.hashed_game_id) {
         Ok(hash_ids) => {
-            if hash_ids.len() > 0 {
-                hash_ids[0] as i32
-            } else {
-                return redirect_to_err("404")
-            }
+            if hash_ids.len() > 0 { hash_ids[0] as i32 }
+            else { return return_internal_err_json() }
         },
-        Err(_e) => return redirect_to_err("404")
+        Err(_e) => return return_internal_err_json()
     };
 
     // get game and make sure user is owner
@@ -1788,7 +1800,7 @@ pub async fn invite_player(
     };
 
     if the_game.owner_id != user_id {
-        return redirect_to_err("403");
+        return return_internal_err_json()
     }
 
     // make sure we don't already have too many invites
@@ -1816,7 +1828,7 @@ pub async fn invite_player(
             game_id
         ).await {
             Ok(invited) => invited,
-            Err(_e) => return redirect_to_err("404")
+            Err(_e) => return return_internal_err_json()
         };
 
     let message: String = if invite_success {
