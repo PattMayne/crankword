@@ -60,6 +60,10 @@ pub struct GameId {
     pub game_id: i64,
 }
 
+pub struct OwnerUsername {
+    owner_username: String,
+}
+
 pub struct GameIdAndOwnerName {
     pub game_id: i64,
     pub owner_name: String,
@@ -117,6 +121,7 @@ pub struct RawGame {
     pub word: String,
     pub game_status: String,
     pub owner_id: i32,
+    pub owner_username: String,
     pub winner_id: Option<i32>,
     pub turn_user_id: Option<i32>,
     pub created_timestamp: OffsetDateTime,
@@ -130,6 +135,7 @@ pub struct Game {
     pub word: String,
     pub game_status: GameStatus,
     pub owner_id: i32,
+    pub owner_username: String,
     pub winner_id: Option<i32>,
     pub turn_user_id: Option<i32>,
     pub created_timestamp: OffsetDateTime,
@@ -190,6 +196,7 @@ impl Game {
             word: raw_game.word.to_owned(),
             game_status: GameStatus::from_string(&raw_game.game_status),
             owner_id: raw_game.owner_id,
+            owner_username: raw_game.owner_username.to_owned(),
             winner_id: raw_game.winner_id,
             turn_user_id: raw_game.turn_user_id,
             created_timestamp: raw_game.created_timestamp,
@@ -538,13 +545,23 @@ pub async fn get_game_by_id(pool: &MySqlPool, game_id: i32) -> Result<Game> {
     // RawGame gets the string from game_status, all to populate Game which takes an enum.
     let raw_game: RawGame = sqlx::query_as!(
         RawGame,
-        "SELECT id, word, game_status, owner_id, winner_id, open_game,
+        "SELECT id, word, game_status, owner_id, owner_username, winner_id, open_game,
             turn_user_id, turn_timeout, created_timestamp FROM games
             WHERE id = ?",
         game_id
     ).fetch_one(pool).await?;
 
     Ok(Game::new(&raw_game))
+}
+
+pub async fn get_owner_username(pool: &MySqlPool, game_id: i32) -> Result<String> {
+    let owner_name_obj: OwnerUsername = sqlx::query_as!(
+        OwnerUsername,
+        "SELECT owner_username FROM games WHERE id = ?",
+        game_id
+    ).fetch_one(pool).await?;
+
+    Ok(owner_name_obj.owner_username)
 }
 
 
@@ -716,10 +733,11 @@ pub async fn new_game(
 
     let result: sqlx::mysql::MySqlQueryResult = sqlx::query(
         "INSERT INTO games (
-            word, owner_id, open_game)
-            VALUES (?, ?, ?)")
+            word, owner_id, owner_username, open_game)
+            VALUES (?, ?, ?, ?)")
         .bind(word)
         .bind(user_req_data.id)
+        .bind(user_req_data.get_username())
         .bind(open_game_int)
         .execute(pool).await.map_err(|e| {
             eprintln!("Failed to save game to database: {:?}", e);
@@ -832,6 +850,11 @@ pub async fn block_user(
     blocker_username: &String,
     blocked_username: &String
 ) -> Result<bool, anyhow::Error> {
+
+    if blocked_username == blocker_username {
+        return Err(anyhow!("You cannot block yourself"))
+    }
+
     let result: sqlx::mysql::MySqlQueryResult = sqlx::query(
         "INSERT INTO blocks (
             blocker_username, blocked_username)

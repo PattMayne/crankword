@@ -399,6 +399,10 @@ async fn view_user(
         Err(_) => "400".to_string()
     };
 
+    if username_to_view == user_req_data.get_username() {
+        return redirect_to_dash()
+    }
+
     // Get user's games... but BY USERNAME
     let all_user_games: Vec<db::GameItemData> = match db::get_games_by_username(
         &pool, &username_to_view).await {
@@ -719,6 +723,14 @@ pub fn redirect_to_err(err_code: &str) -> HttpResponse {
 pub fn redirect_to_login() -> HttpResponse {
     HttpResponse::Found() // 302 redirect
         .append_header((header::LOCATION, "/login"))
+        .finish()
+}
+
+// if user tries to visit their own view_user page
+pub fn redirect_to_dash() -> HttpResponse {
+    let new_location: String = format!("/dashboard");
+    HttpResponse::Found()
+        .append_header(("Location", new_location))
         .finish()
 }
 
@@ -1342,6 +1354,29 @@ pub async fn join_game(
         },
         Err(_e) => return return_internal_err_json()
     };
+
+    let owner_username: String = match db::get_owner_username(&pool, game_id).await {
+        Ok(name) => name,
+        Err(_e) => return return_internal_err_json()
+    };
+
+    // find out if user is blocked by invitee
+    let is_blocked: bool =
+        match db::is_blocked(
+            &pool,
+            &owner_username,
+            &user_req_data.get_username()
+        ).await {
+            Ok(blocked) => blocked,
+            Err(_e) => return return_internal_err_json()
+        };
+
+    if is_blocked {
+        return HttpResponse::Ok().json(InviteSuccessObject {
+            invite_success: false,
+            message: "User has blocked you".to_string()
+        })
+    }
 
     // Make sure they're not already in too many pregame or inprogress games.
     let games_count: u8 = 

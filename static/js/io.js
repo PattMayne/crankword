@@ -339,7 +339,8 @@ export const join_game = async (hashed_game_id) => {
             response_obj.success = true
         } else {
             console.log("DID NOT JOIN GAME")
-            response_obj.error = !!data.error ? data.error : "DID NOT JOIN GAME"
+            response_obj.error = !!data.error ? data.error :
+                !!data.message ? data.message : "DID NOT JOIN GAME"
         }        
     }).catch(error => {
         console.log('Error: ', error)
