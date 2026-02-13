@@ -3,9 +3,7 @@
 Crankword is a turn-based multiplayer word-guessing game.
 
 ## TODO:
-* better readme
-* Add logo
-* View user page
-* * block from inviting
-* * block from joining
-* Invitations include username of owners
+* Official readme
+* * Description of gameplay
+* * Description of interaction with auth app
+* * Image(s) of gameplay
