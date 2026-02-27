@@ -1,0 +1,232 @@
+/* 
+ * ========================
+ * ========================
+ * =====              =====
+ * =====  MIDDLEWARE  =====
+ * =====              =====
+ * ========================
+ * ========================
+ * 
+ * 
+ * 
+ * If multiple middleware functions are chained in the App::new() chain (inside a wrap() function)
+ * they are each called in sequence, and they can each act upon the request and change the request.
+ * In any function, post-processing can happen after the next.call(req).await call.
+ * That post-processing happens AFTER all the later calls
+ */
+
+use actix_web::{
+    error, Error, HttpMessage,
+    body::MessageBody, dev::{ServiceRequest, ServiceResponse},
+    middleware::{ Next }
+};
+
+use crate::{ auth, crankword_io,
+    auth_code_shared::{ 
+            RefreshCheckSuccess,
+            RefreshCheckRequest,
+        }
+};
+
+
+pub struct NewJwtObj {
+    token: String
+}
+
+impl NewJwtObj {
+    pub fn new(token: String) -> Self {
+        NewJwtObj { token }
+    }
+
+    pub fn get_token(&self) -> &String { &self.token }
+}
+
+
+/* 
+ * 
+ * 
+ * 
+ * 
+ * ============================
+ * ============================
+ * =====                  =====
+ * =====  PRE-PROCESSING  =====
+ * =====                  =====
+ * ============================
+ * ============================
+ * 
+ * 
+ * 
+ * 
+*/
+
+
+/**
+ * Pre-processing to make user data available for all routes.
+ * Check for JSON web token in req's cookies, and validate the token.
+ * Create a UserReqData object indicating whether user is logged in,
+ * or a guest (based on whether JWT is valid).
+ * Put that UserReqData object into the response for later functions.
+*/
+pub async fn login_status_middleware(
+    req: ServiceRequest,
+    next: Next<impl MessageBody>,
+) -> Result<ServiceResponse<impl MessageBody>, Error> {
+    let guest_data: auth::UserReqData = auth::UserReqData::new(None);
+    let user_req_data_opt: Option<actix_web::cookie::Cookie<'_>> = req.cookie("jwt");
+    let user_req_data: auth::UserReqData = get_user_req_data_from_opt(
+        user_req_data_opt,
+        &req,
+        guest_data
+    ).await?;
+
+    // Put UserReqData into the request object to identify user to all routes.
+    req.extensions_mut().insert(user_req_data);
+    next.call(req).await
+}
+
+
+
+/**
+ * Assists the login_status_middleware function by getting
+ * user data for request (UserReqData).
+ */
+async fn get_user_req_data_from_opt(
+    option: Option<actix_web::cookie::Cookie<'_>>,
+    req: &ServiceRequest,
+    guest_data: auth::UserReqData
+) -> Result<auth::UserReqData, Error> {
+    // This was deeply nested match expressions, so we're checking for none/err instead
+
+    if option.is_none() { return Ok(guest_data); }
+    let jwt_cookie: actix_web::cookie::Cookie<'_> = option.unwrap();
+
+    // hold claims in var if jwt expired. Otherwise return within match.
+    let claims: auth::Claims = match auth::verify_jwt(jwt_cookie.value()).await {
+        auth::JwtVerification::Invalid => {
+            return Ok(guest_data);
+        },
+        auth::JwtVerification::Valid(claims) => {
+            return Ok(auth::UserReqData::new(Some(claims)));
+        },
+        auth::JwtVerification::Expired(claims) => claims
+    };
+
+    // todo: delete this printline on PROG
+    println!("JWT expired. will check refresh token and generate new JWT");
+    // JWT is expired but otherwise valid.
+    // check refresh_token in auth_app before generating a new one
+    /* 
+    * PROCESS:
+    * => check REFRESH TOKEN
+    * => if that is valid (and non-expired):
+    * ====> set FLAG for setting the new JWT
+    * => ELSE
+    * ====> set FLAG to make user log in again
+    */
+    
+    // Check the cookies for a refresh_token
+    let r_token_optn = req.cookie("refresh_token");
+    if r_token_optn.is_none() { return Ok(guest_data); }
+    let r_tkn_ckie: actix_web::cookie::Cookie<'_> = r_token_optn.unwrap();
+    let refresh_token: &str = r_tkn_ckie.value();
+    let client_data_result: Result<auth::ClientData, std::env::VarError> =
+        auth::get_client_data();
+
+    let client_data: auth::ClientData = match client_data_result {
+        Ok(data) => data,
+        Err(e) => return Err(error::ErrorInternalServerError(e.to_string()))
+    };
+
+    let refresh_check_data: RefreshCheckRequest = RefreshCheckRequest {
+        token: refresh_token.to_string(),
+        user_id: claims.get_sub(),
+        client_id: client_data.client_id,
+        client_secret: client_data.client_secret
+    };
+
+    let refresh_check_result: Result<RefreshCheckSuccess, anyhow::Error> =
+        crankword_io::check_refresh_code(&refresh_check_data).await;
+
+    // Get the OK from auth_app
+    let r_tkn_valid: bool = match refresh_check_result {
+        Ok(result) => result.is_valid(),
+        Err(e) => return Err(error::ErrorInternalServerError(e.to_string()))
+    };
+    
+
+    if r_tkn_valid {
+        println!("REFRESH TOKEN VALID!");
+        // CREATE and GIVE NEW JWT
+        let new_jwt_rslt: Result<String, auth::AuthError> =
+            auth::generate_jwt(
+                claims.get_sub(),
+                claims.get_username().to_owned(),
+                claims.get_role().to_owned()
+            );
+
+        if let Err(e) = new_jwt_rslt {
+            return Err(error::ErrorInternalServerError(e.to_string()));
+        }
+
+        let new_jwt = new_jwt_rslt.unwrap();
+        req.extensions_mut().insert(NewJwtObj::new(new_jwt));
+
+        Ok(auth::UserReqData::new(Some(claims)))
+    } else {
+        println!("REFRESH TOKEN NOT NOT NOT VALID!");
+        Ok(guest_data)
+    }
+}
+
+
+
+/* 
+ * 
+ * 
+ * 
+ * 
+ * =============================
+ * =============================
+ * =====                   =====
+ * =====  POST-PROCESSING  =====
+ * =====                   =====
+ * =============================
+ * =============================
+ * 
+ * 
+ * 
+ * 
+*/
+
+
+/**
+ * Post-processing middleware to catch a "make new JWT" flag,
+ * then make a new JWT and put it in a cookie in the response.
+ */
+pub async fn jwt_cookie_middleware<B>(
+    req: ServiceRequest,
+    next: Next<B>,
+) -> Result<ServiceResponse<B>, Error> where B: MessageBody, {
+    let mut res: ServiceResponse<B> = next.call(req).await?;
+
+    let new_jwt: Option<String> = res
+        .request()
+        .extensions()
+        .get::<NewJwtObj>()
+        .map(|obj| obj.get_token().to_owned());
+
+    // After handler, check for the NewJwt flag and add cookie if present
+    if let Some(token) = new_jwt {
+        let cookie: actix_web::cookie::Cookie<'_> =
+            auth::build_token_cookie(
+                token,
+                String::from("jwt")
+            );
+
+        res.response_mut().add_cookie(&cookie).ok();
+    }
+    Ok(res)
+}
+
+

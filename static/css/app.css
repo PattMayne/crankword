@@ -1,0 +1,315 @@
+/*  REMEMBER only to edit the SCSS file!  */
+/* RAW COLORS */
+/* darker green */
+/* COLOR SCHEME 
+        https://coolors.co/423841-2e5c8a-d6d6d6-248232-c97c18
+*/
+/* CUSTOM FONTS */
+@font-face {
+  font-family: nue-gothic-reg;
+  src: url(../fonts/nue-gothic-reg.ttf);
+}
+@font-face {
+  font-family: nue-gothic-round;
+  src: url(../fonts/nue-gothic-round.ttf);
+}
+@font-face {
+  font-family: "lato";
+  src: url(../fonts/lato-med.woff2);
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "lato";
+  src: url(../fonts/lato-bold.woff2);
+  font-weight: bold;
+  font-style: normal;
+}
+@font-face {
+  font-family: "lato";
+  src: url(../fonts/lato-med-italic.woff2);
+  font-weight: normal;
+  font-style: italic;
+}
+@font-face {
+  font-family: "lato";
+  src: url(../fonts/lato-bold-italic.woff2);
+  font-weight: bold;
+  font-style: italic;
+}
+/* FONT VARIABLES */
+/* HTML ELEMENT OVERRIDES */
+body {
+  font-family: lato;
+  background-color: #111111;
+  color: #f0f0f0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: nue-gothic-round;
+  text-transform: uppercase;
+}
+
+a {
+  color: #bdf000;
+}
+
+a:hover {
+  color: #111111;
+}
+
+li a {
+  text-decoration: none !important;
+}
+
+/* FOUNDATION OVERRIDES */
+.callout.primary a {
+  color: #111111;
+  text-decoration: underline;
+}
+
+.callout.primary a:hover {
+  color: #1A6025;
+}
+
+.callout a,
+.callout.primary .callout a {
+  color: #bdf000;
+  text-decoration: none;
+}
+
+.callout a:hover,
+.callout.primary .callout a:hover {
+  color: #111111;
+}
+
+.callout {
+  background-color: #5a639e;
+  color: #f0f0f0;
+}
+
+.callout label {
+  color: #f0f0f0;
+}
+
+.callout.primary {
+  background-color: #d6d6d6;
+  color: #111111;
+}
+
+.callout.primary label {
+  color: #111111;
+}
+
+.button {
+  background-color: #111111;
+  color: #f0f0f0 !important;
+  border: 1px solid #111111;
+  border-radius: 5px;
+  font-family: lato, arial;
+  font-weight: bold;
+  text-transform: uppercase;
+  transition: background-color 0.55s;
+  text-decoration: none !important;
+}
+
+.button:hover, .button:focus {
+  background-color: #248232;
+  color: #f0f0f0;
+}
+
+.top-bar,
+.top-bar-right,
+.top-bar-left,
+.header_menu {
+  background-color: transparent !important;
+}
+
+.menu,
+.menu li {
+  background-color: #423841;
+}
+
+/* CUSTOM CLASSES */
+.nav-button {
+  background-color: #423841 !important;
+  transition: background-color 0.25s;
+  color: #f0f0f0;
+  border: none;
+  border-radius: 0px;
+}
+
+.nav-button:hover {
+  background-color: #5a639e !important;
+}
+
+.username_btn {
+  color: #bdf000 !important;
+  cursor: default;
+}
+
+.username_btn:hover {
+  color: #000000;
+}
+
+.hidden {
+  display: none;
+}
+
+/* 
+ * 
+ * =============================
+ * =============================
+ * =====                   =====
+ * =====  POST-GAME PAGES  =====
+ * =====                   =====
+ * =============================
+ * =============================
+ * 
+*/
+.winning_word_won_label {
+  color: #60f000;
+  background-color: #000000;
+  padding: 5px;
+  padding-left: 7px;
+  display: inline-block;
+}
+
+.winning_word_lost_label {
+  color: #e02f2f;
+  background-color: #000000;
+  padding: 5px;
+  padding-left: 7px;
+  display: inline-block;
+}
+
+.winner_name {
+  color: #60f000;
+  background-color: #000000;
+  padding: 5px;
+  padding-left: 7px;
+  display: inline-block;
+  font-weight: bold;
+}
+
+#players_list {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+/* 
+ * 
+ * 
+ * ======================
+ * ======================
+ * =====            =====
+ * =====  PRE-GAME  =====
+ * =====            =====
+ * ======================
+ * ======================
+ * 
+ * 
+*/
+.remove_player_button {
+  margin: 2px;
+  margin-left: 6px;
+  padding: 0px 4px 0px 4px;
+  border-radius: 10px;
+  font-size: 11px;
+  border: 1px solid #111111;
+  color: #111111;
+  background-color: #f0f0f0;
+}
+
+.remove_player_button:hover {
+  background-color: #e02f2f;
+  color: #f0f0f0;
+}
+
+/* 
+ * 
+ * =======================
+ * =======================
+ * =====             =====
+ * =====  DASHBOARD  =====
+ * =====             =====
+ * =======================
+ * =======================
+ * 
+*/
+.decline_invite {
+  margin-top: 5px;
+}
+
+.invite_btn {
+  margin: 0px 0px 7px 0px;
+}
+
+#invite_only_label {
+  color: #111111;
+  width: auto;
+}
+
+.current_game_callout {
+  display: inline-block;
+  width: auto;
+  text-align: center;
+}
+
+.invite_callout {
+  display: inline-block;
+  width: auto;
+  margin-right: 5px;
+  text-align: center;
+}
+
+/* 
+ * 
+ * 
+ * ========================
+ * ========================
+ * =====              =====
+ * =====  OPEN GAMES  =====
+ * =====              =====
+ * ========================
+ * ========================
+ * 
+ * 
+*/
+.open_game_button {
+  text-transform: none !important;
+  margin-bottom: 0px;
+}
+
+.owner_name {
+  color: #bdf000;
+  padding: 0px;
+  margin: 0px;
+}
+
+.open_game_callout {
+  display: inline-block;
+  width: auto;
+}
+
+#index_body {
+  background-color: #111111;
+}
+
+#welcome_img {
+  width: 100%;
+}
+
+#big_message {
+  font-size: 25px;
+  font-weight: bold;
+}
+
+@media screen and (max-width: 540px) {
+  /* extra small screen styles here */
+  #big_message {
+    font-size: 18px;
+  }
+}
+
+/*# sourceMappingURL=app.css.map */

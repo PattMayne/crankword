@@ -1,0 +1,555 @@
+
+/*
+ * Remember to ONLY EDIT the SCSS file and then run sass.
+ * =========================
+ * =====               =====
+ * =====  COLOR CODES  =====
+ * =====               =====
+ * =========================
+ *
+ *  board bg (pastel blue):     5a639e
+ *  current guess (white):      ffffff
+ *  right place (yellow):       bdf000
+ *  wrong place (dark blue):    0008dd
+ *
+ */
+
+
+/* RAW COLORS */
+$jet: #423841ff;
+$lapis-lazuli: #2e5c8aff;
+$timberwolf: #d6d6d6ff;
+$forest-green: #248232ff;
+$dartmouth-green: #1A6025; /* darker green */
+$bronze: #c97c18ff;
+$pastel-blue: #5a639e;
+$yellow: #bdf000;
+$very-light-gray: #f0f0f0;
+$light-gray: #9a9a9a;
+$gray: #6b6b6b;
+$pure-blue: #0008dd;
+
+
+$letter_right_spot: #60f000;
+$letter_wrong_spot: $pure-blue;
+$letter_dud: #111111;
+$letter_current_guess: #ffffff;
+
+
+
+/* COLOR SCHEME 
+        https://coolors.co/423841-2e5c8a-d6d6d6-248232-c97c18
+*/
+
+$white: $very-light-gray;
+$black: #111111;
+
+$player_turn_color: $yellow;
+
+
+/* CUSTOM FONTS */
+
+@font-face {
+  font-family: nue-gothic-reg;
+  src: url(../fonts/nue-gothic-reg.ttf);
+}
+
+
+@font-face {
+  font-family: nue-gothic-round;
+  src: url(../fonts/nue-gothic-round.ttf);
+}
+
+@font-face {
+  font-family: 'lato';
+  src: url(../fonts/lato-med.woff2);
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'lato';
+  src: url(../fonts/lato-bold.woff2);
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'lato';
+  src: url(../fonts/lato-med-italic.woff2);
+  font-weight: normal;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'lato';
+  src: url(../fonts/lato-bold-italic.woff2);
+  font-weight: bold;
+  font-style: italic;
+}
+
+
+$text-font: lato;
+$button-font: lato;
+
+
+@font-face {
+  font-family: alte;
+  src: url('../fonts/alte-bold.ttf');
+}
+
+body {
+    background-color: #000000;
+    color:#fff;
+    font-family: 'nue-gothic-round';
+}
+
+
+
+/* 
+ * 
+ * ====================================
+ * ====================================
+ * =====                          =====
+ * =====  CUSTOM IDS AND CLASSES  =====
+ * =====                          =====
+ * ====================================
+ * ====================================
+ * 
+*/
+
+
+/* The container for the actual board-grid
+ * (encompasses headline (title) and board (grid)).
+ */
+#board_panel {
+    background-color: $pastel-blue;
+    color:#000000;
+    border: none;
+    width: 500px;
+    max-width: 100%;
+    padding: 5px;
+    margin: auto;
+    margin-top: 10px;
+}
+
+#headline {
+    width: 100%;
+    text-align: center;
+    font-family: 'nue-gothic-round';
+    font-size: 101px;
+    margin-top: -14px;
+}
+
+/* the grid-container for the tiles. */
+#board {
+    display: grid;
+    width: 100%;
+    height: auto;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+    font-size: 55px;
+    margin-top: -16px;
+}
+
+/* each tile on the game grid/board */
+.tile {
+    font-family: alte;
+    border: 2px solid black;
+    text-align: center;
+    vertical-align: middle;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+}
+
+.tile:hover {
+    cursor:default;
+}
+
+.current_tile {
+    background-color: #333;
+}
+
+.tile:focus {
+    outline: none !important;
+    background-color: #000;
+}
+
+#game_wrapper {
+    min-height: 100vh;
+}
+
+#cranktable {
+    width: 100%;
+    padding: 0px;
+    margin: 0px;
+    text-align: center;
+}
+
+
+.wrong_spot {
+    /* color: #0008dd; */
+    color: $letter_wrong_spot;
+}
+
+.right_spot {
+    color: $letter_right_spot;
+    /* color: #bdf000; */
+}
+
+.current_guess {
+    color: $letter_current_guess;
+}
+
+.dud {
+    color: $letter_dud;
+}
+
+
+/* 
+ * 
+ * 
+ * 
+ * 
+ * ===========================
+ * ===========================
+ * =====                 =====
+ * =====  PLAYERS BOARD  =====
+ * =====                 =====
+ * ===========================
+ * ===========================
+ * 
+ * 
+ * 
+ * 
+*/
+
+#players-board {
+    width: 300px;
+    height: auto;
+    background-color: $pastel-blue;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+
+
+#message_modal {
+    background-color: #0008dd;
+    color: #bdf000;
+    border: 2px solid #000000;
+    text-align: center;
+}
+
+
+#players_list_bk {
+    width: 100%;
+    margin: 0px;
+    padding: 0px;
+}
+
+#game_menu_container {
+    padding: 0px;
+    margin: auto;
+    text-align: left;
+    border-bottom: 1px solid $black;
+}
+
+#cancel_button_container {
+    margin: auto;
+    width: 100%;
+    text-align: left;
+    padding: 0px;
+}
+
+#cancel_button {
+    margin: 5px;
+    background-color: $gray;
+    color: $very-light-gray;
+    border-radius: 0;
+}
+
+#cancel_button:hover {
+    background-color: red;
+    color: $black;
+}
+
+#cancel_p {
+    color: $black;
+}
+
+#game_menu {
+    width: auto!important;
+    font-family: $text-font;
+    background-color: transparent!important;
+    margin: auto!important;
+    text-align: left;
+}
+
+#game_menu li a {
+    color: $white;
+}
+
+#game_menu li a:hover {
+    cursor: default;
+}
+
+#player_turn_li {
+    font-family: $text-font;
+    text-transform: uppercase;
+    color: $player_turn_color!important;
+}
+
+.player_label {
+    cursor: default;
+    color: white;
+    text-transform: uppercase;
+}
+
+#scores_toggle {
+    transition: background-color 0.25s;
+}
+
+#scores_toggle:hover {
+    background-color: $pastel-blue;
+    cursor: pointer!important;
+}
+
+#timer_element {
+    border-right: 2px solid $black;
+    cursor: default;
+    color: $player_turn_color!important;
+}
+
+#timer_element:hover {
+    cursor: default;
+}
+
+/*    Opponents' scores screen.    */
+
+#oppo_table {
+    display: flex;
+    width: 100%;
+    background-color: $black;
+}
+
+.oppo_panel {
+    background-color: $pastel-blue;
+    margin: 5px 0px 5px 5px;
+    padding: 15px 0px 0px 0px;
+    text-align: center;
+    display: inline-block;
+    width: auto;
+    height: auto;
+}
+
+.oppo_panel_label {
+    text-align: center;
+}
+
+.oppo_canvas {
+    width: 200px!important;
+    height: 200px!important;
+    background-color: transparent;
+    margin: 0px;
+    padding: 0px;
+    display: block;
+}
+
+#oppo_scores {
+    text-align: center;
+}
+
+#oppo_scores h3 {
+    text-align: center;
+}
+
+#scores_toggle_2 {
+    text-align: center;
+    background-color: $pastel-blue;
+}
+
+#scores_toggle_2:hover {
+    background-color: $jet;
+    transition: background-color 0.25s;
+}
+
+.scores_toggle_container {
+    text-align: center;
+}
+
+
+.oppo_label {
+    color: $black;
+}
+
+// keyboard used letter keyboard div
+
+#used_keys_board_container {
+    background-color: transparent;
+    text-align: center;
+    width: 100%;
+    margin: auto;
+    display: inline-block;
+    margin-top: 60px;
+}
+
+.keyboard_row {
+    display: inline;
+    text-align: center;
+    width: auto;
+    display: flex;
+    justify-content: center;
+}
+
+.kb_letter {
+    font-family: alte;
+    text-align: center;
+    vertical-align: middle;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+}
+
+#back_key,
+#enter_key {
+    font-family: alte;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid $gray;
+}
+
+@media screen and (min-width: 1024px) {
+    /* large screen styles here */
+    .kb_letter {
+        width: 31px;
+        height: 31px;
+        margin: 2px;
+        font-size: 20px;
+    }
+
+    #back_key,
+    #enter_key {
+        width: auto;
+        height: 31px;
+        margin: 5px 2px;
+        padding: 1px 9px 5px 9px;
+        font-size: 18px;
+    }
+}
+
+@media screen and (min-width: 509px) and (max-width: 1023px) {
+    /* Medium screen styles here */
+    .kb_letter {
+        width: 39px;
+        height: 39px;
+        margin: 5px;
+        font-size: 23px;
+    }
+
+    #back_key,
+    #enter_key {
+        width: auto;
+        height: 39px;
+        margin: 5px 2px;
+        padding: 1px 9px 5px 9px;
+        font-size: 21px;
+    }
+}
+
+@media screen and (min-width: 436px) and (max-width: 510px) {
+    /* small screen styles here */
+    .kb_letter {
+        width: 34px;
+        height: 34px;
+        margin: 4px;
+        font-size: 21px;
+    }
+
+    #back_key,
+    #enter_key {
+        width: auto;
+        height: 39px;
+        margin: 5px 2px;
+        padding: 1px 9px 5px 9px;
+        font-size: 21px;
+    }
+}
+
+@media screen and (min-width: 399px) and (max-width: 437px) {
+    /* extra small screen styles here */
+    .kb_letter {
+        width: 33px;
+        height: 33px;
+        margin: 2px;
+        font-size: 20px;
+    }
+
+    #back_key,
+    #enter_key {
+        width: auto;
+        height: 33px;
+        margin: 2px 2px;
+        padding: 1px 9px 5px 9px;
+        font-size: 19px;
+    }
+}
+
+
+@media screen and (max-width: 400px) {
+    /* Medium screen styles here */
+    .kb_letter {
+        width: 30px;
+        height: 30px;
+        margin: 2px;
+        font-size: 19px;
+    }
+
+    #back_key,
+    #enter_key {
+        width: auto;
+        height: 30px;
+        margin: 2px 2px;
+        padding: 1px 9px 5px 9px;
+        font-size: 17px;
+    }
+}
+
+.kb_letter:hover {
+    cursor: pointer;
+    color: $very-light-gray;
+    background-color: $pastel-blue;
+}
+
+#back_key:hover,
+#enter_key:hover {
+    cursor: pointer;
+    color: $very-light-gray;
+    background-color: $pastel-blue;
+    border: 1px solid $pastel-blue;
+}
+
+.letter_right_spot {
+    background-color: $letter_right_spot;
+    color: $black;
+    border: 1px solid $jet;
+}
+
+.letter_wrong_spot {
+    background-color: $letter_wrong_spot;
+    color: $very-light-gray;
+    border: 1px solid $light-gray;
+}
+
+.letter_dud {
+    background-color: $letter_dud;
+    color: $gray;
+    border: 1px solid $gray;
+}
+
+.letter_not_used {
+    background-color: $very-light-gray;
+    color: $black;
+    border: 1px solid $black;
+}
+

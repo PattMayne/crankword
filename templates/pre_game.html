@@ -1,0 +1,105 @@
+<!doctype html>
+<html class="no-js" lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{ texts.title }}</title>
+        <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
+        <link rel="stylesheet" href="../static/css/foundation.min.css">
+        <link rel="stylesheet" href="../static/css/app.css?id=0">
+    </head>
+
+
+    <body>
+    {% include "header.html" %}
+    <div class="grid-container">
+        <div class="grid-x grid-padding-x">
+            <div class="large-6 medium-6 small-12 cell">
+                <div class="callout">
+                    <h2>PRE-GAME DASHBOARD</h2>
+                    <p>Only game owner may start game</p>
+                </div>
+
+                <div class="callout primary">
+                    <h5>OWNER:
+                        {% if game.owner_name().is_some() %}
+                            <a href="/user/{{ game.owner_name().unwrap() }}">{{ game.owner_name().unwrap() }}</a>
+                        {% else %}
+                            NO OWNER?
+                        {% endif %}
+                    </h5>
+
+                    <h5>
+                        {% if game.game.open_game %} OPEN GAME {% else %} INVITE-ONLY GAME {% endif %}
+                        --
+                        {{ age_string }}
+                    </h5>
+
+                </div>
+
+                <div class="callout primary">
+                    <a id="refresh_btn" class="button small">REFRESH</a>
+                    <br />
+                    {% if user.id.is_some() && game.game.owner_id == user.id.unwrap() %}
+                        <a id="start_btn" class="button small">START GAME</a>
+                        <a id="cancel_btn" class="button small">CANCEL GAME</a>
+                        <hr />
+                        <label for="invite_input">INVITE USER
+                            <input
+                                type="text"
+                                id="invite_input"
+                                name="invite_input"
+                                placeholder="TYPE USERNAME"
+                            />
+                        </label>
+                        <a class="button small" id="invite_submit">INVITE</a>
+                    {% else if user.id.is_some() && !game.user_id_is_player(user.id.unwrap()) %}
+                        <a href="#" id="join_btn" class="button small">JOIN GAME</a>
+                    {% else if user.id.is_some() && game.user_id_is_player(user.id.unwrap()) %}
+                        <a href="#" id="leave_btn" class="button small">LEAVE GAME</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="large-6 medium-6 small-12 cell">
+                <div class="callout primary">
+                    <h4>Players registered for this game:</h4>
+                    {% if game.players.len() > 0 %}
+                        <ul id="players_ul">
+                            {% for player_info in game.players %}
+                            <li>
+                                <a href="/user/{{ player_info.username }}">
+                                    {{ player_info.username }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="callout primary">
+                    <h4>Pending Invitations:</h4>
+                    {% if game.players.len() > 0 %}
+                        <ul id="invitees_ul">
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="large-12 cell">
+                <div class="callout hidden" id="msg_box">
+                </div>
+            </div>
+
+        </div> <!-- end of grid-x -->
+
+    </div><!-- end of grid-container -->
+        <input type="hidden" id="game_id" value="{{ hashed_game_id }}">
+
+        <script src="../static/js/vendor/jquery.js"></script>
+        <script src="../static/js/vendor/what-input.js"></script>
+        <script src="../static/js/vendor/foundation.min.js"></script>
+        <script type="module" src="../static/js/pre_game.js?id=5"></script>
+    </body>
+
+</html>

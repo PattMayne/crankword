@@ -1,0 +1,669 @@
+import * as utils from './utils.js'
+
+/* 
+ * 
+ * ---------------------------------
+ * ----------             ----------
+ * ----------  IO ROUTES  ----------
+ * ----------             ----------
+ * ---------------------------------
+ * 
+ * 
+ * 
+*/
+
+
+/* 
+ * 
+ * 
+ * 
+ * 
+ * -------------------------------
+ * -------------------------------
+ * -----------         -----------
+ * -----------  LOCAL  -----------
+ * -----------         -----------
+ * -------------------------------
+ * -------------------------------
+ * 
+ * 
+ * "local" meaning the crankword APIs
+ * instead of the auth_app APIs
+ * 
+ * 
+ * 
+*/
+
+/**
+ * User presses "new game" button.
+ * We call the "new game" function in the backend.
+ * Backend creates an empty new game and returns id.
+ * @returns 
+ */
+export const new_game = async (invite_only) => {
+    const route = "/new_game"
+    const input = {
+        "invite_only": invite_only
+    }
+
+    const return_obj = {
+        hashed_game_id: 0,
+        error: null
+    }
+
+    await utils.fetch_json_post(route, input)
+    .then(response => {
+        if(!response.ok) {
+            response.json().then(data => {
+                console.log("NOT OK")
+                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                msg += (!!data.error) ? data.error : " Error occurred"
+                response_obj.error = msg
+            })
+
+            throw new Error("Unable to create new game, or error on server.")
+        }
+        return response.json()
+    }).then(data => {
+        if (data.hashed_game_id !== undefined && !!data.hashed_game_id) {
+            return_obj.hashed_game_id = data.hashed_game_id
+        } else if (!!data.error) {
+            return_obj.error = data.error
+        } else {
+            console.log("no game id")
+            return_obj.error = "NO GAME ID"
+        }     
+    }).catch(error =>
+        console.log('Error: ', error)
+    )
+
+    return return_obj
+}
+
+
+/**
+ * When the owner of the game wants to transition from pre-game to in-progress.
+ * 
+ * @param {int} hashed_game_id 
+ * @returns json object
+ */
+export const start_game = async hashed_game_id => {
+    const route = "/game_in/start_game"
+    const input = {
+        "hashed_game_id": String(hashed_game_id)
+    }
+
+    const response_obj = {
+        success: false,
+        error: null
+    }
+
+    await utils.fetch_json_post(route, input)
+    .then(response => {
+        if(!response.ok) {
+            response.json().then(data => {
+                console.log("NOT OK")
+                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                msg += (!!data.error) ? data.error : " Error occurred"
+                response_obj.error = msg
+            })
+
+            throw new Error("Unable to start game, or error on server.")
+        }
+        return response.json()
+    }).then(data => {
+        if (data.success) {
+            response_obj.success = true
+        } else {
+            console.log("DID NOT START GAME")
+            response_obj.error = !!data.error ? data.error : "DID NOT START GAME"
+        }        
+    }).catch(error => {
+        console.log('Error: ', error)
+    })
+
+    return response_obj
+}
+
+
+
+/**
+ * Get all of the current player's previous guesses and their scores
+ * from the database.
+ * 
+ * @param {int} hashed_game_id 
+ * @returns obj
+ */
+export const get_guess_scores = async hashed_game_id => {
+    const route = "/game_in/get_guess_scores"
+    const input = {
+        "hashed_game_id": String(hashed_game_id)
+    }
+
+    const response_obj = {
+        scores: null,
+        error: null
+    }
+
+    await utils.fetch_json_post(route, input)
+    .then(response => {
+        if(!response.ok) {
+            response.json().then(data => {
+                console.log("NOT OK")
+                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                msg += (!!data.error) ? data.error : " Error occurred"
+                response_obj.error = msg
+            })
+
+            throw new Error("Unable to get guesses, or error on server.")
+        }
+        return response.json()
+    }).then(data => {
+
+        if (!!data.scores) {
+            response_obj.scores = data.scores
+        } else {
+            console.log("DID NOT GET GUESS DATA")
+            response_obj.error = !!data.error ? data.error : "DID NOT GET GUESS DATA"
+        }        
+    }).catch(error =>
+        console.log('Error: ', error)
+    )
+
+    return response_obj
+}
+
+/**
+ * Check a particular guess (word) and get a result for that word
+ * @param {*} guess_word 
+ * @param {*} hashed_game_id 
+ * @returns 
+ */
+export const check_guess_io = async (guess_word, hashed_game_id) => {
+    const check_guess_route = "/game_in/check_guess"
+    const guess_obj = {
+        "guess_word": guess_word,
+        "hashed_game_id": String(hashed_game_id)
+    }
+
+    const response_obj = {
+        letter_states: [],
+        fake_word: false,
+        max_guesses: false,
+        wrong_turn: false,
+        game_over: false,
+        is_winner: false,
+        next_turn_id: null,
+        error: null
+    }
+
+    await utils.fetch_json_post(check_guess_route, guess_obj)
+    .then(response => {
+        if(!response.ok) {
+            response.json().then(data => {
+                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                msg += (!!data.error) ? data.error : " Error occurred"
+                response_obj.error = msg
+            })
+
+            throw new Error("Unable to check word, or error on server.")
+        }
+        return response.json()
+    }).then(guess_result => {
+        if (!!guess_result.fake_word) {
+            response_obj.fake_word = true
+        } else if (!!guess_result.max_guesses) {
+            response_obj.max_guesses = true
+        } else if (!!guess_result.wrong_turn) {
+            response_obj.wrong_turn = true
+        } else {
+            if (guess_result.is_winner) {
+                response_obj.is_winner = guess_result.is_winner
+                response_obj.game_over = true
+            } else if (guess_result.game_over) {
+                response_obj.game_over = true
+            }
+            
+            response_obj.next_turn_id = guess_result.next_turn_id
+            response_obj.letter_states = guess_result.score
+        }        
+    }).catch(error => {
+        console.log('Error: ', error)
+    })
+
+    return response_obj
+}
+
+
+/**
+ * update the data about the in-progress game.
+ * 
+ * @param {int} hashed_game_id 
+ * @returns obj
+ */
+export const refresh_players = async hashed_game_id => {
+    const route = "/game_in/refresh_in_prog_players"
+    const input = {
+        "hashed_game_id": String(hashed_game_id)
+    }
+
+    const response_obj = {
+        players: [],
+        current_turn_id: null,
+        game_status: null,
+        turn_timeout: false,
+    }
+
+    await utils.fetch_json_post(route, input)
+    .then(response => {
+        if(!response.ok) {
+            response.json().then(data => {
+                console.log("NOT OK")
+                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                msg += (!!data.error) ? data.error : " Error occurred"
+                response_obj.error = msg
+            })
+
+            throw new Error("Unable to refresh game, or error on server.")
+        }
+        return response.json()
+    }).then(data => {
+        //console.log("data: " + JSON.stringify(data))
+        if (!!data.current_turn_id && !!data.players && !!data.turn_timeout) {
+            response_obj.players = data.players
+            response_obj.current_turn_id = data.current_turn_id
+            response_obj.turn_timeout = new Date(data.turn_timeout)
+            response_obj.game_status = data.game_status
+        } else {
+            console.log("DID NOT REFRESH PLAYERS DATA")
+            response_obj.error = !!data.error ? data.error : "DID NOT REFRESH PLAYERS DATA"
+        }        
+    }).catch(error => {
+        console.log('Error: ', error)
+    })
+
+    return response_obj
+}
+
+/* 
+ * 
+ * 
+ * 
+ * 
+ * ======================
+ * ======================
+ * =====            =====
+ * =====  PRE-GAME  =====
+ * =====            =====
+ * ======================
+ * ======================
+ * 
+ * 
+ * 
+ * 
+*/
+
+
+/**
+ * When the user wants to join the game.
+ * 
+ * @param {int} hashed_game_id 
+ * @returns obj
+ */
+export const join_game = async (hashed_game_id) => {
+    const route = "/game_in/join_game"
+    const input = {
+        "hashed_game_id": String(hashed_game_id)
+    }
+
+    const response_obj = {
+        success: false,
+        error: null
+    }
+
+    await utils.fetch_json_post(route, input)
+    .then(response => {
+        if(!response.ok) {
+            response.json().then(data => {
+                console.log("NOT OK")
+                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                msg += (!!data.error) ? data.error : " Error occurred"
+                response_obj.error = msg
+            })
+
+            throw new Error("Unable to join game, or error on server.")
+        }
+        return response.json()
+    }).then(data => {
+        if (data.success) {
+            response_obj.success = true
+        } else {
+            console.log("DID NOT JOIN GAME")
+            response_obj.error = !!data.error ? data.error :
+                !!data.message ? data.message : "DID NOT JOIN GAME"
+        }        
+    }).catch(error => {
+        console.log('Error: ', error)
+    })
+
+    return response_obj
+}
+
+
+/**
+ * When the user wants to leave the game.
+ * 
+ * @param {int} hashed_game_id 
+ * @returns obj
+ */
+export const leave_game = async (hashed_game_id) => {
+    const route = "/game_in/leave_game"
+    const input = {
+        "hashed_game_id": String(hashed_game_id)
+    }
+
+    const response_obj = {
+        success: false,
+        error: null
+    }
+
+    await utils.fetch_json_post(route, input)
+    .then(response => {
+        if(!response.ok) {
+            response.json().then(data => {
+                console.log("NOT OK")
+                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                msg += (!!data.error) ? data.error : " Error occurred"
+                response_obj.error = msg
+            })
+
+            throw new Error("Unable to leave game, or error on server.")
+        }
+        return response.json()
+    }).then(data => {
+        if (data.success) {
+            response_obj.success = true
+        } else {
+            console.log("DID NOT LEAVE GAME")
+            response_obj.error = !!data.error ? data.error : "DID NOT LEAVE GAME"
+        }        
+    }).catch(error => {
+        console.log('Error: ', error)
+    })
+
+    return response_obj
+}
+
+
+/**
+ * When the owner invites a player during the pre-game period.
+ * 
+ * @param {int} hashed_game_id
+ * @param {String} invited_username 
+ * @returns obj
+ */
+export const invite_player = async (invited_username, hashed_game_id) => {
+    const route = "/game_in/invite_player"
+    const input = {
+        "hashed_game_id": String(hashed_game_id),
+        "invited_player_username": String(invited_username)
+    }
+
+    const response_obj = {
+        invite_success: false,
+        message: null,
+        error: null
+    }
+
+    await utils.fetch_json_post(route, input)
+    .then(response => {
+        if(!response.ok) {
+            response.json().then(data => {
+                console.log("NOT OK")
+                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                msg += (!!data.error) ? data.error : " Error occurred"
+                response_obj.error = msg
+            })
+
+            throw new Error("Unable to invite player, or error on server.")
+        }
+        return response.json()
+    }).then(data => {
+        if (!!data.message) {
+            response_obj.invite_success = data.invite_success
+            response_obj.message = data.message
+            console.log(response_obj.message)
+        } else {
+            console.log("DID NOT INVITE PLAYER")
+            response_obj.error = !!data.error ? data.error : "DID NOT INVITE PLAYER"
+        }        
+    }).catch(error => {
+        console.log('Error: ', error)
+    })
+
+    return response_obj
+}
+
+
+
+/**
+ * update the data about the pregame-status game.
+ * 
+ * @param {int} hashed_game_id 
+ * @returns obj
+ */
+export const refresh_pregame = async hashed_game_id => {
+    const route = "/game_in/refresh_pregame"
+    const input = {
+        "hashed_game_id": String(hashed_game_id)
+    }
+
+    const response_obj = {
+        players: [],
+        game_status: "in_progress",
+        invitee_usernames: [],
+    }
+
+    await utils.fetch_json_post(route, input)
+    .then(response => {
+        if(!response.ok) {
+            response.json().then(data => {
+                console.log("NOT OK")
+                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                msg += (!!data.error) ? data.error : " Error occurred"
+                response_obj.error = msg
+            })
+
+            throw new Error("Unable to refresh game, or error on server.")
+        }
+        return response.json()
+    }).then(data => {
+        if (!!data.game_status && !!data.players) {
+            response_obj.players = data.players
+            response_obj.game_status = data.game_status
+            if (!!response_obj.invitee_usernames) {
+                response_obj.invitee_usernames = data.invitee_usernames
+            }
+
+        } else {
+            console.log("DID NOT REFRESH GAME DATA")
+            response_obj.error = !!data.error ? data.error : "DID NOT REFRESH GAME DATA"
+        }        
+    }).catch(error => {
+        console.log('Error: ', error)
+    })
+
+    return response_obj
+}
+
+
+export const uninvite_player = async (hashed_game_id, username) => {
+    console.log("uninviting player")
+
+    const route = "/game_in/delete_invite"
+    const input = {
+        "hashed_game_id": String(hashed_game_id),
+        "username": String(username)
+    }
+
+    const response_obj = {
+        success: false,
+        message: null,
+    }
+
+    await utils.fetch_json_post(route, input)
+        .then(response => {
+            if(!response.ok) {
+                response.json().then(data => {
+                    console.log("NOT OK")
+                    let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                    msg += (!!data.error) ? data.error : " Error occurred"
+                    response_obj.error = msg
+                })
+
+                throw new Error("Unable to uninvite player, or error on server.")
+            }
+            return response.json()
+        }).then(data => {
+            if (!!data.message) {
+                response_obj.success = !!data.success
+                response_obj.message = data.message
+                console.log(response_obj.message)
+            } else {
+                console.log("DID NOT UNINVITE PLAYER")
+                response_obj.error = !!data.error ? data.error : "DID NOT UNINVITE PLAYER"
+            }        
+        }).catch(error => {
+            console.log('Error: ', error)
+        })
+
+    return response_obj
+}
+
+
+export const boot_player_pregame = async (hashed_game_id, username) => {
+    console.log("booting player")
+
+    const route = "/game_in/boot_player_pregame"
+    const input = {
+        "hashed_game_id": String(hashed_game_id),
+        "username": String(username)
+    }
+
+    const response_obj = {
+        success: false,
+        message: null,
+    }
+
+    await utils.fetch_json_post(route, input)
+        .then(response => {
+            if(!response.ok) {
+                response.json().then(data => {
+                    console.log("NOT OK")
+                    let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                    msg += (!!data.error) ? data.error : " Error occurred"
+                    response_obj.error = msg
+                })
+
+                throw new Error("Unable to boot player, or error on server.")
+            }
+            return response.json()
+        }).then(data => {
+            if (!!data.message) {
+                response_obj.success = !!data.success
+                response_obj.message = data.message
+                console.log(response_obj.message)
+            } else {
+                console.log("DID NOT BOOT PLAYER")
+                response_obj.error = !!data.error ? data.error : "DID NOT BOOT PLAYER"
+            }        
+        }).catch(error => {
+            console.log('Error: ', error)
+        })
+
+    return response_obj
+}
+
+// cancel game
+
+
+/**
+ * When the owner of the game wants to transition from pre-game to in-progress.
+ * 
+ * @param {int} hashed_game_id 
+ * @returns json object
+ */
+export const cancel_game = async hashed_game_id => {
+    const route = "/game_in/cancel_game"
+    const input = {
+        "hashed_game_id": String(hashed_game_id)
+    }
+
+    const response_obj = {
+        success: false,
+        error: null
+    }
+
+    await utils.fetch_json_post(route, input)
+    .then(response => {
+        if(!response.ok) {
+            response.json().then(data => {
+                console.log("NOT OK")
+                let msg = (!!data.code) ? (data.code.toString() + " ") : ""
+                msg += (!!data.error) ? data.error : " Error occurred"
+                response_obj.error = msg
+            })
+
+            throw new Error("Unable to start game, or error on server.")
+        }
+        return response.json()
+    }).then(data => {
+        if (data.success) {
+            response_obj.success = data.success
+        } else {
+            console.log("DID NOT CANCEL GAME")
+            response_obj.error = !!data.error ? data.error : "DID NOT CANCEL GAME"
+        }        
+    }).catch(error => {
+        console.log('Error: ', error)
+    })
+
+    return response_obj
+}
+
+
+/* 
+ * 
+ * =======================
+ * =======================
+ * =====             =====
+ * =====  DASHBOARD  =====
+ * =====             =====
+ * =======================
+ * =======================
+ * 
+ */
+
+export const refresh_dashboard = async () => {
+    const route = "/game_in/refresh_dashboard"
+
+    let response = await fetch(route, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' }
+    })
+
+    let data = await response.json()
+
+    let return_obj = {
+        invited_games: [],
+        error: null
+    }
+
+    if (data.invited_games !== undefined) {
+        return_obj.invited_games = data.invited_games
+    } else if (!!data.error) {
+        return_obj.error = data.error
+    }
+
+    return return_obj
+}
