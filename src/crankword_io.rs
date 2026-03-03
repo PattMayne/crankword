@@ -37,7 +37,8 @@ pub async fn check_auth_code(
     // Use a reqwest Client for POST request
     let client: Client = Client::new();
     let response: AuthCodeResponse = client
-        .post("http://auth.localhost.test:3000/ext_auth/verify_auth_code") // put this in resources file
+        //.post("http://auth.localhost.test:3000/ext_auth/verify_auth_code")
+        .post("https://crankade.com/ext_auth/verify_auth_code") // todo: put this in resources file
         .json(&client_auth_data)
         .send()
         .await?
@@ -60,7 +61,8 @@ pub async fn check_refresh_code(refresh_request: &RefreshCheckRequest)
     // Use a reqwest Client for POST request
     let client: Client = Client::new();
     let response: RefreshCheckResponse = client
-        .post("http://auth.localhost.test:3000/ext_auth/check_refresh") // put this in resources file
+        .post("https://crankade.com/ext_auth/check_refresh") // todo: put this in resources file
+        //.post("http://auth.localhost.test:3000/ext_auth/check_refresh") // put this in resources file
         .json(&refresh_request)
         .send()
         .await?
