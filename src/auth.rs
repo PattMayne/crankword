@@ -328,11 +328,14 @@ pub fn build_token_cookie(token: String, name: String) -> Cookie<'static> {
         .map(|value: String| value == "true")
         .unwrap_or(false);
 
+    let max_age: Duration = Duration::days(21);
+
     Cookie::build(name, token)
         .http_only(true)
         .secure(secure) 
         .same_site(SameSite::Lax)
         .path("/")
+        .max_age(max_age)
         .finish()
 }
 
