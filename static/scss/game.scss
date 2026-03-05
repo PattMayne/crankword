@@ -409,6 +409,12 @@ body {
     vertical-align: middle;
     overflow: hidden;
     aspect-ratio: 1 / 1;
+
+    /* make the text non-selectable */
+    user-select: none;      /* Standard */
+    -webkit-user-select: none; /* Safari/Chrome */
+    -moz-user-select: none;    /* Firefox */
+    -ms-user-select: none;     /* Internet Explorer/Edge */
 }
 
 #back_key,

@@ -806,8 +806,7 @@ function toggle_scores() {
 function show_scores() {
     showing_scores = true
     document.getElementById("oppo_scores").style.display = ""
-    document.getElementById("scores_toggle").innerHTML = "HIDE PANEL"
-    document.getElementById("scores_toggle_2").innerHTML = "HIDE PANEL"
+    //document.getElementById("scores_toggle_2").innerHTML = "HIDE PANEL"
     document.getElementById("crank_cell").className = "large-7 medium-12 small-12 cell"
     document.getElementById("stats_cell").style.display = ""
 }
@@ -815,8 +814,7 @@ function show_scores() {
 function hide_scores() {
     showing_scores = false
     document.getElementById("oppo_scores").style.display = "none"
-    document.getElementById("scores_toggle").innerHTML = "SHOW PANEL"
-    document.getElementById("scores_toggle_2").innerHTML = "SHOW PANEL"
+    //document.getElementById("scores_toggle_2").innerHTML = "SHOW PANEL"
     document.getElementById("crank_cell").className = "large-12 cell"
     document.getElementById("stats_cell").style.display = "none"
 }
@@ -977,8 +975,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     timer_element = document.getElementById("timer_element")
     const cancel_button = document.getElementById("cancel_button")
     const confirm_cancel_button = document.getElementById("confirm_cancel_button")
-    document.getElementById('scores_toggle').addEventListener('click', toggle_scores)
-    document.getElementById('scores_toggle_2').addEventListener('click', toggle_scores)
+    // document.getElementById('scores_toggle').addEventListener('click', toggle_scores)
+    // document.getElementById('scores_toggle_2').addEventListener('click', toggle_scores)
     !!cancel_button && cancel_button.addEventListener('click', () => {
         cancel_modal.foundation('open')
     })
