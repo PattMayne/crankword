@@ -130,6 +130,11 @@ li a {
   background-color: #423841;
 }
 
+#toggle_nav_button {
+  color: #bdf000;
+  cursor: pointer;
+}
+
 /* CUSTOM CLASSES */
 .nav-button {
   background-color: #423841 !important;
