@@ -975,8 +975,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     timer_element = document.getElementById("timer_element")
     const cancel_button = document.getElementById("cancel_button")
     const confirm_cancel_button = document.getElementById("confirm_cancel_button")
-    // document.getElementById('scores_toggle').addEventListener('click', toggle_scores)
-    // document.getElementById('scores_toggle_2').addEventListener('click', toggle_scores)
     !!cancel_button && cancel_button.addEventListener('click', () => {
         cancel_modal.foundation('open')
     })
@@ -998,6 +996,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         setInterval(refresh_players, 5000)
     }
     show_scores()
+
+    const cranktable = document.getElementById("cranktable")
+    !!cranktable && cranktable.scrollIntoView({ behavior: "smooth" })
 })
 
 const cancel_game = async () => {

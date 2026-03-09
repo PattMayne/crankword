@@ -334,7 +334,14 @@ body {
   width: 100%;
   margin: auto;
   display: inline-block;
-  margin-top: 60px;
+  margin-top: 0px;
+}
+
+.buffer-60 {
+  width: 100%;
+  height: 60px;
+  padding: 0px;
+  margin: 0px;
 }
 
 .keyboard_row {
@@ -351,6 +358,11 @@ body {
   vertical-align: middle;
   overflow: hidden;
   aspect-ratio: 1/1;
+  /* make the text non-selectable */
+  user-select: none !important; /* Standard */
+  -webkit-user-select: none !important; /* Safari/Chrome */
+  -moz-user-select: none !important; /* Firefox */
+  -ms-user-select: none !important; /* Internet Explorer/Edge */
 }
 
 #back_key,
