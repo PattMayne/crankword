@@ -231,6 +231,16 @@ li a {
   color: #f0f0f0;
 }
 
+#start_btn {
+  background-color: #248232;
+  color: #111111;
+}
+
+#start_btn:hover {
+  background-color: #1A6025;
+  color: #f0f0f0;
+}
+
 /* 
  * 
  * =======================
