@@ -7,3 +7,4 @@ Crankword is a turn-based multiplayer word-guessing game.
 * * Description of gameplay
 * * Description of interaction with auth app
 * * Image(s) of gameplay
+* Getting "server error" in /reception sometimes
