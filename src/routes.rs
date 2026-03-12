@@ -358,7 +358,6 @@ async fn go_to_cancelled_game(
     the_game: db::GameAndPlayers,
     user_req_data: auth::UserReqData
 ) -> HttpResponse {
-    println!("GAME STATUS: {}", the_game.game.game_status.to_string());
     let post_game_texts: PostGameTexts = resource_mgr::PostGameTexts::new(
         &user_req_data,
         None,
@@ -652,7 +651,7 @@ async fn reception(query: web::Query<AuthCodeQuery>) -> HttpResponse {
 
         },
         Err(e) => {
-            println!("Error: {}", e);
+            eprintln!("Error: {}", e);
             return redirect_to_err("404");
         }
     }
@@ -1436,7 +1435,6 @@ pub async fn leave_game(
     req: HttpRequest,
     game_join_hash_id: web::Json<HashedGameId>
 ) -> HttpResponse {
-    println!("LEAVING GAME");
     // Make sure it's a real user
     let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
     if user_req_data.get_role() == "guest" {

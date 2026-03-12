@@ -112,8 +112,6 @@ async fn get_user_req_data_from_opt(
         auth::JwtVerification::Expired(claims) => claims
     };
 
-    // todo: delete this printline on PROG
-    println!("JWT expired. will check refresh token and generate new JWT");
     // JWT is expired but otherwise valid.
     // check refresh_token in auth_app before generating a new one
     /* 
@@ -156,7 +154,6 @@ async fn get_user_req_data_from_opt(
     
 
     if r_tkn_valid {
-        println!("REFRESH TOKEN VALID!");
         // CREATE and GIVE NEW JWT
         let new_jwt_rslt: Result<String, auth::AuthError> =
             auth::generate_jwt(
@@ -174,7 +171,6 @@ async fn get_user_req_data_from_opt(
 
         Ok(auth::UserReqData::new(Some(claims)))
     } else {
-        println!("REFRESH TOKEN NOT NOT NOT VALID!");
         Ok(guest_data)
     }
 }

@@ -154,8 +154,6 @@ impl SupportedLangs {
             return SupportedLangs::French;
         }
 
-        println!("DEFAULTING to ENGLISH");
-
         // Default
         return SupportedLangs::English;
     }
