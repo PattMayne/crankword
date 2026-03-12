@@ -113,10 +113,10 @@ async fn hashid_secret_err() -> std::io::Result<()> {
 
 
 async fn database_pool_err() -> std::io::Result<()> {
-    eprintln!("ERROR: NO HASH ID SECRET.");
+    eprintln!("ERROR: DATABASE POOL ERROR.");
     return Err(
         io::Error::new(
-            io::ErrorKind::Other, "HASHID_SECRET not set")
+            io::ErrorKind::Other, "Failed to create or retrieve DB pool.")
     );
 }
 
