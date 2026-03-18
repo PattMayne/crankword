@@ -371,14 +371,11 @@ pub async fn verify_jwt(token: &str) -> JwtVerification {
                 ErrorKind::ExpiredSignature => {
                     match insecure_decode::<Claims>(token) {
                         Ok(token_data) => {
+                            println!("Expired signature. Renewing...");
                             JwtVerification::Expired(token_data.claims)
                         },
                         Err(_e) => {
                             eprintln!("Invalid JWT: Expired");
-                            JwtVerification::Invalid
-                        },
-                        _=> {
-                            eprintln!("Invalid JWT: Expired: Neither Ok nor Err");
                             JwtVerification::Invalid
                         }
                     }
