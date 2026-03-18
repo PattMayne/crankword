@@ -36,18 +36,28 @@ pub async fn check_auth_code(
 ) -> anyhow::Result<AuthCodeSuccess> {
     // Use a reqwest Client for POST request
     let client: Client = Client::new();
-    let response: AuthCodeResponse = client
+    let response: reqwest::Response = client
         //.post("http://auth.localhost.test:3000/ext_auth/verify_auth_code")
         .post("https://crankade.com/ext_auth/verify_auth_code") // todo: put this in resources file
         .json(&client_auth_data)
         .send()
-        .await?
-        .json::<AuthCodeResponse>()
         .await?;
 
-    match response {
-        AuthCodeResponse::Ok(success) => { Ok(success) }
-        AuthCodeResponse::Err(err) => anyhow::bail!(err.message)
+    let bytes: actix_web::web::Bytes = response.bytes().await?;
+
+    // Try to parse as JSON
+    let parsed: Result<AuthCodeResponse, _> = serde_json::from_slice(&bytes);
+
+    // If failed to parse, print bytes as string
+    if let Err(error) = parsed {
+        println!("Failed to parse: {:?}", error);
+        println!("Raw response: {}", String::from_utf8_lossy(&bytes));
+        anyhow::bail!("Failed to parse AuthCodeResponse: {:?}", error);
+    }
+    
+    match parsed.unwrap() {
+        AuthCodeResponse::Ok(success) => Ok(success),
+        AuthCodeResponse::Err(err) => anyhow::bail!(err.message),
     }
 }
 
