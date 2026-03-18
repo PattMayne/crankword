@@ -364,16 +364,27 @@ pub async fn verify_jwt(token: &str) -> JwtVerification {
         &Validation::new(Algorithm::HS256),
     ) {
         Ok(token_data) => JwtVerification::Valid(token_data.claims), // good. send.
-        Err(e) => match *e.kind() {
-            ErrorKind::ExpiredSignature => {
-                match insecure_decode::<Claims>(token) {
-                    Ok(token_data) => {
-                        JwtVerification::Expired(token_data.claims)
-                    },
-                    Err(_e) => JwtVerification::Invalid
+        Err(e) => {
+            eprintln!("ERROR decoding JSON WEB TOKEN");
+
+            match *e.kind() {
+                ErrorKind::ExpiredSignature => {
+                    match insecure_decode::<Claims>(token) {
+                        Ok(token_data) => {
+                            JwtVerification::Expired(token_data.claims)
+                        },
+                        Err(_e) => {
+                            eprintln!("Invalid JWT: Expired");
+                            JwtVerification::Invalid
+                        }
+                    }
+                },
+                _ => {
+                    eprintln!("Invalid JWT: not expired");
+                    JwtVerification::Invalid
                 }
-            },
-            _ => JwtVerification::Invalid
+            }
+
         }
     }
     
