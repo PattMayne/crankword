@@ -122,7 +122,7 @@ async fn get_user_req_data_from_opt(
     * => ELSE
     * ====> set FLAG to make user log in again
     */
-    println!("Expired token 1");
+    
     // Check the cookies for a refresh_token
     let r_token_optn = req.cookie("refresh_token");
     if r_token_optn.is_none() { return Ok(guest_data); }
@@ -135,7 +135,7 @@ async fn get_user_req_data_from_opt(
         Ok(data) => data,
         Err(e) => return Err(error::ErrorInternalServerError(e.to_string()))
     };
-println!("Expired token 5");
+
     let refresh_check_data: RefreshCheckRequest = RefreshCheckRequest {
         token: refresh_token.to_string(),
         user_id: claims.get_sub(),
@@ -145,13 +145,16 @@ println!("Expired token 5");
 
     let refresh_check_result: Result<RefreshCheckSuccess, anyhow::Error> =
         crankword_io::check_refresh_code(&refresh_check_data).await;
-    println!("Expired token 7");
+
     // Get the OK from auth_app
     let r_tkn_valid: bool = match refresh_check_result {
         Ok(result) => result.is_valid(),
-        Err(e) => return Err(error::ErrorInternalServerError(e.to_string()))
+        Err(e) => {
+            eprintln!("Probably just printing this error again: {}", e.to_string());
+            return Err(error::ErrorInternalServerError(e.to_string()))
+        }
     };
-    println!("Expired token 9");
+    
 
     if r_tkn_valid {
         // CREATE and GIVE NEW JWT
@@ -161,15 +164,14 @@ println!("Expired token 5");
                 claims.get_username().to_owned(),
                 claims.get_role().to_owned()
             );
-        println!("Expired token 10");
+
         if let Err(e) = new_jwt_rslt {
-            println!("Expired token ERROR!!");
             return Err(error::ErrorInternalServerError(e.to_string()));
         }
-        println!("Expired token 11");
+
         let new_jwt = new_jwt_rslt.unwrap();
         req.extensions_mut().insert(NewJwtObj::new(new_jwt));
-        println!("Expired token 12");
+
         Ok(auth::UserReqData::new(Some(claims)))
     } else {
         Ok(guest_data)

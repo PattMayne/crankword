@@ -81,7 +81,9 @@ pub async fn check_refresh_code(refresh_request: &RefreshCheckRequest)
 
     match response {
         RefreshCheckResponse::Ok(success) => { Ok(success) }
-        RefreshCheckResponse::Err(err) => anyhow::bail!(err.message)
+        RefreshCheckResponse::Err(err) => {
+            eprintln!("Error with refresh response: {}", err.message);
+            anyhow::bail!(err.message)
+        }
     }
 }
-
