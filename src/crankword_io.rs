@@ -68,14 +68,6 @@ pub async fn check_auth_code(
 pub async fn check_refresh_code(refresh_request: &RefreshCheckRequest)
     -> anyhow::Result<RefreshCheckSuccess>
 {
-
-    // printing all:
-    println!("User id: {}", refresh_request.user_id);
-    println!("token: {}", refresh_request.token);
-    println!("Client id: {}", refresh_request.client_id);
-    println!("client secret: {}", refresh_request.client_secret);
-
-
     // Use a reqwest Client for POST request
     let client: Client = Client::new();
     let response: RefreshCheckResponse = client
@@ -89,9 +81,6 @@ pub async fn check_refresh_code(refresh_request: &RefreshCheckRequest)
 
     match response {
         RefreshCheckResponse::Ok(success) => { Ok(success) }
-        RefreshCheckResponse::Err(err) => {
-            eprintln!("Error with refresh response: {}", err.message);
-            anyhow::bail!(err.message)
-        }
+        RefreshCheckResponse::Err(err) => anyhow::bail!(err.message)
     }
 }

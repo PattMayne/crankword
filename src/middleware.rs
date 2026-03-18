@@ -149,10 +149,7 @@ async fn get_user_req_data_from_opt(
     // Get the OK from auth_app
     let r_tkn_valid: bool = match refresh_check_result {
         Ok(result) => result.is_valid(),
-        Err(e) => {
-            eprintln!("Probably just printing this error again: {}", e.to_string());
-            return Err(error::ErrorInternalServerError(e.to_string()))
-        }
+        Err(_e) => return Ok(guest_data)
     };
     
 
