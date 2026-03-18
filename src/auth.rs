@@ -376,6 +376,10 @@ pub async fn verify_jwt(token: &str) -> JwtVerification {
                         Err(_e) => {
                             eprintln!("Invalid JWT: Expired");
                             JwtVerification::Invalid
+                        },
+                        _=> {
+                            eprintln!("Invalid JWT: Expired: Neither Ok nor Err");
+                            JwtVerification::Invalid
                         }
                     }
                 },
