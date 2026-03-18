@@ -39,6 +39,7 @@ pub struct AppConfig {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    println!("CRANKWORD app starting");
     // Prepare data for storage in app data and other universal utils
 
     /* dotenvy loads env variables for whole app
