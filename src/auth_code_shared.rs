@@ -51,6 +51,7 @@ pub struct AuthCodeSuccess {
     pub username: String,
     pub user_role: String,
     pub refresh_token: String,
+    pub email_verified: bool,
 }
 
 

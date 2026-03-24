@@ -159,7 +159,8 @@ async fn get_user_req_data_from_opt(
             auth::generate_jwt(
                 claims.get_sub(),
                 claims.get_username().to_owned(),
-                claims.get_role().to_owned()
+                claims.get_role().to_owned(),
+                claims.email_verified
             );
 
         if let Err(e) = new_jwt_rslt {

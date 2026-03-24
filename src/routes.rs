@@ -625,7 +625,8 @@ async fn reception(query: web::Query<AuthCodeQuery>) -> HttpResponse {
             let jwt: String = match auth::generate_jwt(
                 success.user_id,
                 success.username,
-                success.user_role
+                success.user_role,
+                success.email_verified
             ) {
                 Ok(token) => token,
                 Err(e) => {
