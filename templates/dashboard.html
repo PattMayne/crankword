@@ -80,6 +80,13 @@
                     <h6>WINS: {{ stats.wins }}</h6>
                     <h6>CANCELLED GAMES: {{ stats.cancelled_games }}</h6>
                 </div>
+                <div class="callout primary">
+                    {% if user.email_verified %}
+                    <p>EMAIL: VERIFIED</p>
+                    {% else %}
+                    <p>EMAIL: NOT VERIFIED</p>
+                    {% endif %}
+                </div>
             </div>
 
 
