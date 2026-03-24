@@ -127,7 +127,7 @@ pub async fn send_email_verification_request(
     // Use a reqwest Client for POST request
     let client: Client = Client::new();
     let response: SendVerificationEmailResponse = client
-        .post("https://crankade.com/ext_auth/re_ver_email") // todo: put this in resources file
+        .post("https://crankade.com/ext_auth/req_ver_email") // todo: put this in resources file
         //.post("http://auth.localhost.test:3000/ext_auth/check_refresh") // put this in resources file
         .json(&email_req)
         .send()
