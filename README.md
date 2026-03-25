@@ -2,7 +2,7 @@
 
 Crankword is a turn-based multiplayer word-guessing game. It's a web application, written in Rust, where login (accounts) are handled by a separate app (crankade).
 
-![Alt text](static/img/logo.png)
+<img src="static/img/logo.png" alt="CRANKWORD logo" width="300">
 
 ## TECH:
 
