@@ -1,10 +1,13 @@
 # CRANKWORD
 
-Crankword is a turn-based multiplayer word-guessing game.
+Crankword is a turn-based multiplayer word-guessing game. It's a web application, written in Rust, where login (accounts) are handled by a separate app (crankade).
 
-## TODO:
-* Official readme
-* * Description of gameplay
-* * Description of interaction with auth app
-* * Image(s) of gameplay
-* Getting "server error" in /reception sometimes
+![Alt text](static/img/logo.png)
+
+## TECH:
+
+Crankword uses actix-web for backend, Askama templates for front-end, and sqlx to run the mariadb database.
+
+## USAGE:
+
+You can play the game at https://crankword.crankade.com.
