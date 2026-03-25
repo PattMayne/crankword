@@ -80,10 +80,9 @@
                     <h6>WINS: {{ stats.wins }}</h6>
                     <h6>CANCELLED GAMES: {{ stats.cancelled_games }}</h6>
                 </div>
-                <div class="callout primary">
+                <div class="callout">
                     {% if user.email_verified %}
                     <h6>EMAIL VERIFIED</h6>
-                    <p>To get a verification email, <a id="verify_btn">click here.</a></p>
                     {% else %}
                     <h6>EMAIL NOT VERIFIED</h6>
                     <p>To get a verification email, <a id="verify_btn">click here.</a></p>
@@ -93,7 +92,7 @@
 
 
             <div class="large-12 cell">
-                <div class="callout primary hidden" id="msg_box">
+                <div class="callout hidden" id="msg_box">
                 </div>
             </div>
 

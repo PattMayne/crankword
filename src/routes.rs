@@ -1557,7 +1557,6 @@ pub async fn start_game(
             Err(_e) => return return_internal_err_json()
         };
 
-
     // delete all invitations (some may be pending, so still extant)
     if game_started.success {
         let _deleted_invite_count_result: Result<u8, anyhow::Error> =
@@ -1596,6 +1595,13 @@ pub async fn new_game(
             success: false,
             error: "Too many current games".to_string()
         });
+    }
+
+    // only verified users can create OPEN games
+    if !invite_only_data.invite_only && !user_req_data.email_verified {
+        let success: bool = false;
+        let error: String = "Verify your email to create open games.".to_string();            
+        return HttpResponse::Ok().json(JoinGameFailure { success, error });
     }
 
     let game_id: i32 = match db::new_game(
