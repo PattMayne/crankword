@@ -121,7 +121,8 @@ pub async fn send_email_verification_request(
 
     let email_req: SendVerificationEmailRequest =
         SendVerificationEmailRequest{
-            client_id, client_secret, user_id
+            client_id, client_secret, user_id,
+            username: user_req_data.get_username()
         };
 
     // Use a reqwest Client for POST request

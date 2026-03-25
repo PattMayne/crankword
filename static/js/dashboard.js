@@ -108,6 +108,14 @@ const set_decline_event_listeners = async (invited_games, username) => {
         })
 }
 
+const req_email_verify = async () => {
+    console.log("requesting verify email")
+    const message = await io.req_email_verify()
+    msgs.push(message)
+    show_msg_box()
+    msgs = []
+}
+
 const get_decline_id = hashid => "decline_" + hashid
 
 // Add event listeners
@@ -116,6 +124,9 @@ document.addEventListener('DOMContentLoaded', () => {
     hide_msg_box()
     invites_list = document.getElementById("invitations")
     refresh_data()
+
+    const verify_btn = document.getElementById("verify_btn")
+    !!verify_btn && verify_btn.addEventListener("click", () => req_email_verify())
 
     // Check every 4 seconds for new users or updated game_status
     setInterval(refresh_data, 4001)

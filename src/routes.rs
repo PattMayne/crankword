@@ -10,12 +10,8 @@ use time::OffsetDateTime;
 
 use crate::{
     auth, auth_code_shared::{ 
-        AuthCodeRequest,
-        AuthCodeSuccess
-    }, db::{self, GameAndPlayers, PlayerStats},
-    game_logic::{ self, GameStatus },
-    crankword_io, resource_mgr::{self, *}, resources::get_translation,
-    routes_utils::*, utils::{ self, SupportedLangs }, words_all
+        self, AuthCodeRequest, AuthCodeSuccess
+    }, crankword_io, db::{self, GameAndPlayers, PlayerStats}, game_logic::{ self, GameStatus }, resource_mgr::{self, *}, resources::get_translation, routes_utils::*, utils::{ self, SupportedLangs }, words_all
 };
 
 /* 
@@ -1005,6 +1001,7 @@ pub async fn unblock_user(
     HttpResponse::Ok().json(block_success_obj)
 }
 
+
 /**
  * Get the data to update items in the dashboard.
  */
@@ -1133,6 +1130,36 @@ pub async fn quit_game(
 
     HttpResponse::Ok().json(quit_game_success)
 }
+
+
+
+
+
+/**
+ * User requests system to send verification email.
+ */
+#[post("request_verification_email")]
+pub async fn request_verification_email(
+    req: HttpRequest
+) -> HttpResponse {
+    // Make sure it's a real user
+    let user_req_data: auth::UserReqData = auth::get_user_req_data(&req);
+    if user_req_data.id.is_none() {
+        return return_unauthorized_err_json(&user_req_data)
+    }
+
+    let response: auth_code_shared::SendVerificationEmailResponse =
+        match crankword_io::send_email_verification_request(&user_req_data).await {
+            Ok(res) => res,
+            Err(_e) => return return_internal_err_json()
+        };
+
+    HttpResponse::Ok().json(response)
+}
+
+
+
+
 
 
 

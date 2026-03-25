@@ -148,6 +148,7 @@ impl RefreshCheckSuccess {
 pub struct SendVerificationEmailRequest {
     pub client_id: String,
     pub client_secret: String,
+    pub username: String,
     pub user_id: i32,
 }
 

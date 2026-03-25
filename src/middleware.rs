@@ -124,7 +124,7 @@ async fn get_user_req_data_from_opt(
     */
     
     // Check the cookies for a refresh_token
-    let r_token_optn = req.cookie("refresh_token");
+    let r_token_optn: Option<actix_web::cookie::Cookie<'_>> = req.cookie("refresh_token");
     if r_token_optn.is_none() { return Ok(guest_data); }
     let r_tkn_ckie: actix_web::cookie::Cookie<'_> = r_token_optn.unwrap();
     let refresh_token: &str = r_tkn_ckie.value();

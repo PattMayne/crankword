@@ -667,3 +667,46 @@ export const refresh_dashboard = async () => {
 
     return return_obj
 }
+
+
+/**
+ * When the owner of the game wants to transition from pre-game to in-progress.
+ * 
+ * @param {int} hashed_game_id 
+ * @returns json object
+ */
+export const req_email_verify = async () => {
+
+    const route = "/request_verification_email"
+
+    let return_message = await fetch(route, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' }
+    }).then(async response => {
+
+        let message = "";
+        let data;
+
+        try {
+            data = await response.json();
+        } catch (e) {
+            data = {};
+        }
+
+        if (!response.ok) {
+            if (data.error) {
+                message += data.error;
+            }
+            if (data.message) {
+                message += " " + data.message;
+            }
+        } else if (data.message) {
+            message = data.message;
+        }
+
+        return message
+
+    })
+
+    return return_message
+}

@@ -80,6 +80,7 @@ async fn main() -> std::io::Result<()> {
             .service(routes::view_user)
             .service(routes::block_user)
             .service(routes::unblock_user)
+            .service(routes::request_verification_email)
             .service(
                 web::scope("/game_in")
                 .service(routes::check_guess)
